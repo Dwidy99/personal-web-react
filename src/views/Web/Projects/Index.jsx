@@ -66,7 +66,8 @@ export default function Index() {
                 image={project.image}
                 title={project.title || "Untitled Project"}
                 caption={project.caption}
-                description={truncateText(project.description)} // ✅ fix typo
+                description={truncateText(project.description)}
+                link={`/projects/${project.slug}`}
               >
                 <p className="text-sm font-medium text-right text-blue-600 hover:underline">
                   <Link to={`/projects/${project.slug}`}>Learn more →</Link>
