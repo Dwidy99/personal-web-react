@@ -4,13 +4,14 @@ import Sidebar from "@/components/admin/Sidebar";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
+  className?: string; // ✅ tambahkan baris ini
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout({ children, className }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark min-h-screen">
+    <div className={`dark:bg-boxdark-2 dark:text-bodydark min-h-screen ${className ?? ""}`}>
       {/* ===== Page Wrapper ===== */}
       <div className="flex h-screen overflow-hidden">
         {/* ===== Sidebar ===== */}
