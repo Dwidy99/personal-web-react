@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import SidebarLinkGroup from "./SidebarLinkGroup";
-
-// Import js-cookie
 import Cookies from "js-cookie";
+import hasAnyPermission from "@/utils/Permissions";
 
-// Import permissions
-import hasAnyPermission from "../../../utils/Permissions";
 import {
   FaBarsProgress,
   FaCircleChevronDown,
@@ -17,71 +14,78 @@ import {
   FaUser,
   FaWandMagicSparkles,
   FaWandSparkles,
+  FaPhotoFilm,
+  FaUserPen,
+  FaUsersRectangle,
 } from "react-icons/fa6";
-import PropTypes from "prop-types";
 import { GoFileDiff } from "react-icons/go";
-import { FaPhotoVideo, FaUserEdit, FaUsersCog } from "react-icons/fa";
 import { GrDashboard, GrInsecure, GrSecure } from "react-icons/gr";
 import { ImProfile } from "react-icons/im";
 import { TiContacts } from "react-icons/ti";
 import { FcDataConfiguration } from "react-icons/fc";
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
+interface SidebarProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+}
+
+export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const location = useLocation();
   const { pathname } = location;
-
   const activeRoute = pathname.split("/");
-  const user = JSON.parse(Cookies.get("user"));
 
-  const trigger = useRef(null);
-  const sidebar = useRef(null);
+  const userCookie = Cookies.get("user");
+  const user = userCookie ? JSON.parse(userCookie) : { email: "guest@local" };
 
-  const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
-  const [sidebarExpanded, setSidebarExpanded] = useState(
-    storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
-  );
+  const trigger = useRef<HTMLButtonElement>(null);
+  const sidebar = useRef<HTMLDivElement>(null);
 
-  // Close sidebar on click outside
+  const [sidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
+    const stored = localStorage.getItem("sidebar-expanded");
+    return stored === "true";
+  });
+
+  /** 🔹 Close sidebar on click outside */
   useEffect(() => {
-    const clickHandler = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return;
       if (
         !sidebarOpen ||
-        sidebar.current.contains(event.target) ||
-        trigger.current.contains(event.target)
+        sidebar.current.contains(event.target as Node) ||
+        trigger.current.contains(event.target as Node)
       )
         return;
       setSidebarOpen(false);
     };
-    document.addEventListener("click", clickHandler);
-    return () => document.removeEventListener("click", clickHandler);
-  }, [sidebarOpen]);
 
-  // Close sidebar on ESC key press
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [sidebarOpen, setSidebarOpen]);
+
+  /** 🔹 Close on ESC */
   useEffect(() => {
-    const keyHandler = (event) => {
-      if (!sidebarOpen || event.keyCode !== 27) return;
-      setSidebarOpen(false);
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && sidebarOpen) {
+        setSidebarOpen(false);
+      }
     };
-    document.addEventListener("keydown", keyHandler);
-    return () => document.removeEventListener("keydown", keyHandler);
-  }, [sidebarOpen]);
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [sidebarOpen, setSidebarOpen]);
 
-  // Manage sidebar expanded state
+  /** 🔹 Manage expand state */
   useEffect(() => {
     localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
-    document
-      .querySelector("body")
-      ?.classList.toggle("sidebar-expanded", sidebarExpanded);
+    document.body.classList.toggle("sidebar-expanded", sidebarExpanded);
   }, [sidebarExpanded]);
 
-  // NavLink rendering helper
-  const renderNavLink = (to, label, activeCondition) => (
+  /** 🔹 Helper for active links */
+  const renderNavLink = (to: string, label: string, activeCondition?: boolean) => (
     <NavLink
       to={to}
       className={({ isActive }) =>
         `group relative flex items-center rounded-md px-3 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-          isActive || activeCondition ? "!text-white " : ""
+          isActive || activeCondition ? "!text-white" : ""
         }`
       }
     >
@@ -92,19 +96,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-meta-4 lg:static lg:translate-x-0 ${
+      className={`absolute left-0 top-0 z-50 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-meta-4 lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      {/* Sidebar Header */}
+      {/* ===== Header ===== */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <Link
-          className={`flex items-center p-2 font-extrabold text-lg tablet:text-sm rounded-md ${
-            activeRoute[2] === "dashboard"
-              ? "text-white bg-gray-700"
-              : "text-gray-300 hover:text-white hover:bg-gray-700"
-          }`}
           to="/admin/dashboard"
+          className={`flex items-center rounded-md p-2 text-lg font-extrabold ${
+            activeRoute[2] === "dashboard"
+              ? "bg-gray-700 text-white"
+              : "text-gray-300 hover:bg-gray-700 hover:text-white"
+          }`}
         >
           My Portfolio Website
         </Link>
@@ -114,274 +118,199 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls="sidebar"
           aria-expanded={sidebarOpen}
-          className="block lg:hidden"
+          className="block lg:hidden text-white"
         >
-          <i className="fa-solid fa-arrow-left text-white"></i>
+          <i className="fa-solid fa-arrow-left" />
         </button>
       </div>
 
-      {/* Sidebar Content */}
+      {/* ===== Sidebar Content ===== */}
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
-          <NavLink>
-            <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 flex items-center">
-              <GrDashboard className="mr-2" />
-              MAIN DASHBOARD
-            </h3>
-          </NavLink>
-          <NavLink
-            to="/admin/dashboard"
-            className="group relative flex items-center rounded-md px-3 mb-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-          >
-            <FaGaugeHigh className="mr-3" /> Dashboard
-          </NavLink>
-          {/* CONTENT MANAGEMENT */}
-          {(hasAnyPermission(["projects.index"]) ||
-            hasAnyPermission(["experiences.index"])) && (
-            <>
-              <NavLink>
-                <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 flex items-center">
-                  <FaWandMagicSparkles className="mr-2" />
-                  CONTENT MANAGEMENT
-                </h3>
-              </NavLink>
+        <nav className="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
+          {/* Main Dashboard */}
+          <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+            <GrDashboard className="mr-2" />
+            MAIN DASHBOARD
+          </h3>
+          {renderNavLink("/admin/dashboard", "Dashboard", activeRoute[2] === "dashboard")}
+
+          {/* Content Management */}
+          {(hasAnyPermission(["projects.index"]) || hasAnyPermission(["experiences.index"])) && (
+            <section>
+              <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+                <FaWandMagicSparkles className="mr-2" /> CONTENT MANAGEMENT
+              </h3>
               <ul className="mb-6 flex flex-col gap-1.5">
-                {/* Contents Link */}
-                <SidebarLinkGroup
-                  activeCondition={activeRoute[2] === "dashboard"}
-                >
+                <SidebarLinkGroup activeCondition={activeRoute[2] === "dashboard"}>
                   {(handleClick, open) => (
                     <>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-graydark ${
-                          open ? "" : ""
-                        }`}
+                      <button
                         onClick={(e) => {
                           e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
+                        className="group relative flex w-full items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-graydark"
                       >
                         <FaWandSparkles className="mr-2" />
                         Contents
                         <FaCircleChevronDown
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && "rotate-180"
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform ${
+                            open ? "rotate-180" : ""
                           }`}
                         />
-                      </NavLink>
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && "hidden"
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col text-bodydark2 gap-2.5 pl-9">
+                      </button>
+
+                      {open && (
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9 text-bodydark2">
                           {hasAnyPermission(["profiles.index"]) && (
-                            <li>
-                              <div className="flex items-center">
-                                <ImProfile />
-                                {renderNavLink("/admin/profiles", "Profile")}
-                              </div>
+                            <li className="flex items-center gap-2">
+                              <ImProfile />
+                              {renderNavLink("/admin/profiles", "Profile")}
                             </li>
                           )}
                           {hasAnyPermission(["experiences.index"]) && (
-                            <li>
-                              <div className="flex items-center">
-                                <FaClipboardList />
-                                {renderNavLink(
-                                  "/admin/experiences",
-                                  "Experience"
-                                )}
-                              </div>
+                            <li className="flex items-center gap-2">
+                              <FaClipboardList />
+                              {renderNavLink("/admin/experiences", "Experience")}
                             </li>
                           )}
                           {hasAnyPermission(["categories.index"]) && (
-                            <li>
-                              <div className="flex items-center">
-                                <FaLayerGroup />
-                                {renderNavLink(
-                                  "/admin/categories",
-                                  "Categories"
-                                )}
-                              </div>
+                            <li className="flex items-center gap-2">
+                              <FaLayerGroup />
+                              {renderNavLink("/admin/categories", "Categories")}
                             </li>
                           )}
                           {hasAnyPermission(["posts.index"]) && (
-                            <li>
-                              <div className="flex items-center">
-                                <GoFileDiff />
-                                {renderNavLink("/admin/posts", "Posts")}
-                              </div>
+                            <li className="flex items-center gap-2">
+                              <GoFileDiff />
+                              {renderNavLink("/admin/posts", "Posts")}
                             </li>
                           )}
                         </ul>
-                      </div>
+                      )}
                     </>
                   )}
                 </SidebarLinkGroup>
               </ul>
-            </>
+            </section>
           )}
 
-          {/* MEDIA MANAGEMENT */}
+          {/* Media Management */}
           {(hasAnyPermission(["projects.index"]) ||
             hasAnyPermission(["contacts.index"]) ||
             hasAnyPermission(["configurations.update"])) && (
-            <>
-              <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 flex items-center">
+            <section>
+              <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
                 <FaBarsProgress className="mr-2" /> MEDIA MANAGEMENT
               </h3>
-              <ul className="mb-6 flex flex-col text-bodydark2 gap-1.5">
-                {/* Media Link */}
-                <SidebarLinkGroup
-                  activeCondition={activeRoute[2] === "dashboard"}
-                >
+              <ul className="mb-6 flex flex-col gap-1.5 text-bodydark2">
+                <SidebarLinkGroup activeCondition={activeRoute[2] === "dashboard"}>
                   {(handleClick, open) => (
                     <>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                          open ? "" : ""
-                        }`}
+                      <button
                         onClick={(e) => {
                           e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
+                        className="group relative flex w-full items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-graydark dark:hover:bg-meta-4"
                       >
-                        <FaPhotoVideo />
+                        <FaPhotoFilm />
                         Media
                         <FaCircleChevronDown
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && "rotate-180"
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform ${
+                            open ? "rotate-180" : ""
                           }`}
                         />
-                      </NavLink>
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && "hidden"
-                        }`}
-                      >
+                      </button>
+
+                      {open && (
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9">
-                          <li>
-                            <div className="flex items-center">
-                              <FaImages />
-                              {renderNavLink("/admin/projects", "Projects")}
-                            </div>
+                          <li className="flex items-center gap-2">
+                            <FaImages />
+                            {renderNavLink("/admin/projects", "Projects")}
                           </li>
-                          <li>
-                            <div className="flex items-center">
-                              <TiContacts />
-                              {renderNavLink("/admin/contacts", "Contacts")}
-                            </div>
+                          <li className="flex items-center gap-2">
+                            <TiContacts />
+                            {renderNavLink("/admin/contacts", "Contacts")}
                           </li>
-                          <li>
-                            <div className="flex items-center">
-                              <FcDataConfiguration />
-                              {renderNavLink(
-                                "/admin/configurations",
-                                "Configurations"
-                              )}
-                            </div>
+                          <li className="flex items-center gap-2">
+                            <FcDataConfiguration />
+                            {renderNavLink("/admin/configurations", "Configurations")}
                           </li>
                         </ul>
-                      </div>
+                      )}
                     </>
                   )}
                 </SidebarLinkGroup>
               </ul>
-            </>
+            </section>
           )}
 
-          {/* USERS MANAGEMENT */}
-          <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 flex items-center">
-            <FaUsersCog className="mr-2" /> USERS MANAGEMENT
-          </h3>
+          {/* Users Management */}
+          <section>
+            <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+              <FaUsersRectangle className="mr-2" /> USERS MANAGEMENT
+            </h3>
 
-          {hasAnyPermission(["roles.index"]) ||
-          hasAnyPermission(["permissions.index"]) ||
-          hasAnyPermission(["users.index"]) ? (
-            <ul className="mb-6 flex flex-col gap-1.5">
-              <SidebarLinkGroup activeCondition={activeRoute[2] === "users"}>
-                {(handleClick, open) => (
-                  <>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        open ? "" : ""
-                      }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FaUser />
-                      Users
-                      <FaCircleChevronDown
-                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                          open && "rotate-180"
-                        }`}
-                      />
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden ${
-                        !open && "hidden"
-                      }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col text-bodydark2 gap-2.5 pl-9">
-                        {hasAnyPermission(["roles.index"]) && (
-                          <li>
-                            <div className="flex items-center">
+            {(hasAnyPermission(["roles.index"]) ||
+              hasAnyPermission(["permissions.index"]) ||
+              hasAnyPermission(["users.index"])) && (
+              <ul className="mb-6 flex flex-col gap-1.5">
+                <SidebarLinkGroup activeCondition={activeRoute[2] === "users"}>
+                  {(handleClick, open) => (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                        className="group relative flex w-full items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                      >
+                        <FaUser />
+                        Users
+                        <FaCircleChevronDown
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform ${
+                            open ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {open && (
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9">
+                          {hasAnyPermission(["roles.index"]) && (
+                            <li className="flex items-center gap-2">
                               <GrSecure />
                               {renderNavLink("/admin/roles", "Roles")}
-                            </div>
-                          </li>
-                        )}
-                        {hasAnyPermission(["permissions.index"]) && (
-                          <li>
-                            <div className="flex items-center">
+                            </li>
+                          )}
+                          {hasAnyPermission(["permissions.index"]) && (
+                            <li className="flex items-center gap-2">
                               <GrInsecure />
-                              {renderNavLink(
-                                "/admin/permissions",
-                                "Permissions"
-                              )}
-                            </div>
-                          </li>
-                        )}
-                        {hasAnyPermission(["users.index"]) && (
-                          <li>
-                            <div className="flex items-center">
-                              <FaUserEdit />
+                              {renderNavLink("/admin/permissions", "Permissions")}
+                            </li>
+                          )}
+                          {hasAnyPermission(["users.index"]) && (
+                            <li className="flex items-center gap-2">
+                              <FaUserPen />
                               {renderNavLink("/admin/users", "Users")}
-                            </div>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </>
-                )}
-              </SidebarLinkGroup>
-            </ul>
-          ) : null}
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </SidebarLinkGroup>
+              </ul>
+            )}
+          </section>
 
-          <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 flex items-center">
-            <i className="fa-solid fa-circle-user mr-2"></i> {user.email} logged
-            in
+          {/* Logged-in Info */}
+          <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+            <i className="fa-solid fa-circle-user mr-2"></i>
+            {user.email} logged in
           </h3>
         </nav>
       </div>
     </aside>
   );
-};
-
-Sidebar.propTypes = {
-  sidebarOpen: PropTypes.bool.isRequired,
-  setSidebarOpen: PropTypes.func.isRequired,
-};
-
-export default Sidebar;
+}

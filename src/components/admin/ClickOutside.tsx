@@ -1,44 +1,50 @@
-import { useRef, useEffect } from "react";
-import PropTypes from "prop-types";
+import { useEffect, useRef } from "react";
 
-const ClickOutside = ({ children, exceptionRef, onClick, className }) => {
-  const wrapperRef = useRef(null);
+interface ClickOutsideProps {
+  /** Elemen anak yang akan dibungkus */
+  children: React.ReactNode;
+  /** Ref elemen yang tidak memicu onClickOutside (pengecualian) */
+  excludeRef?: React.RefObject<HTMLElement>;
+  /** Fungsi yang dipanggil saat klik di luar wrapper */
+  onClickOutside: () => void;
+  /** Kelas tambahan opsional */
+  className?: string;
+}
+
+/**
+ * Komponen pembungkus yang mendeteksi klik di luar elemen.
+ * Contoh penggunaan:
+ * <ClickOutside onClickOutside={() => setOpen(false)} excludeRef={buttonRef}>
+ *   <DropdownMenu />
+ * </ClickOutside>
+ */
+export default function ClickOutside({
+  children,
+  excludeRef,
+  onClickOutside,
+  className = "",
+}: ClickOutsideProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickListener = (event) => {
-      let clickedInside = false;
-      if (exceptionRef) {
-        clickedInside =
-          (wrapperRef.current && wrapperRef.current.contains(event.target)) ||
-          (exceptionRef.current && exceptionRef.current === event.target) ||
-          (exceptionRef.current && exceptionRef.current.contains(event.target));
-      } else {
-        clickedInside =
-          wrapperRef.current && wrapperRef.current.contains(event.target);
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      const clickedInside =
+        wrapperRef.current?.contains(target) || excludeRef?.current?.contains(target);
+
+      if (!clickedInside) {
+        onClickOutside();
       }
-
-      if (!clickedInside) onClick();
     };
 
-    document.addEventListener("mousedown", handleClickListener);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickListener);
-    };
-  }, [exceptionRef, onClick]);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [excludeRef, onClickOutside]);
 
   return (
-    <div ref={wrapperRef} className={className || ""}>
+    <div ref={wrapperRef} className={className}>
       {children}
     </div>
   );
-};
-
-ClickOutside.propTypes = {
-  children: PropTypes.node.isRequired,
-  exceptionRef: PropTypes.object,
-  onClick: PropTypes.func.isRequired,
-  className: PropTypes.string,
-};
-
-export default ClickOutside;
+}

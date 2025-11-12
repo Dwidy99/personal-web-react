@@ -1,30 +1,44 @@
 import { useEffect, useRef } from "react";
 
-// Komponen ClickOutside untuk menangani klik di luar elemen
-const ClickOutside = ({ children, onClickOutside, excludeRef }) => {
-  const ref = useRef(null);
+export interface ClickOutsideProps {
+  children: React.ReactNode;
+  /** Fungsi yang dijalankan ketika klik di luar elemen */
+  onClickOutside: () => void;
+  /** Elemen ref yang dikecualikan (tidak memicu onClickOutside) */
+  excludeRef?: React.RefObject<HTMLElement>;
+  /** Opsional: class tambahan untuk wrapper */
+  className?: string;
+}
+
+export default function ClickOutside({
+  children,
+  onClickOutside,
+  excludeRef,
+  className = "",
+}: ClickOutsideProps) {
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+
       if (
         ref.current &&
-        !ref.current.contains(e.target) &&
-        (!excludeRef.current || !excludeRef.current.contains(e.target))
+        !ref.current.contains(target) &&
+        (!excludeRef?.current || !excludeRef.current.contains(target))
       ) {
         onClickOutside();
       }
     };
 
-    // Tambahkan event listener untuk mendeteksi klik di luar
-    window.addEventListener("click", handleClickOutside);
-
-    // Hapus event listener saat komponen dibersihkan
-    return () => {
-      window.removeEventListener("click", handleClickOutside);
-    };
+    // Gunakan 'mousedown' agar lebih responsif
+    window.addEventListener("mousedown", handleClickOutside);
+    return () => window.removeEventListener("mousedown", handleClickOutside);
   }, [onClickOutside, excludeRef]);
 
-  return <div ref={ref}>{children}</div>;
-};
-
-export default ClickOutside;
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}

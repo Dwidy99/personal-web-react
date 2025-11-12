@@ -1,19 +1,14 @@
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useState, ReactNode } from "react";
 
-const SidebarLinkGroup = ({ children, activeCondition }) => {
+interface SidebarLinkGroupProps {
+  children: (handleClick: () => void, open: boolean) => ReactNode;
+  activeCondition: boolean;
+}
+
+export default function SidebarLinkGroup({ children, activeCondition }: SidebarLinkGroupProps) {
   const [open, setOpen] = useState(activeCondition);
 
-  const handleClick = () => {
-    setOpen(!open);
-  };
+  const handleClick = () => setOpen((prev) => !prev);
 
   return <li>{children(handleClick, open)}</li>;
-};
-
-SidebarLinkGroup.propTypes = {
-  children: PropTypes.func.isRequired,
-  activeCondition: PropTypes.bool.isRequired,
-};
-
-export default SidebarLinkGroup;
+}
