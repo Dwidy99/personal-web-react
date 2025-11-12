@@ -46,9 +46,9 @@ export default function SEO({ description, keywords, canonical, ogUrl }: SEOProp
   const defaultImage =
     config.banner ||
     config.logo ||
-    `${import.meta.env.VITE_API_URL}/storage/configurations/default-banner.png`;
+    `${import.meta.env.VITE_API_BASE_URL}/storage/configurations/default-banner.png`;
   const faviconUrl =
-    config.icon || `${import.meta.env.VITE_API_URL}/storage/configurations/default-icon.png`;
+    config.icon || `${import.meta.env.VITE_API_BASE_URL}/storage/configurations/default-icon.png`;
 
   return (
     <>
