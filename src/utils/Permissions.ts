@@ -1,15 +1,17 @@
-//import Cookies
 import Cookies from "js-cookie";
 
-export default function hasAnyPermissions(permissions) {
-  //get permissions from cookies
-  let allPermissions = JSON.parse(Cookies.get("permissions"));
+export default function hasAnyPermissions(permissions: string[]): boolean {
+  const cookieValue = Cookies.get("permissions");
+  if (!cookieValue) return false;
 
-  let hasPermission = false;
+  let allPermissions: Record<string, boolean> = {};
 
-  permissions.forEach(function (item) {
-    if (allPermissions[item]) hasPermission = true;
-  });
+  try {
+    allPermissions = JSON.parse(cookieValue);
+  } catch (error) {
+    console.error("Invalid permissions cookie:", error);
+    return false;
+  }
 
-  return hasPermission;
+  return permissions.some((perm) => allPermissions[perm]);
 }
