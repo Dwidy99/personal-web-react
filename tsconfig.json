@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    /* ✅ Target dan library modern */
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+
+    /* ✅ Interop & Module */
+    "module": "ESNext",
+    "moduleResolution": "bundler", // <— Ganti "Node" jadi "bundler" (baru di TS 5.6)
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    /* ✅ React + JSX */
+    "jsx": "react-jsx",
+
+    /* ✅ Keamanan & Strictness */
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    /* ✅ Path alias (pengganti baseUrl lama) */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* ✅ Untuk kompatibilitas sementara TypeScript 6/7 */
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src"]
+}
