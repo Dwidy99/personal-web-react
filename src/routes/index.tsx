@@ -77,18 +77,19 @@ import ProjectsHome from "../pages/Web/Projects/Index";
 import ProjectShow from "../pages/Web/Projects/Show";
 
 export default function RoutesIndex() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
 
-  // Reset scroll position on route change
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  // Simulasi loading selama 1 detik
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000); // Anda bisa menyesuaikan durasi di sini
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
   }, []);
+
+  if (loading) return <Loader />;
 
   return loading ? (
     <Loader />

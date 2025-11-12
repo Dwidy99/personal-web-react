@@ -1,11 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.js";
+import App from "./App";
 import "../src/assets/admin/css/style.css";
 import "../src/assets/admin/css/satoshi.css";
 import { BrowserRouter } from "react-router-dom";
 
-createRoot(document.getElementById("root")).render(
+const rootElement = document.getElementById("root") as HTMLElement;
+
+createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <App />

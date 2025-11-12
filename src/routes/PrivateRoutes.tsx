@@ -1,17 +1,17 @@
-//import Cookies
 import Cookies from "js-cookie";
-//import react-router-dom
 import { Navigate } from "react-router-dom";
+import { ReactNode } from "react";
 
-function PrivateRoutes({ children }) {
-  //token react router dom
+interface PrivateRoutesProps {
+  children: ReactNode;
+}
+
+export default function PrivateRoutes({ children }: PrivateRoutesProps) {
   const token = Cookies.get("token");
 
-  //if from cookie
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-  return children;
-}
 
-export default PrivateRoutes;
+  return <>{children}</>;
+}
