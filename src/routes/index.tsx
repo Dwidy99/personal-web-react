@@ -14,41 +14,41 @@ import Loader from "../components/general/Loader";
 import PrivateRoutes from "./PrivateRoutes";
 
 //import Dashboard
-import Dashboard from "../views/Admin/Dashboard/Index";
+import Dashboard from "../pages/Admin/Dashboard/Index";
 //import Permissions
-import PermissionsIndex from "../views/Admin/Permissions/Index";
+import PermissionsIndex from "../pages/Admin/Permissions/Index";
 // import RolesIndex
-import RolesIndex from "../views/Admin/Roles/Index";
-import RolesCreate from "../views/Admin/Roles/Create";
-import RolesEdit from "../views/Admin/Roles/Edit";
+import RolesIndex from "../pages/Admin/Roles/Index";
+import RolesCreate from "../pages/Admin/Roles/Create";
+import RolesEdit from "../pages/Admin/Roles/Edit";
 // import UsersIndex
-import UsersIndex from "../views/Admin/Users/Index";
-import UsersCreate from "../views/Admin/Users/Create";
-import UsersEdit from "../views/Admin/Users/Edit";
+import UsersIndex from "../pages/Admin/Users/Index";
+import UsersCreate from "../pages/Admin/Users/Create";
+import UsersEdit from "../pages/Admin/Users/Edit";
 // import UsersIndex
-import ProfilesIndex from "../views/Admin/Profiles/Index";
+import ProfilesIndex from "../pages/Admin/Profiles/Index";
 // import Categories
-import CategoriesIndex from "../views/Admin/Categories/Index";
-import CategoriesCreate from "../views/Admin/Categories/Create";
-import CategoriesEdit from "../views/Admin/Categories/Edit";
+import CategoriesIndex from "../pages/Admin/Categories/Index";
+import CategoriesCreate from "../pages/Admin/Categories/Create";
+import CategoriesEdit from "../pages/Admin/Categories/Edit";
 // import Posts
-import PostsIndex from "../views/Admin/Posts/Index";
-import PostsCreate from "../views/Admin/Posts/Create";
-import PostEdit from "../views/Admin/Posts/Edit";
+import PostsIndex from "../pages/Admin/Posts/Index";
+import PostsCreate from "../pages/Admin/Posts/Create";
+import PostEdit from "../pages/Admin/Posts/Edit";
 // import Projects
-import ProjectsIndex from "../views/Admin/Projects/Index";
-import ProjectsCreate from "../views/Admin/Projects/Create";
-import ProjectsEdit from "../views/Admin/Projects/Edit";
+import ProjectsIndex from "../pages/Admin/Projects/Index";
+import ProjectsCreate from "../pages/Admin/Projects/Create";
+import ProjectsEdit from "../pages/Admin/Projects/Edit";
 // import Experiences
-import ExperiencesIndex from "../views/Admin/Experiences/Index";
-import ExperiencesCreate from "../views/Admin/Experiences/Create";
-import ExperiencesEdit from "../views/Admin/Experiences/Edit";
+import ExperiencesIndex from "../pages/Admin/Experiences/Index";
+import ExperiencesCreate from "../pages/Admin/Experiences/Create";
+import ExperiencesEdit from "../pages/Admin/Experiences/Edit";
 // import Contacts
-import ContactsIndex from "../views/Admin/Contacts/Index";
-import ContactsCreate from "../views/Admin/Contacts/Create";
-import ContactsEdit from "../views/Admin/Contacts/Edit";
+import ContactsIndex from "../pages/Admin/Contacts/Index";
+import ContactsCreate from "../pages/Admin/Contacts/Create";
+import ContactsEdit from "../pages/Admin/Contacts/Edit";
 // import Configurations
-import ConfigurationsIndex from "../views/Admin/Configurations/Index";
+import ConfigurationsIndex from "../pages/Admin/Configurations/Index";
 
 //======================================================
 // view public
@@ -56,25 +56,25 @@ import ConfigurationsIndex from "../views/Admin/Configurations/Index";
 // PUBLIC
 
 //import view login
-import Login from "../views/Auth/Login";
+import Login from "../pages/Auth/Login";
 //import view Forgot
-import Forgot from "../views/Auth/Forgot";
+import Forgot from "../pages/Auth/Forgot";
 //import view forbidden
-import ResetPassword from "../views/Auth/ResetPassword";
+import ResetPassword from "../pages/Auth/ResetPassword";
 
-import Forbidden from "../views/Auth/Forbidden";
+import Forbidden from "../pages/Auth/Forbidden";
 
 // import Home
-import Home from "../views/Web/Home/Index";
+import Home from "../pages/Web/Home/Index";
 // import Blogs
-import BlogsIndex from "../views/Web/Post/Index";
-import BlogsShow from "../views/Web/Post/Show";
-import CategoryPostsIndex from "../views/Web/Post/CategoryPostsIndex";
+import BlogsIndex from "../pages/Web/Post/Index";
+import BlogsShow from "../pages/Web/Post/Show";
+import CategoryPostsIndex from "../pages/Web/Post/CategoryPostsIndex";
 // import About
-import AboutIndex from "../views/Web/About/Index";
+import AboutIndex from "../pages/Web/About/Index";
 // import Projects
-import ProjectsHome from "../views/Web/Projects/Index";
-import ProjectShow from "../views/Web/Projects/Show";
+import ProjectsHome from "../pages/Web/Projects/Index";
+import ProjectShow from "../pages/Web/Projects/Show";
 
 export default function RoutesIndex() {
   const [loading, setLoading] = useState(true);

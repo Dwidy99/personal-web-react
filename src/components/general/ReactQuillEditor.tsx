@@ -1,4 +1,4 @@
-// src/components/ReactQuillEditor.jsx
+// src/components/ReactQuillEditor.tsx
 import { forwardRef } from "react";
 import ReactQuill from "react-quill";
 import PropTypes from "prop-types";

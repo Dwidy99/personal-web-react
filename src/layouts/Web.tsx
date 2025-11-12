@@ -5,8 +5,8 @@ import "../assets/web/js/script.js";
 import "react-quill/dist/quill.snow.css";
 import "react-quill/dist/quill.bubble.css";
 
-import Navbar from "../components/web/Navbar.jsx";
-import Footer from "../components/web/Footer.jsx";
+import Navbar from "../components/web/Navbar.tsx";
+import Footer from "../components/web/Footer.tsx";
 import SnowEffect from "../components/general/SnowEffect";
 import PropTypes from "prop-types";
 import { Helmet } from "react-helmet-async";

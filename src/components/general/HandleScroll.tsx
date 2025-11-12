@@ -1,4 +1,4 @@
-// src/components/general/HandleScroll.jsx
+// src/components/general/HandleScroll.tsx
 import { useEffect } from "react";
 import PropTypes from "prop-types";
 
