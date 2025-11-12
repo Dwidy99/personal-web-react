@@ -4,7 +4,7 @@ import Api from "../../../services/Api";
 import { Link, useParams } from "react-router-dom";
 import LoadingTailwind from "../../../components/general/LoadingTailwind";
 import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
-import DateID from "../../../utils/DateID";
+import Date from "../../../utils/Date";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML"; // Assuming this is your custom component
@@ -104,7 +104,7 @@ export default function Show() {
                   {" "}
                   {/* Adjusted for dark mode text */}
                   <FaCalendarAlt className="inline mr-2" />
-                  {DateID(new Date(post.created_at))}
+                  {Date(new Date(post.created_at))}
                 </span>
               </div>
               <h1 className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-800 dark:text-gray-100 sm:text-5xl">
@@ -182,7 +182,7 @@ export default function Show() {
                             <span className="text-gray-500 dark:text-gray-400">
                               {" "}
                               {/* Adjusted for dark mode text */}
-                              {p.created_at && DateID(new Date(p.created_at))}
+                              {p.created_at && Date(new Date(p.created_at))}
                             </span>
                           </div>
                         </div>

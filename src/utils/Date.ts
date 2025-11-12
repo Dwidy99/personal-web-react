@@ -1,7 +1,6 @@
-export default function DateID(date) {
+export default function Date(date) {
   let e = date.getDate();
-  return `${e} ${
-    [
+  return `${e} ${[
       "January",
       "February",
       "March",
@@ -15,5 +14,5 @@ export default function DateID(date) {
       "November",
       "December",
     ][date.getMonth()]
-  } ${date.getFullYear()}`;
+    } ${date.getFullYear()}`;
 }

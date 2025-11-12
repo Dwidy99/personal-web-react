@@ -28,7 +28,7 @@ export default function CardPostHome(props) {
                   </div>
                   <div className="end-0">
                     <i className="fa fa-calender"></i>
-                    {DateID(new Date(props.date))}
+                    {Date(new Date(props.date))}
                   </div>
                 </div>
               </div>
