@@ -1,17 +1,18 @@
-export default function auth({ children }) {
+interface AuthLayoutProps {
+  children: React.ReactNode;
+  backgroundUrl?: string;
+}
+
+export default function AuthLayout({
+  children,
+  backgroundUrl = "/images/bg.png",
+}: AuthLayoutProps) {
   return (
     <div
-      style={{
-        backgroundImage: "url(/images/bg.png)",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-        height: "100vh",
-      }}
+      className="flex items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${backgroundUrl})` }}
     >
-      <div className="container">
-        <div className="d-flex justify-content-center h-100">{children}</div>
-      </div>
+      <div className="container flex justify-center">{children}</div>
     </div>
   );
 }
