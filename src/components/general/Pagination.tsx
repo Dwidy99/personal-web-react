@@ -1,4 +1,15 @@
-const Pagination = ({
+interface PaginationProps {
+  currentPage: number;
+  totalCount: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  previousLabel?: string;
+  nextLabel?: string;
+  pageRangeDisplayed?: number;
+  className?: string;
+}
+
+export default function Pagination({
   currentPage,
   totalCount,
   pageSize,
@@ -7,73 +18,64 @@ const Pagination = ({
   nextLabel = "Next",
   pageRangeDisplayed = 5,
   className = "",
-}) => {
+}: PaginationProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
-  const startPage = Math.max(
-    1,
-    currentPage - Math.floor(pageRangeDisplayed / 2)
-  );
+  const startPage = Math.max(1, currentPage - Math.floor(pageRangeDisplayed / 2));
   const endPage = Math.min(totalPages, startPage + pageRangeDisplayed - 1);
 
-  // Create an array of page numbers to display
-  const pages = [];
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
+  const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-  // Handle page change
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      onPageChange(page);
-    }
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) onPageChange(page);
   };
 
+  if (totalPages <= 1) return null;
+
   return (
-    <nav aria-label="Page navigation" className={className}>
-      <ul className="inline-flex -space-x-px text-sm">
-        {/* Previous Button */}
+    <nav aria-label="Pagination Navigation" className={`flex justify-center mt-6 ${className}`}>
+      <ul className="inline-flex -space-x-px text-sm rounded-md overflow-hidden border border-gray-300 dark:border-gray-700">
+        {/* Previous */}
         <li>
-          <a
-            href="#"
+          <button
             onClick={() => handlePageChange(currentPage - 1)}
-            className="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
             disabled={currentPage === 1}
+            className={`px-3 py-2 text-gray-500 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+              currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             {previousLabel}
-          </a>
+          </button>
         </li>
 
-        {/* Page Number Buttons */}
+        {/* Page Numbers */}
         {pages.map((page) => (
           <li key={page}>
-            <a
-              href="#"
+            <button
               onClick={() => handlePageChange(page)}
-              className={`flex items-center justify-center px-3 h-8 leading-tight ${
+              className={`px-3 py-2 border-l border-gray-300 dark:border-gray-700 ${
                 page === currentPage
-                  ? "text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-                  : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  ? "bg-blue-600 text-white font-semibold"
+                  : "bg-white text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               {page}
-            </a>
+            </button>
           </li>
         ))}
 
-        {/* Next Button */}
+        {/* Next */}
         <li>
-          <a
-            href="#"
+          <button
             onClick={() => handlePageChange(currentPage + 1)}
-            className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
             disabled={currentPage === totalPages}
+            className={`px-3 py-2 border-l border-gray-300 dark:border-gray-700 text-gray-500 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+              currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             {nextLabel}
-          </a>
+          </button>
         </li>
       </ul>
     </nav>
   );
-};
-
-export default Pagination;
+}
