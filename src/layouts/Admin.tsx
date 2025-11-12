@@ -4,7 +4,7 @@ import Sidebar from "@/components/admin/Sidebar";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  className?: string; // ✅ tambahkan baris ini
+  className?: string;
 }
 
 export default function AdminLayout({ children, className }: AdminLayoutProps) {
