@@ -8,7 +8,6 @@ import {
   FaBarsProgress,
   FaCircleChevronDown,
   FaClipboardList,
-  FaGaugeHigh,
   FaImages,
   FaLayerGroup,
   FaUser,
@@ -96,58 +95,61 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-50 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-meta-4 lg:static lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}
+      className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col bg-black dark:bg-meta-4 shadow-lg transform transition-transform duration-300 ease-in-out
+      ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+      lg:static lg:translate-x-0 lg:h-screen lg:w-72
+      w-64 sm:w-72 md:w-72`}
     >
       {/* ===== Header ===== */}
-      <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
-        <Link
-          to="/admin/dashboard"
-          className={`flex items-center rounded-md p-2 text-lg font-extrabold ${
-            activeRoute[2] === "dashboard"
-              ? "bg-gray-700 text-white"
-              : "text-gray-300 hover:bg-gray-700 hover:text-white"
-          }`}
-        >
-          My Portfolio Website
+      <div className="flex items-center justify-between gap-2 px-6 py-4 border-b border-gray-700 lg:py-5">
+        <Link to="/admin/dashboard" className="flex items-center gap-3">
+          <img
+            src="/src/assets/admin/images/logo/logo-icon.svg"
+            alt="Logo"
+            className="w-6 h-6 object-contain"
+          />
+          <span className="text-base md:text-lg font-semibold text-gray-200 truncate max-w-[140px] md:max-w-none">
+            Portfolio Admin
+          </span>
         </Link>
 
+        {/* Close button for mobile */}
         <button
           ref={trigger}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls="sidebar"
           aria-expanded={sidebarOpen}
-          className="block lg:hidden text-white"
+          className="lg:hidden text-gray-300 hover:text-white"
         >
-          <i className="fa-solid fa-arrow-left" />
+          <i className="fa-solid fa-xmark text-xl"></i>
         </button>
       </div>
 
       {/* ===== Sidebar Content ===== */}
-      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
-          {/* Main Dashboard */}
-          <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
-            <GrDashboard className="mr-2" />
-            MAIN DASHBOARD
-          </h3>
-          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9 text-bodydark2">
-            {hasAnyPermission(["profiles.index"]) && (
-              <li className="flex items-center gap-2">
-                <ImProfile />
-                {renderNavLink("/admin/dashboard", "Dashboard", activeRoute[2] === "dashboard")}
-              </li>
-            )}
-          </ul>
+      <div className="no-scrollbar flex flex-col overflow-y-auto px-6 py-6">
+        <nav className="space-y-6">
+          {/* === Main Dashboard === */}
+          <section>
+            <h3 className="my-4 flex items-center text-sm font-semibold text-bodydark2">
+              <GrDashboard className="mr-2" /> MAIN DASHBOARD
+            </h3>
+            <ul className="flex flex-col gap-2 pl-4">
+              {hasAnyPermission(["profiles.index"]) && (
+                <li className="flex items-center gap-2">
+                  <ImProfile />
+                  {renderNavLink("/admin/dashboard", "Dashboard", activeRoute[2] === "dashboard")}
+                </li>
+              )}
+            </ul>
+          </section>
 
-          {/* Content Management */}
+          {/* === Content Management === */}
           {(hasAnyPermission(["projects.index"]) || hasAnyPermission(["experiences.index"])) && (
             <section>
-              <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+              <h3 className="mb-4 flex items-center text-sm font-semibold text-bodydark2">
                 <FaWandMagicSparkles className="mr-2" /> CONTENT MANAGEMENT
               </h3>
-              <ul className="mb-6 flex flex-col gap-1.5">
+              <ul className="flex flex-col gap-1">
                 <SidebarLinkGroup activeCondition={activeRoute[2] === "dashboard"}>
                   {(handleClick, open) => (
                     <>
@@ -156,19 +158,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                           e.preventDefault();
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
-                        className="group relative flex w-full items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-graydark"
+                        className="group flex w-full items-center gap-2 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-gray-800"
                       >
-                        <FaWandSparkles className="mr-2" />
-                        Contents
+                        <FaWandSparkles />
+                        <span className="truncate">Contents</span>
                         <FaCircleChevronDown
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform ${
-                            open ? "rotate-180" : ""
-                          }`}
+                          className={`ml-auto transition-transform ${open ? "rotate-180" : ""}`}
                         />
                       </button>
 
                       {open && (
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9 text-bodydark2">
+                        <ul className="mt-2 flex flex-col gap-2 pl-6 text-bodydark2">
                           {hasAnyPermission(["profiles.index"]) && (
                             <li className="flex items-center gap-2">
                               <ImProfile />
@@ -202,15 +202,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             </section>
           )}
 
-          {/* Media Management */}
+          {/* === Media Management === */}
           {(hasAnyPermission(["projects.index"]) ||
             hasAnyPermission(["contacts.index"]) ||
             hasAnyPermission(["configurations.update"])) && (
             <section>
-              <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+              <h3 className="mb-4 flex items-center text-sm font-semibold text-bodydark2">
                 <FaBarsProgress className="mr-2" /> MEDIA MANAGEMENT
               </h3>
-              <ul className="mb-6 flex flex-col gap-1.5 text-bodydark2">
+              <ul className="flex flex-col gap-1">
                 <SidebarLinkGroup activeCondition={activeRoute[2] === "dashboard"}>
                   {(handleClick, open) => (
                     <>
@@ -219,19 +219,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                           e.preventDefault();
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
-                        className="group relative flex w-full items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-graydark dark:hover:bg-meta-4"
+                        className="group flex w-full items-center gap-2 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-gray-800"
                       >
                         <FaPhotoFilm />
-                        Media
+                        <span className="truncate">Media</span>
                         <FaCircleChevronDown
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform ${
-                            open ? "rotate-180" : ""
-                          }`}
+                          className={`ml-auto transition-transform ${open ? "rotate-180" : ""}`}
                         />
                       </button>
 
                       {open && (
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9">
+                        <ul className="mt-2 flex flex-col gap-2 pl-6 text-bodydark2">
                           <li className="flex items-center gap-2">
                             <FaImages />
                             {renderNavLink("/admin/projects", "Projects")}
@@ -253,16 +251,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             </section>
           )}
 
-          {/* Users Management */}
+          {/* === Users Management === */}
           <section>
-            <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
+            <h3 className="mb-4 flex items-center text-sm font-semibold text-bodydark2">
               <FaUsersRectangle className="mr-2" /> USERS MANAGEMENT
             </h3>
-
             {(hasAnyPermission(["roles.index"]) ||
               hasAnyPermission(["permissions.index"]) ||
               hasAnyPermission(["users.index"])) && (
-              <ul className="mb-6 flex flex-col gap-1.5">
+              <ul className="flex flex-col gap-1">
                 <SidebarLinkGroup activeCondition={activeRoute[2] === "users"}>
                   {(handleClick, open) => (
                     <>
@@ -271,19 +268,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                           e.preventDefault();
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
-                        className="group relative flex w-full items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                        className="group flex w-full items-center gap-2 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-gray-800"
                       >
                         <FaUser />
-                        Users
+                        <span className="truncate">Users</span>
                         <FaCircleChevronDown
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform ${
-                            open ? "rotate-180" : ""
-                          }`}
+                          className={`ml-auto transition-transform ${open ? "rotate-180" : ""}`}
                         />
                       </button>
 
                       {open && (
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9">
+                        <ul className="mt-2 flex flex-col gap-2 pl-6 text-bodydark2">
                           {hasAnyPermission(["roles.index"]) && (
                             <li className="flex items-center gap-2">
                               <GrSecure />
@@ -311,9 +306,9 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             )}
           </section>
 
-          {/* Logged-in Info */}
-          <h3 className="mb-4 ml-4 flex items-center text-sm font-semibold text-bodydark2">
-            <i className="fa-solid fa-circle-user mr-2"></i>
+          {/* === Logged-in Info === */}
+          <h3 className="mt-8 ml-2 text-xs text-bodydark2 flex items-center gap-2 border-t border-gray-700 pt-3">
+            <i className="fa-solid fa-circle-user"></i>
             {user.email} logged in
           </h3>
         </nav>
