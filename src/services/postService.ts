@@ -1,58 +1,58 @@
+// src/services/postService.ts
 import Api from "./Api";
-import type { ApiResponse, PaginatedResponse } from "@/types/common";
-import type { Post, PostFormData } from "@/types/post";
-import type { ID } from "@/types/common";
+import Cookies from "js-cookie";
+import { Post } from "../types/post";
 
-/**
- * Post Service – CRUD for Posts
- */
-export async function getPosts(
-    page = 1
-): Promise<PaginatedResponse<Post>> {
-    const res = await Api.get(`/posts?page=${page}`);
-    return res.data;
-}
+const token = Cookies.get("token");
 
-export async function getPostById(id: ID): Promise<ApiResponse<Post>> {
-    const res = await Api.get(`/posts/${id}`);
-    return res.data;
-}
+export const postService = {
+    async getAll(page = 1, search = "") {
+        const res = await Api.get(`/api/admin/posts?search=${search}&page=${page}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data.data;
+    },
 
-export async function createPost(
-    data: PostFormData
-): Promise<ApiResponse<Post>> {
-    // Jika mengandung file upload, ubah ke FormData
-    const formData = new FormData();
-    for (const key in data) {
-        const value = data[key as keyof PostFormData];
-        if (value !== undefined && value !== null)
-            formData.append(key, value as any);
-    }
+    async getById(id: number) {
+        const res = await Api.get(`/api/admin/posts/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data.data;
+    },
 
-    const res = await Api.post("/posts", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res.data;
-}
+    async create(formData: FormData) {
+        const res = await Api.post("/api/admin/posts", formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return res.data;
+    },
 
-export async function updatePost(
-    id: ID,
-    data: Partial<PostFormData>
-): Promise<ApiResponse<Post>> {
-    const formData = new FormData();
-    for (const key in data) {
-        const value = data[key as keyof PostFormData];
-        if (value !== undefined && value !== null)
-            formData.append(key, value as any);
-    }
+    async update(id: number, formData: FormData) {
+        const res = await Api.post(`/api/admin/posts/${id}`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return res.data;
+    },
 
-    const res = await Api.post(`/posts/${id}?_method=PUT`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res.data;
-}
+    async delete(id: number) {
+        const res = await Api.delete(`/api/admin/posts/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data;
+    },
 
-export async function deletePost(id: ID): Promise<ApiResponse<null>> {
-    const res = await Api.delete(`/posts/${id}`);
-    return res.data;
-}
+    async getCategories() {
+        const res = await Api.get("/api/admin/categories/all", {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data.data;
+    },
+};
+
+export default postService;

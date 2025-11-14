@@ -11,7 +11,7 @@ import { FaCirclePlus } from "react-icons/fa6";
 import hasAnyPermissions from "../../../utils/Permissions";
 
 // Service
-import { categoryService } from "../../../services/categoryService";
+import { categoryService } from "../../../services";
 
 export default function CategoriesIndex() {
   document.title = "Categories - Desa Digital";

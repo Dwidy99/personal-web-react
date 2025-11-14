@@ -1,31 +1,25 @@
-import type { ID, Status } from "./common";
-import type { User } from "./user";
-
-export interface Category {
-    id: ID;
-    name: string;
-    slug: string;
-}
-
 export interface Post {
-    id: ID;
+    id: number;
     title: string;
-    slug: string;
     content: string;
-    thumbnail?: string;
-    category?: Category;
-    author?: User;
-    status?: Status;
-    published_at?: string;
-    created_at?: string;
-    updated_at?: string;
+    image: string;
+    category_id: number;
+    category?: {
+        id: number;
+        name: string;
+    };
+    user?: {
+        id: number;
+        name: string;
+    };
 }
 
-export interface PostFormData {
-    title: string;
-    slug: string;
-    content: string;
-    category_id: ID;
-    status?: Status;
-    thumbnail?: File | null;
+export interface ValidationErrors {
+    [key: string]: string[] | undefined;
+}
+
+export interface PaginationMeta {
+    current_page: number;
+    per_page: number;
+    total: number;
 }
