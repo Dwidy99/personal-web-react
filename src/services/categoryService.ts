@@ -1,3 +1,4 @@
+// ✅ src/services/categoryService.ts
 import Api from "./Api";
 import Cookies from "js-cookie";
 import { Category } from "../types/category";
@@ -46,3 +47,5 @@ export const categoryService = {
         return res.data;
     },
 };
+
+export default categoryService;

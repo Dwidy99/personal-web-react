@@ -1,39 +1,31 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+// src/services/Api.ts
+import axios from "axios";
 import Cookies from "js-cookie";
 
-// Base URL dari environment atau fallback
-const baseURL: string =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV
-    ? "http://127.0.0.1:8000"
-    : "https://api.dwiyulianto.my.id/api");
-
-// Membuat instance axios
-const Api: AxiosInstance = axios.create({
-  baseURL,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
+const Api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000",
+  headers: { Accept: "application/json" },
 });
 
-// Interceptor untuk handle error global
-Api.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: AxiosError) => {
-    const status = error?.response?.status;
+Api.interceptors.request.use((config) => {
+  const token = Cookies.get("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
+Api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const status = err.response?.status;
     if (status === 401) {
-      // Hapus semua cookies saat unauthenticated
       Cookies.remove("token");
       Cookies.remove("user");
       Cookies.remove("permissions");
       window.location.href = "/";
     } else if (status === 403) {
       window.location.href = "/forbidden";
-    } else {
-      return Promise.reject(error);
     }
+    return Promise.reject(err);
   }
 );
 

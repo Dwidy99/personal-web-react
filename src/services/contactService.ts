@@ -46,3 +46,6 @@ export const contactService = {
         return res.data;
     },
 };
+
+// ✅ Tambahkan default export agar bisa diimport dari index.ts
+export default contactService;
