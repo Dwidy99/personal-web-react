@@ -6,6 +6,7 @@ export { default as categoryService } from "./categoryService";
 export { default as contactService } from "./contactService";
 export { default as configurationService } from "./configurationService";
 export { default as experienceService } from "./experienceService";
-export { default as permissionService } from "./permissionService";
 export { default as profileService } from './profileService';
 export { default as projectService } from "./projectService";
+export { default as permissionService } from "./permissionService";
+export { default as roleService } from "./roleService";

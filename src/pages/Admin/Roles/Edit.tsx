@@ -1,216 +1,164 @@
-//import useNavigate and useParams
+import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-//import useState
-import { useEffect, useState } from "react";
-
-// import Api
-import Api from "../../../services/Api";
-
-//import LayoutAdmin
-import LayoutAdmin from "../../../layouts/Admin";
-
-//import toast js
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
-//import Cokoies js
-import Cookies from "js-cookie";
+import type { RoleForm } from "@/types/role";
+import type { Permission } from "@/types/permission";
+
+// Service
+import { permissionService, roleService } from "@/services";
 
 export default function RolesEdit() {
-  //title page
-  document.title = "Edit Role - Data Digital";
+  document.title = "Edit Role - Desa Digital";
 
-  //navigate
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
 
-  //get param id at URL
-  const { id } = useParams();
+  const [formData, setFormData] = useState<RoleForm>({
+    name: "",
+    permissions: [],
+  });
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [loading, setLoading] = useState(true);
 
-  //define state for form
-  const [name, setName] = useState("");
-  const [permissionsData, setPermissionsData] = useState([]);
-  const [errors, setErrors] = useState([]);
-
-  //define state "permissionis"
-  const [permissions, setPermissions] = useState([]);
-
-  //get token
-  const token = Cookies.get("token");
-
-  //function "fetchDataPermissionsData"
-  const fetchDataPermissions = async () => {
-    await Api.get("/api/admin/permissions/all", {
-      //header
-      headers: {
-        //header Bearer + Token
-        Authorization: `Bearer ${token}`,
-      },
-    }).then((response) => {
-      //set response data to state "permissions"
-      setPermissions(response.data.data);
-    });
-  };
-
-  //function "fetchDataRole"
-  const fetchDataRole = async () => {
-    await Api.get(`/api/admin/roles/${id}`, {
-      //header
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }).then((response) => {
-      //set response data to state
-      setName(response.data.data.name);
-      setPermissionsData(response.data.data.permissions.map((obj) => obj.name));
-    });
-  };
-
-  //useEffect
+  /**
+   * Fetch all permissions + role details
+   */
   useEffect(() => {
-    //call function "fetchDataPermissions"
-    fetchDataPermissions();
+    const fetchRoleAndPermissions = async () => {
+      try {
+        const [permRes, roleRes] = await Promise.all([
+          permissionService.getAll(1, ""),
+          roleService.getById(id!),
+        ]);
 
-    //call function "fetchDataRole"
-    fetchDataRole();
-  }, []);
-
-  //define function "handleCheckboxChange"
-  const handleCheckboxChange = (e) => {
-    //define data
-    let data = permissionsData;
-
-    //check item already exist, if so, remove filter
-    if (data.some((name) => name === e.target.value)) {
-      data = data.filter((name) => name !== e.target.value);
-    } else {
-      //push new item on array
-      data.push(e.target.value);
-    }
-
-    //set data to state
-    setPermissionsData(data);
-  };
-
-  const updateRole = async (e) => {
-    e.preventDefault();
-
-    await Api.post(
-      `/api/admin/roles/${id}`,
-      {
-        //data
-        name: name,
-        permissions: permissionsData,
-        _method: "PUT",
-      },
-      {
-        //header
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-      .then((response) => {
-        toast.success(response.data.message, {
-          position: "top-center",
-          duration: 4000,
+        setPermissions(permRes.items || []);
+        setFormData({
+          name: roleRes.name || "",
+          permissions: roleRes.permissions.map((p) => p.name),
         });
+      } catch (err) {
+        toast.error("Failed to load role data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        //redirect
-        navigate("/admin/roles");
-      })
-      .catch((err) => {
-        //set error message to state "errors"
-        setErrors(err.response.data);
-      });
+    fetchRoleAndPermissions();
+  }, [id]);
+
+  /**
+   * Handle checkbox
+   */
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      permissions: checked
+        ? [...prev.permissions, value]
+        : prev.permissions.filter((p) => p !== value),
+    }));
   };
 
-  // Reset form
+  /**
+   * Update Role
+   */
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    try {
+      const res = await roleService.update(id, formData);
+      toast.success(res.message || "Role updated successfully");
+      navigate("/admin/roles");
+    } catch (err: any) {
+      setErrors(err.response?.data || {});
+      toast.error("Failed to update role");
+    }
+  };
+
+  /**
+   * Reset Form
+   */
   const handleReset = () => {
-    setName(""); // Reset role name
-    setPermissionsData([]); // Reset permissions (checkboxes)
-    setErrors([]); // Reset errors
+    setFormData({ name: "", permissions: [] });
+    setErrors({});
   };
 
+  if (loading) {
+    return (
+      <LayoutAdmin>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500">Loading role data...</p>
+        </div>
+      </LayoutAdmin>
+    );
+  }
+
+  /**
+   * Render Form
+   */
   return (
     <LayoutAdmin>
       <Link
-        to="/admin/roles/"
-        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-gray-700 focus:outline-none"
+        to="/admin/roles"
+        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-gray-700"
       >
         <i className="fa-solid fa-arrow-left mr-2"></i> Back
       </Link>
 
       <div className="rounded-lg border bg-white shadow-md mt-8 p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          Create Role
-        </h3>
-        <form onSubmit={updateRole}>
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Edit Role</h3>
+
+        <form onSubmit={handleSubmit}>
           {/* Role Name */}
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700">
-              Role Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Role Name</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter role name.."
-              className="w-full p-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500"
+              value={formData.name}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter role name..."
+              className="w-full p-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary"
             />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-1">{errors.name[0]}</p>
-            )}
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name[0]}</p>}
           </div>
 
           {/* Permissions */}
           <div className="mb-3">
-            <label htmlFor="name" className="font-bold text-sm text-gray-700">
-              Permissions
-            </label>
-            <div className="flex flex-wrap space-x-3 mt-1">
+            <label className="font-bold text-sm text-gray-700">Permissions</label>
+            <div className="flex flex-wrap gap-3 mt-2">
               {permissions.map((permission) => (
-                <div
-                  className="flex items-center space-x-2 space-y-2"
-                  key={Math.random()}
-                >
+                <label key={permission.id} className="flex items-center gap-2">
                   <input
-                    className="h-5 w-5 border-gray-300 text-blue-600 focus:ring-blue-500"
                     type="checkbox"
                     value={permission.name}
-                    defaultChecked={permissionsData.some(
-                      (name) => name === permission.name ?? true
-                    )}
+                    checked={formData.permissions.includes(permission.name)}
                     onChange={handleCheckboxChange}
-                    id={`check-${permission.id}`}
-                    aria-describedby="comments-description"
-                    placeholder="Enter role name.."
+                    className="h-5 w-5 border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <label
-                    className="text-sm text-gray-800"
-                    htmlFor={`check-${permission.id}`}
-                  >
-                    {permission.name}
-                  </label>
-                </div>
+                  <span>{permission.name}</span>
+                </label>
               ))}
             </div>
-
-            {errors.name && (
-              <div className="alert alert-danger">{errors.permissions[0]}</div>
+            {errors.permissions && (
+              <p className="text-red-500 text-xs mt-1">{errors.permissions[0]}</p>
             )}
-            <hr />
           </div>
 
           {/* Buttons */}
-          <div className="flex mt-5.5 items-center space-x-4">
+          <div className="flex gap-4 mt-5">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500 focus:outline-none"
+              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500"
             >
               <i className="fa-solid fa-save mr-2"></i> Save
             </button>
             <button
               type="button"
-              onClick={handleReset} // Call handleReset function
-              className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400 focus:outline-none"
+              onClick={handleReset}
+              className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset
             </button>
