@@ -132,7 +132,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <GrDashboard className="mr-2" />
             MAIN DASHBOARD
           </h3>
-          {renderNavLink("/admin/dashboard", "Dashboard", activeRoute[2] === "dashboard")}
+          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-9 text-bodydark2">
+            {hasAnyPermission(["profiles.index"]) && (
+              <li className="flex items-center gap-2">
+                <ImProfile />
+                {renderNavLink("/admin/dashboard", "Dashboard", activeRoute[2] === "dashboard")}
+              </li>
+            )}
+          </ul>
 
           {/* Content Management */}
           {(hasAnyPermission(["projects.index"]) || hasAnyPermission(["experiences.index"])) && (
