@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import { ApiResponse } from "@/types/common";
 import { Profile } from "@/types/profile";
 
+
 const token = Cookies.get("token");
 
 export const profileService = {

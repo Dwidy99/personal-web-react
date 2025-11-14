@@ -1,3 +1,4 @@
+
 export { default as Api } from "./Api";
 export { default as userService } from "./userService";
 export { default as postService } from "./postService";
@@ -6,3 +7,4 @@ export { default as contactService } from "./contactService";
 export { default as configurationService } from "./configurationService";
 export { default as experienceService } from "./experienceService";
 export { default as permissionService } from "./permissionService";
+export { default as profileService } from './profileService';

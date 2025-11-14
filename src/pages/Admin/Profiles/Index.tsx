@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-import { profileService } from "../../../services";
 import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import "react-quill/dist/quill.snow.css";
+
+// Service
+import { profileService } from "../../../services";
 
 export default function ProfilesIndex() {
   document.title = "Edit Profile - My Portfolio";
