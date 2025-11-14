@@ -2,8 +2,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
-import { categoryService } from "../../../services/categoryService";
-import { Category, ValidationErrors } from "../../../types/category";
+import { categoryService } from "../../../services";
+import { ValidationErrors } from "../../../types/category";
 
 export default function CategoriesEdit() {
   document.title = "Edit Category - Desa Digital";

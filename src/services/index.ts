@@ -1,8 +1,12 @@
-// Central export file for all service modules
-// Makes importing services cleaner throughout the app
+// src/services/index.ts
+// 🔹 Central export for all service modules
+// Makes importing services cleaner and consistent
 
 export * from "./userService";
 export * from "./postService";
-
-// Default axios instance
+export * from "./categoryService";
+export * from "./contactService";
+export * from "./configurationService";
+export * from "./experienceService";
+export * from "./projectService"; // jika nanti ada
 export { default as Api } from "./Api";

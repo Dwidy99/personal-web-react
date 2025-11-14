@@ -1,12 +1,14 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-import Api from "../../../services/Api";
 import Cookies from "js-cookie";
 import hasAnyPermissions from "../../../utils/Permissions";
 import Pagination from "../../../components/general/Pagination";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
+
+// Service
+import { Api } from "../../../services";
 
 // Icons
 import { FaUserEdit } from "react-icons/fa";

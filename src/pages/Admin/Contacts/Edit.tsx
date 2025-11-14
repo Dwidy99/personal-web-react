@@ -2,8 +2,10 @@ import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
-import { contactService } from "../../../services/contactService";
 import { ValidationErrors, Contact } from "../../../types/contact";
+
+// Service
+import { contactService } from "../../../services";
 
 export default function ContactsEdit() {
   document.title = "Edit Contact - My Portfolio";

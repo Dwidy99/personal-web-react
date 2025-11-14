@@ -3,7 +3,9 @@ import { useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import { ValidationErrors } from "../../../types/contact";
-import { contactService } from "../../../services/contactService";
+
+// Service
+import { contactService } from "../../../services";
 
 export default function ContactsCreate() {
   document.title = "Create Contact - My Portfolio";

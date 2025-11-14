@@ -2,7 +2,6 @@ import { useEffect, useState, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
-import { contactService } from "../../../services/contactService";
 import { Contact, PaginationMeta } from "../../../types/contact";
 import { confirmAlert } from "react-confirm-alert";
 import hasAnyPermissions from "../../../utils/Permissions";
@@ -10,6 +9,9 @@ import Pagination from "../../../components/general/Pagination";
 import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
+
+// Service
+import { contactService } from "../../../services";
 
 export default function ContactsIndex() {
   document.title = "Contacts - My Portfolio";

@@ -1,7 +1,6 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-import { categoryService } from "../../../services/categoryService";
 import { Category, PaginationMeta } from "../../../types/category";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
@@ -10,6 +9,9 @@ import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
 import hasAnyPermissions from "../../../utils/Permissions";
+
+// Service
+import { categoryService } from "../../../services/categoryService";
 
 export default function CategoriesIndex() {
   document.title = "Categories - Desa Digital";

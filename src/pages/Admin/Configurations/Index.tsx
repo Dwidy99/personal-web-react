@@ -4,7 +4,9 @@ import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { ConfigData, FileInputs, ValidationErrors } from "../../../types/configuration";
-import { configurationService } from "../../../services/configurationService";
+
+// Service
+import { configurationService } from "../../../services";
 
 // Cookie type
 interface UserCookie {

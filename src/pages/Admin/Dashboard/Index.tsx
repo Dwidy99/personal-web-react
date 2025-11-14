@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
-import Api from "../../../services/Api";
 import Cookies from "js-cookie";
 import CardDataStats from "../../../components/admin/CardDataStats";
 import { TbCategory2 } from "react-icons/tb";
 import { LuSignpostBig } from "react-icons/lu";
 import { MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { SlPicture } from "react-icons/sl";
+
+// Service
+import { Api } from "../../../services";
 
 // ✅ Definisikan tipe data untuk dashboard
 interface DashboardData {

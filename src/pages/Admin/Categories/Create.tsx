@@ -2,8 +2,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
-import { categoryService } from "../../../services/categoryService";
 import { ValidationErrors } from "../../../types/category";
+
+// Service
+import { categoryService } from "../../../services";
 
 export default function CategoriesCreate() {
   document.title = "Create Category - Desa Digital";
