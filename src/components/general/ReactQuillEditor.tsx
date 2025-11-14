@@ -1,11 +1,18 @@
 // src/components/ReactQuillEditor.tsx
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import ReactQuill from "react-quill";
 import PropTypes from "prop-types";
 import "react-quill/dist/quill.snow.css";
 
-// Tambahkan fontSize dan color ke Quill jika diperlukan
-const ReactQuillEditor = forwardRef(
+// ✅ Definisikan tipe props
+interface ReactQuillEditorProps {
+  value: string;
+  onChange: (content: string) => void;
+  placeholder?: string;
+}
+
+// ✅ forwardRef ke instance ReactQuill (bukan HTMLDivElement)
+const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
   ({ value, onChange, placeholder = "Enter text..." }, ref) => {
     const modules = {
       toolbar: [
@@ -45,6 +52,7 @@ const ReactQuillEditor = forwardRef(
       "video",
     ];
 
+    // ✅ ref diarahkan langsung ke ReactQuill instance
     return (
       <ReactQuill
         ref={ref}
@@ -59,10 +67,10 @@ const ReactQuillEditor = forwardRef(
   }
 );
 
-// 💡 Tambahkan displayName untuk menghilangkan warning
+// ✅ Tambahkan nama komponen
 ReactQuillEditor.displayName = "ReactQuillEditor";
 
-// 💡 Tambahkan prop-types supaya ESLint happy
+// ✅ Tambahkan prop-types untuk runtime check
 ReactQuillEditor.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
