@@ -1,53 +1,34 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-import Api from "../../../services/Api";
-import Cookies from "js-cookie";
-import hasAnyPermissions from "../../../utils/Permissions";
-import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
+import { contactService } from "../../../services/contactService";
+import { Contact, PaginationMeta } from "../../../types/contact";
+import { confirmAlert } from "react-confirm-alert";
+import hasAnyPermissions from "../../../utils/Permissions";
 import Pagination from "../../../components/general/Pagination";
 import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
 
-interface Contact {
-  id: number;
-  name: string;
-  link: string;
-  image: string;
-}
-
-interface PaginationMeta {
-  currentPage: number;
-  perPage: number;
-  total: number;
-}
-
 export default function ContactsIndex() {
-  document.title = "Contacts Page - My Portfolio";
+  document.title = "Contacts - My Portfolio";
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta>({
-    currentPage: 1,
-    perPage: 10,
+    current_page: 1,
+    per_page: 10,
     total: 0,
   });
-  const [keywords, setKeywords] = useState<string>("");
+  const [keywords, setKeywords] = useState("");
 
-  const token = Cookies.get("token");
-
-  const fetchData = async (pageNumber = 1, keywords = "") => {
-    const page = pageNumber || pagination.currentPage;
-    const response = await Api.get(`/api/admin/contacts?search=${keywords}&page=${page}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    setContacts(response.data.data.data);
+  const fetchData = async (page = 1, search = "") => {
+    const data = await contactService.getAll(page, search);
+    setContacts(data.data);
     setPagination({
-      currentPage: response.data.data.current_page,
-      perPage: response.data.data.per_page,
-      total: response.data.data.total,
+      current_page: data.current_page,
+      per_page: data.per_page,
+      total: data.total,
     });
   };
 
@@ -55,25 +36,23 @@ export default function ContactsIndex() {
     fetchData();
   }, []);
 
-  const searchData = (e: ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setKeywords(val);
-    fetchData(1, val);
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setKeywords(value);
+    fetchData(1, value);
   };
 
-  const deleteContacts = (id: number) => {
+  const handleDelete = (id: number) => {
     confirmAlert({
       title: "Are you sure?",
-      message: "Want to delete this data?",
+      message: "Delete this contact?",
       buttons: [
         {
           label: "YES",
           onClick: async () => {
-            const res = await Api.delete(`/api/admin/contacts/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            toast.success(res.data.message, { position: "top-center" });
-            fetchData();
+            await contactService.delete(id);
+            toast.success("Contact deleted!");
+            fetchData(pagination.current_page);
           },
         },
         { label: "NO" },
@@ -83,86 +62,64 @@ export default function ContactsIndex() {
 
   return (
     <LayoutAdmin>
-      <div className="rounded-sm border bg-white px-5 pt-6 pb-2.5 shadow-default dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">Contacts Lists</h4>
-
-        <div className="flex flex-row mb-4">
+      <div className="rounded-lg border bg-white shadow-md p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-xl font-semibold">Contacts List</h4>
           {hasAnyPermissions(["contacts.create"]) && (
             <Link
               to="/admin/contacts/create"
-              className="mx-2 inline-flex items-center justify-center rounded-md bg-meta-5 py-3 px-3 text-sm font-medium text-white hover:bg-opacity-90"
+              className="inline-flex items-center rounded-md bg-primary text-white py-2 px-4 hover:bg-opacity-90"
             >
-              <FaCirclePlus className="text-white mr-2" /> Add New
+              <FaCirclePlus className="mr-2" /> Add New
             </Link>
           )}
-
-          <div className="w-full">
-            <form>
-              <div className="relative">
-                <input
-                  type="text"
-                  onChange={searchData}
-                  placeholder="Search here..."
-                  className="w-full bg-transparent pl-10 pr-4 py-2 text-black dark:text-white border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button type="submit" className="absolute left-0 top-1/2 -translate-y-1/2 p-2">
-                  <MdPersonSearch />
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
 
-        <table className="w-full table-auto border border-stroke border-collapse rounded-sm dark:border-strokedark">
-          <thead>
-            <tr className="bg-gray-200 text-left dark:bg-meta-4">
-              <th className="py-4 px-4 font-bold text-center text-black dark:text-white border w-[5%]">
-                No.
-              </th>
-              <th className="py-4 px-4 font-bold text-center text-black dark:text-white border">
-                Name
-              </th>
-              <th className="py-4 px-4 font-bold text-center text-black dark:text-white border">
-                Image
-              </th>
-              <th className="py-4 px-4 font-bold text-center text-black dark:text-white border">
-                URL
-              </th>
-              <th className="py-4 px-4 font-bold text-center text-black dark:text-white border">
-                Actions
-              </th>
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Search contact..."
+            value={keywords}
+            onChange={handleSearch}
+            className="w-full border rounded-md p-2 pl-10"
+          />
+          <MdPersonSearch className="absolute left-3 top-2.5 text-gray-500" />
+        </div>
+
+        <table className="w-full border border-stroke rounded-md text-center">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-3 px-2">No.</th>
+              <th className="py-3 px-2">Name</th>
+              <th className="py-3 px-2">Image</th>
+              <th className="py-3 px-2">URL</th>
+              <th className="py-3 px-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {contacts.length > 0 ? (
-              contacts.map((contact, index) => (
-                <tr key={contact.id} className="border dark:border-strokedark">
-                  <td className="py-3 text-center">{index + 1}</td>
-                  <td className="py-3 text-center">{contact.name}</td>
-                  <td className="py-3 text-center">
-                    {contact.image ? (
+              contacts.map((item, index) => (
+                <tr key={item.id} className="border-t">
+                  <td>{index + 1}</td>
+                  <td>{item.name}</td>
+                  <td>
+                    {item.image ? (
                       <img
-                        src={contact.image}
-                        alt={contact.name}
-                        className="w-10 h-10 object-cover mx-auto rounded-full"
+                        src={item.image}
+                        alt={item.name}
+                        className="w-10 h-10 mx-auto rounded-full"
                       />
                     ) : (
-                      <span className="text-xs text-gray-400">No Image</span>
+                      <span className="text-gray-400 text-sm">No Image</span>
                     )}
                   </td>
-                  <td className="py-3 text-center">{contact.link || "-"}</td>
-                  <td className="py-3 text-center flex justify-center">
-                    <Link
-                      to={`/admin/contacts/edit/${contact.id}`}
-                      className="inline-flex items-center justify-center"
-                    >
-                      <FaUserEdit className="text-primary text-lg mr-2" />
+                  <td>{item.link}</td>
+                  <td className="flex justify-center gap-2 py-2">
+                    <Link to={`/admin/contacts/edit/${item.id}`}>
+                      <FaUserEdit className="text-primary text-lg" />
                     </Link>
                     {hasAnyPermissions(["contacts.delete"]) && (
-                      <button
-                        onClick={() => deleteContacts(contact.id)}
-                        className="inline-flex items-center justify-center"
-                      >
+                      <button onClick={() => handleDelete(item.id)}>
                         <MdDeleteForever className="text-danger text-lg" />
                       </button>
                     )}
@@ -171,8 +128,8 @@ export default function ContactsIndex() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-5 text-center text-[#9D5425]">
-                  No Data Found!
+                <td colSpan={5} className="py-4 text-red-500 font-medium">
+                  No Data Found
                 </td>
               </tr>
             )}
@@ -180,10 +137,10 @@ export default function ContactsIndex() {
         </table>
 
         <Pagination
-          className="flex justify-end my-4"
-          currentPage={pagination.currentPage}
+          className="flex justify-end mt-4"
+          currentPage={pagination.current_page}
           totalCount={pagination.total}
-          pageSize={pagination.perPage}
+          pageSize={pagination.per_page}
           onPageChange={(page) => fetchData(page, keywords)}
         />
       </div>
