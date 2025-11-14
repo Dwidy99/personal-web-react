@@ -8,5 +8,5 @@ export * from "./categoryService";
 export * from "./contactService";
 export * from "./configurationService";
 export * from "./experienceService";
-export * from "./projectService"; // jika nanti ada
+export * from "./permissionService";
 export { default as Api } from "./Api";

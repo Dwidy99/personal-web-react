@@ -1,144 +1,99 @@
-//import LayoutAdmin
-import { useEffect, useState } from "react";
-//import LayoutAdmin
+import { useEffect, useState, ChangeEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
-//import Api
-import Api from "../../../services/Api";
-//import js Cokoies
-import Cookies from "js-cookie";
-//import Layout
+import { Permission, PaginationMeta } from "../../../types/permission";
 import Pagination from "../../../components/general/Pagination";
 import { MdPersonSearch } from "react-icons/md";
 
-export default function Index() {
-  //title page
-  document.title = "Permissions - Desa Digital";
+// Service
+import { permissionService } from "../../../services";
 
-  //define state "permissions"
-  const [permissions, setPermissions] = useState([]);
+export default function PermissionsIndex() {
+  document.title = "Permissions - My Portfolio";
 
-  //define state "pagination"
-  const [pagination, setPagination] = useState({
-    currentPage: 0,
-    perPage: 0,
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    current_page: 1,
+    per_page: 10,
     total: 0,
   });
-
-  //define state "keywords"
   const [keywords, setKeywords] = useState("");
 
-  //token from cookies
-  const token = Cookies.get("token");
-
-  //function fetchData
-  const fetchData = async (pageNumber = 1, keywords = "") => {
-    //define variabel "page"
-    const page = pageNumber ? pageNumber : pagination.currentPage;
-
-    await Api.get(`/api/admin/permissions?search=${keywords}&page=${page}`, {
-      //header
-      headers: {
-        //header Bearer + token
-        Authorization: `Bearer ${token}`,
-      },
-    }).then((response) => {
-      //set Data response to state "pagination"
-      setPermissions(response.data.data.data);
-
-      //set data pagination to state "pagination"
-      setPagination(() => ({
-        currentPage: response.data.data.current_page,
-        perPage: response.data.data.per_page,
-        total: response.data.data.total,
-      }));
-    });
+  const fetchData = async (page = 1, search = "") => {
+    try {
+      const data = await permissionService.getAll(page, search);
+      setPermissions(data.data);
+      setPagination({
+        current_page: data.current_page,
+        per_page: data.per_page,
+        total: data.total,
+      });
+    } catch (error) {
+      console.error("Failed to fetch permissions:", error);
+    }
   };
 
-  //useEffect
   useEffect(() => {
-    //call method "fetchData"
     fetchData();
   }, []);
 
-  //function "search Data"
-  const searchData = async (e) => {
-    //set value to state "keyword"
-    setKeywords(e.target.value);
-
-    //call method "fetchdate"
-    fetchData(1, e.target.value);
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setKeywords(value);
+    fetchData(1, value);
   };
 
-  // Pagination Handler
-  const handlePageChange = (pageNumber) => {
+  const handlePageChange = (pageNumber: number) => {
     fetchData(pageNumber, keywords);
   };
 
   return (
     <LayoutAdmin>
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Permission Lists
-        </h4>
+      <div className="rounded-lg border bg-white px-5 pt-6 pb-3 shadow-md dark:bg-boxdark dark:border-strokedark sm:px-7.5">
+        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">Permission Lists</h4>
 
-        <div className="flex flex-row mb-4">
-          <div className="w-full basis-2/2">
-            <form action="#" method="POST">
-              <div className="relative">
-                <input
-                  type="text"
-                  onChange={(e) => searchData(e)}
-                  placeholder="Search here..."
-                  className="w-full bg-transparent pl-10 pr-4 py-2 text-black dark:text-white border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button
-                  type="submit"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 p-2"
-                >
-                  <MdPersonSearch />
-                </button>
-              </div>
-            </form>
+        {/* Search */}
+        <div className="flex mb-4">
+          <div className="w-full">
+            <div className="relative">
+              <input
+                type="text"
+                value={keywords}
+                onChange={handleSearch}
+                placeholder="Search permission..."
+                className="w-full bg-transparent pl-10 pr-4 py-2 text-black dark:text-white border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <MdPersonSearch className="absolute left-3 top-2.5 text-gray-500" />
+            </div>
           </div>
         </div>
 
-        <table className="w-full table-auto border border-stroke border-collapse overflow-x-auto rounded-sm bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+        {/* Table */}
+        <table className="w-full border border-stroke border-collapse rounded-sm overflow-x-auto dark:border-strokedark">
           <thead>
-            <tr className="bg-gray-200 text-left dark:bg-meta-4">
-              <th
-                scope="col"
-                className="py-4 px-4 font-medium text-black dark:text-white border border-stroke dark:border-strokedark w-[5%]"
-              >
+            <tr className="bg-gray-200 dark:bg-meta-4">
+              <th className="py-3 px-4 text-center font-semibold text-black dark:text-white border">
                 No.
               </th>
-              <th
-                scope="col"
-                className="py-4 px-4 text-center font-medium text-black dark:text-white border border-stroke dark:border-strokedark sm:table-cell w-[40%]"
-              >
-                Permissions Name
+              <th className="py-3 px-4 text-center font-semibold text-black dark:text-white border">
+                Permission Name
               </th>
             </tr>
           </thead>
           <tbody>
             {permissions.length > 0 ? (
               permissions.map((permission, index) => (
-                <tr
-                  key={permission.id}
-                  className="border border-stroke dark:border-strokedark"
-                >
-                  <td className="py-5 px-2 text-center text-sm font-medium text-black dark:text-white border border-stroke dark:border-strokedark">
-                    {index + 1}
+                <tr key={permission.id} className="border dark:border-strokedark">
+                  <td className="py-3 px-4 text-center text-sm">
+                    {index + 1 + (pagination.current_page - 1) * pagination.per_page}
                   </td>
-                  <td className="py-5 px-2 text-center text-sm font-medium text-black dark:text-white border border-stroke dark:border-strokedark">
-                    {permission.name}
-                  </td>
+                  <td className="py-3 px-4 text-center text-sm">{permission.name}</td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan="7"
-                  className="py-5 px-4 text-center text-sm text-[#9D5425] border border-stroke dark:border-strokedark"
+                  colSpan={2}
+                  className="py-5 px-4 text-center text-sm text-[#9D5425] border dark:border-strokedark"
                 >
                   No Data Found!
                 </td>
@@ -147,12 +102,12 @@ export default function Index() {
           </tbody>
         </table>
 
-        {/* Pagination Component */}
+        {/* Pagination */}
         <Pagination
-          className="flex justify-end my-4"
-          currentPage={pagination.currentPage}
+          className="flex justify-end mt-4"
+          currentPage={pagination.current_page}
           totalCount={pagination.total}
-          pageSize={pagination.perPage}
+          pageSize={pagination.per_page}
           onPageChange={handlePageChange}
         />
       </div>
