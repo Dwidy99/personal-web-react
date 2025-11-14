@@ -1,86 +1,85 @@
+import { useEffect, useState } from "react";
 import LayoutWeb from "../../../layouts/Web";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import Api from "../../../services/Api";
 import toast from "react-hot-toast";
 import CardProjects from "../../../components/general/CardProjects";
 import SEO from "../../../components/general/SEO";
+import LoadingTailwind from "../../../components/general/LoadingTailwind";
 
-export default function Index() {
-  const [projects, setProjects] = useState([]);
-  const [fetchError, setFetchError] = useState(null);
+// Service
+import { publicService } from "../../../services/";
 
-  document.title = "Projects Dwi's | Blogs";
+export default function ProjectsIndex() {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Fetch Projects from API
-  const fetchDataProjects = async () => {
-    setFetchError(null);
-    try {
-      const response = await Api.get(`/api/public/projects`);
-      setProjects(response.data.data.data);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      toast.error("Failed to load projects. Please try again later.");
-      setFetchError(true);
-    }
-  };
+  document.title = "Projects | Portfolio Blogs";
 
   useEffect(() => {
-    fetchDataProjects();
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await publicService.getProjects();
+        setProjects(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load projects");
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
   }, []);
 
-  // 🔹 Helper: truncate description safely
-  const truncateText = (text, maxLength = 155) => {
+  const truncateText = (text?: string, maxLength = 155): string => {
     if (!text) return "No description available.";
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
   return (
     <LayoutWeb>
       <SEO />
-
-      <div className="container">
-        {/* 🔹 Header Section */}
-        <div className="mt-16 lg:mx-22 xsm:mt-22.5">
-          <h2 className="text-3xl font-bold text-gray-700">Projects</h2>
-          <p className="tracking-tight mb-2 text-gray-500">
-            A collection of my open-source projects, prototypes, and client
-            collaborations.
+      <section className="container mx-auto px-4 sm:px-6 lg:px-10 xl:px-20 py-10 md:py-16">
+        {/* Header */}
+        <header className="mb-10 text-center md:text-left">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 dark:text-gray-100">
+            My Projects
+          </h1>
+          <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto md:mx-0">
+            A collection of my open-source works, prototypes, and client collaborations.
           </p>
-          <hr className="my-8 border-gray-200" />
-        </div>
+          <hr className="mt-6 border-gray-200 dark:border-gray-700" />
+        </header>
 
-        {/* 🔹 Project Grid */}
-        <div className="grid lg:mx-22 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          {fetchError ? (
-            <div className="col-span-full text-center text-red-500">
-              Failed to load projects. Please check your connection and try
-              again.
-            </div>
-          ) : projects.length > 0 ? (
-            projects.map((project) => (
+        {/* Projects Grid */}
+        {loading ? (
+          <LoadingTailwind />
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : projects.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {projects.map((project, i) => (
               <CardProjects
-                key={project.id}
+                key={i}
                 image={project.image}
-                title={project.title || "Untitled Project"}
+                title={project.title}
                 caption={project.caption}
                 description={truncateText(project.description)}
-                link={project.link} // bisa "/projects/slug" atau "https://github.com/..."
+                link={project.link}
               >
-                <p className="text-sm font-medium text-right text-blue-600 hover:underline">
+                <p className="text-sm font-medium text-right text-blue-600 hover:underline mt-2">
                   <Link to={`/projects/${project.slug}`}>Learn more →</Link>
                 </p>
               </CardProjects>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500">
-              No projects available.
-            </div>
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-10">
+            No projects available.
+          </p>
+        )}
+      </section>
     </LayoutWeb>
   );
 }

@@ -4,6 +4,7 @@ import Api from "@/services/Api";
 import DynamicFavicon from "./DynamicFavicon";
 
 interface SEOProps {
+  title?: string; // ✅ Tambahkan ini
   description?: string;
   keywords?: string[];
   canonical?: string;
@@ -22,7 +23,7 @@ interface ConfigData {
   logo?: string | null;
 }
 
-export default function SEO({ description, keywords, canonical, ogUrl }: SEOProps) {
+export default function SEO({ title, description, keywords, canonical, ogUrl }: SEOProps) {
   const [config, setConfig] = useState<ConfigData | null>(null);
 
   useEffect(() => {
@@ -39,21 +40,34 @@ export default function SEO({ description, keywords, canonical, ogUrl }: SEOProp
 
   if (!config) return null;
 
-  const title = `${config.site_name} | ${config.abbreviation}`;
+  // ✅ jika ada props.title, pakai itu; kalau tidak, fallback ke config
+  const pageTitle = title
+    ? `${title} | ${config.site_name}`
+    : `${config.site_name} | ${config.abbreviation}`;
+
   const metaDesc = description || config.tagline || config.meta_text;
-  const metaKeywords = keywords?.length ? keywords : config.keywords;
+
+  // ✅ Type-safe normalization
+  const rawKeywords: string[] | string | undefined = keywords?.length ? keywords : config.keywords;
+
+  const metaKeywords: string[] = Array.isArray(rawKeywords)
+    ? rawKeywords
+    : typeof rawKeywords === "string"
+      ? (rawKeywords as string).split(",").map((k) => k.trim())
+      : [];
 
   const defaultImage =
     config.banner ||
     config.logo ||
     `${import.meta.env.VITE_API_BASE_URL}/storage/configurations/default-banner.png`;
+
   const faviconUrl =
     config.icon || `${import.meta.env.VITE_API_BASE_URL}/storage/configurations/default-icon.png`;
 
   return (
     <>
       <Helmet>
-        <title>{title}</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={metaDesc} />
         <meta name="keywords" content={metaKeywords.join(", ")} />
         <meta name="author" content={config.site_name} />
@@ -63,7 +77,7 @@ export default function SEO({ description, keywords, canonical, ogUrl }: SEOProp
         <link rel="icon" href={faviconUrl} type="image/png" sizes="16x16" />
 
         {/* Open Graph */}
-        <meta property="og:title" content={title} />
+        <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={metaDesc} />
         <meta property="og:image" content={defaultImage} />
         <meta property="og:url" content={ogUrl || config.website_url} />
@@ -71,7 +85,7 @@ export default function SEO({ description, keywords, canonical, ogUrl }: SEOProp
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
+        <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={metaDesc} />
         <meta name="twitter:image" content={defaultImage} />
       </Helmet>

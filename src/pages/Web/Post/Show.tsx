@@ -1,74 +1,52 @@
 import { useEffect, useState, useCallback } from "react";
 import LayoutWeb from "../../../layouts/Web";
-import Api from "../../../services/Api";
 import { Link, useParams } from "react-router-dom";
 import LoadingTailwind from "../../../components/general/LoadingTailwind";
 import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
-import Date from "../../../utils/Date";
+import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
-import ContentRenderer from "../../../components/general/SanitizedHTML"; // Assuming this is your custom component
+import ContentRenderer from "../../../components/general/SanitizedHTML";
 
-export default function Show() {
-  const [post, setPost] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [loadingPost, setLoadingPost] = useState(true);
-  const [loadingPosts, setLoadingPosts] = useState(true);
+// Service
+import { publicService } from "../../../services";
+
+export default function BlogShow() {
+  const [post, setPost] = useState<any>(null);
+  const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const { slug } = useParams();
 
-  document.title = "Show Post Dwi's | Blogs";
+  document.title = "Show | Portfolio";
 
-  const fetchDetailDataPost = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      setLoadingPost(true);
-      const response = await Api.get(`/api/public/posts/${slug}`);
-      setPost(response.data.data || null);
-    } catch (error) {
-      console.error("Error fetching post details:", error);
-      setPost(null);
+      setLoading(true);
+      const [detail, allPosts] = await Promise.all([
+        publicService.getPostBySlug?.(slug), // we’ll add this below
+        publicService.getPostsHome(),
+      ]);
+      setPost(detail);
+      setRelatedPosts(allPosts.filter((p: any) => p.slug !== slug));
+    } catch (err: any) {
+      toast.error("Failed to load post: " + err.message);
     } finally {
-      setLoadingPost(false);
+      setLoading(false);
     }
   }, [slug]);
 
-  const fetchAllPosts = useCallback(async () => {
-    try {
-      setLoadingPosts(true);
-      const response = await Api.get(`/api/public/posts_home`);
-      setPosts(response.data.data || []);
-    } catch (error) {
-      toast.error(`Failed to load articles: ${error.message}`, {
-        position: "top-center",
-      });
-    } finally {
-      setLoadingPosts(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchDetailDataPost();
-    fetchAllPosts();
-  }, [slug, fetchDetailDataPost, fetchAllPosts]);
+    fetchData();
+  }, [fetchData]);
 
-  if (loadingPost) {
-    return (
-      <LayoutWeb>
-        <div className="container">
-          <LoadingTailwind />
-        </div>
-      </LayoutWeb>
-    );
-  }
+  if (loading) return <LoadingTailwind />;
 
   if (!post) {
     return (
       <LayoutWeb>
         <div className="container text-center py-20">
           <h1 className="text-2xl font-bold text-red-500">Post not found</h1>
-          <Link
-            to="/blog"
-            className="text-blue-600 hover:underline mt-4 inline-block"
-          >
+          <Link to="/blog" className="text-blue-600 hover:underline mt-4 inline-block">
             Back to Blog
           </Link>
         </div>
@@ -78,120 +56,77 @@ export default function Show() {
 
   return (
     <LayoutWeb disableSnow>
-      <SEO
-        title={post.title}
-        description={post.excerpt}
-        keywords={post.tags?.join(",")}
-      />
-      <div className="container mx-auto px-4 mt-22.5 sm:px-6 md:px-8">
-        {" "}
-        {/* Adjusted container to mx-auto and added px-4 */}
+      <SEO title={post.title} description={post.excerpt} />
+      <div className="container mx-auto px-4 mt-10 md:mt-16 lg:mt-22.5">
         <div className="lg:grid lg:grid-cols-3 gap-8">
+          {/* Post Content */}
           <div className="lg:col-span-2">
-            <div className="rounded-lg shadow-lg p-6 bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-              {" "}
-              {/* Adjusted for dark mode background/text */}
-              <div className="flex justify-start mt-2">
+            <article className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-6 text-gray-700 dark:text-gray-200">
+              <div className="flex flex-wrap gap-5 mb-4 text-sm text-gray-500 dark:text-gray-400">
                 {post.user && (
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {" "}
-                    {/* Adjusted for dark mode text */}
-                    <FaUserEdit className="inline mr-2" />
+                  <span>
+                    <FaUserEdit className="inline mr-1" />
                     {post.user.name}
                   </span>
                 )}
-                <span className="ml-5 text-gray-600 dark:text-gray-400">
-                  {" "}
-                  {/* Adjusted for dark mode text */}
-                  <FaCalendarAlt className="inline mr-2" />
-                  {Date(new Date(post.created_at))}
+                <span>
+                  <FaCalendarAlt className="inline mr-1" />
+                  {formatDate(new Date(post.created_at))}
                 </span>
               </div>
-              <h1 className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-800 dark:text-gray-100 sm:text-5xl">
-                {" "}
-                {/* Adjusted for dark mode text */}
+
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
                 {post.title}
               </h1>
-              <hr className="border-gray-300 dark:border-gray-700 my-4" />{" "}
-              {/* Adjusted for dark mode border */}
+
               {post.category && (
-                <span className="text-gray-600">
-                  {" "}
-                  {/* Removed dark:text-gray-600 here as it conflicts with the button color */}
-                  <Link
-                    to={`/blog/category/${post.category.slug}`}
-                    className="bg-gray-700 text-white py-1 px-3 rounded-md hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500" // Added dark mode and hover for category button
-                  >
-                    #{post.category.name}
-                  </Link>
-                </span>
+                <Link
+                  to={`/blog/category/${post.category.slug}`}
+                  className="inline-block bg-gray-700 text-white py-1 px-3 rounded-md hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 mb-4"
+                >
+                  #{post.category.name}
+                </Link>
               )}
-              <div className="mt-6 text-gray-800 dark:text-gray-300">
-                {" "}
-                {/* Adjusted for dark mode text */}
-                <ContentRenderer
-                  content={post.content}
-                  className="custom-styles" // Remove dark:text-gray-600 here, let the ContentRenderer handle its internal styles or let the parent div dictate it.
-                  isQuillContent={true}
-                />
+
+              <div className="mt-6 prose dark:prose-invert max-w-none">
+                <ContentRenderer content={post.content} isQuillContent />
               </div>
-            </div>
+            </article>
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-white text-gray-700 rounded-lg shadow-lg p-6 dark:bg-gray-800 dark:text-gray-300">
-              {" "}
-              {/* Adjusted for dark mode background/text */}
-              <h2 className="text-xl font-medium text-gray-800 dark:text-gray-100 sm:text-2xl">
-                {" "}
-                {/* Adjusted for dark mode text */}
-                Update News
+          {/* Sidebar */}
+          <aside className="lg:col-span-1 mt-10 lg:mt-0">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                Recent Articles
               </h2>
-              <hr className="border-gray-300 dark:border-gray-700 my-4" />{" "}
-              {/* Adjusted for dark mode border */}
-              {loadingPosts ? (
-                <LoadingTailwind />
-              ) : (
-                <div>
-                  {posts
-                    .filter(
-                      (p) => !(p.title === post.title && p.slug === post.slug)
-                    )
-                    .map((p, index) => (
-                      <div key={index} className="mt-6">
-                        <div className="flex items-center">
-                          {p.image && (
-                            <img
-                              src={p.image}
-                              alt={p.title}
-                              className="w-20 h-20 rounded-lg mr-4"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          )}
-                          <div>
-                            <Link to={`/blog/${p.slug}`}>
-                              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-                                {" "}
-                                {/* Adjusted for dark mode text */}
-                                {p.title?.length > 30
-                                  ? `${p.title.slice(0, 30)}...`
-                                  : p.title}
-                              </h3>
-                            </Link>
-                            <span className="text-gray-500 dark:text-gray-400">
-                              {" "}
-                              {/* Adjusted for dark mode text */}
-                              {p.created_at && Date(new Date(p.created_at))}
-                            </span>
-                          </div>
-                        </div>
+              <div className="space-y-4">
+                {relatedPosts.length > 0 ? (
+                  relatedPosts.map((p, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <img
+                        src={p.image}
+                        alt={p.title}
+                        className="w-20 h-20 object-cover rounded-md"
+                      />
+                      <div>
+                        <Link to={`/blog/${p.slug}`}>
+                          <h3 className="font-medium hover:underline text-gray-800 dark:text-gray-100">
+                            {p.title.length > 40 ? `${p.title.slice(0, 40)}...` : p.title}
+                          </h3>
+                        </Link>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {p.created_at && formatDate(new Date(p.created_at))}
+                        </p>
                       </div>
-                    ))}
-                </div>
-              )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No other posts.</p>
+                )}
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
     </LayoutWeb>

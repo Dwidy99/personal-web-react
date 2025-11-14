@@ -1,43 +1,40 @@
 import { useEffect, useState, useCallback } from "react";
 import LayoutWeb from "../../../layouts/Web";
-import Api from "../../../services/Api";
+import { publicService } from "../../../services/publicService";
 import { Link, useParams } from "react-router-dom";
 import LoadingTailwind from "../../../components/general/LoadingTailwind";
-import { FaCalendarAlt } from "react-icons/fa";
-import Date from "../../../utils/Date";
+import { FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
+import formatDate from "../../../utils/Date";
 import SEO from "../../../components/general/SEO";
-import ContentRenderer from "../../../components/general/SanitizedHTML"; // Assuming this is your custom component
+import ContentRenderer from "../../../components/general/SanitizedHTML";
 
-export default function Show() {
-  const [project, setProject] = useState(null);
-  const [loadingProject, setLoadingProject] = useState(true);
+export default function ProjectShow() {
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { slug } = useParams();
 
-  document.title = "Show Project Dwi's | Blogs";
+  document.title = "Project | Portfolio Blogs";
 
-  const fetchDetailDataProject = useCallback(async () => {
+  const fetchProject = useCallback(async () => {
     try {
-      setLoadingProject(true);
-      const response = await Api.get(`/api/public/projects/${slug}`);
-
-      console.log(response);
-
-      setProject(response.data.data || null);
-    } catch (error) {
-      setProject(error);
+      setLoading(true);
+      const data = await publicService.getProjectBySlug(slug);
+      setProject(data);
+    } catch (err: any) {
+      setProject(null);
     } finally {
-      setLoadingProject(false);
+      setLoading(false);
     }
   }, [slug]);
 
   useEffect(() => {
-    fetchDetailDataProject();
-  }, [slug, fetchDetailDataProject]);
+    fetchProject();
+  }, [fetchProject]);
 
-  if (loadingProject) {
+  if (loading) {
     return (
       <LayoutWeb>
-        <div className="container">
+        <div className="container mx-auto px-4 py-20">
           <LoadingTailwind />
         </div>
       </LayoutWeb>
@@ -49,11 +46,8 @@ export default function Show() {
       <LayoutWeb>
         <div className="container text-center py-20">
           <h1 className="text-2xl font-bold text-red-500">Project not found</h1>
-          <Link
-            to="/blog"
-            className="text-blue-600 hover:underline mt-4 inline-block"
-          >
-            Back to Blog
+          <Link to="/projects" className="text-blue-600 hover:underline mt-4 inline-block">
+            Back to Projects
           </Link>
         </div>
       </LayoutWeb>
@@ -62,47 +56,53 @@ export default function Show() {
 
   return (
     <LayoutWeb disableSnow>
-      <SEO
-        title={project.title}
-        description={project.excerpt}
-        keywords={project.tags?.join(",")}
-      />
-      <div className="container mx-auto px-4 mt-22.5 sm:px-6 md:px-8">
-        {" "}
-        {/* Adjusted container to mx-auto and added px-4 */}
-        <div className="justify-center m-18">
-          <div className="lg:col-span-2">
-            <div className="rounded-lg shadow-lg p-6 bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-              {" "}
-              {/* Adjusted for dark mode background/text */}
-              <div className="flex justify-start mt-2">
-                <span className="ml-5 text-gray-600 dark:text-gray-400">
-                  {" "}
-                  {/* Adjusted for dark mode text */}
-                  <FaCalendarAlt className="inline mr-2" />
-                  {Date(new Date(project.created_at))}
-                </span>
-              </div>
-              <h1 className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-800 dark:text-gray-100 sm:text-5xl">
-                {" "}
-                {/* Adjusted for dark mode text */}
-                {project.title}
-              </h1>
-              <hr className="border-gray-300 dark:border-gray-700 my-4" />{" "}
-              {/* Adjusted for dark mode border */}
-              <div className="mt-6 text-gray-800 dark:text-gray-300">
-                {" "}
-                {/* Adjusted for dark mode text */}
-                <ContentRenderer
-                  content={project.description}
-                  className="custom-styles" // Remove dark:text-gray-600 here, let the ContentRenderer handle its internal styles or let the parent div dictate it.
-                  isQuillContent={true}
-                />
-              </div>
+      <SEO title={project.title} description={project.caption || project.description} />
+      <section className="container mx-auto px-4 sm:px-6 lg:px-10 xl:px-20 mt-10 md:mt-16 lg:mt-22.5">
+        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10">
+          <header className="mb-6">
+            <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400">
+              <FaCalendarAlt className="inline" />
+              <span>{formatDate(new Date(project.created_at))}</span>
             </div>
+            <h1 className="text-3xl md:text-4xl font-bold mt-3 text-gray-800 dark:text-gray-100">
+              {project.title}
+            </h1>
+            {project.link && (
+              <a
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 mt-3 hover:underline"
+              >
+                Visit Project <FaExternalLinkAlt className="text-sm" />
+              </a>
+            )}
+          </header>
+
+          <div className="prose dark:prose-invert max-w-none">
+            <ContentRenderer content={project.description} isQuillContent />
           </div>
+
+          {project.image && (
+            <div className="mt-10">
+              <img
+                src={project.image}
+                alt={project.title}
+                className="w-full rounded-lg shadow-md object-cover max-h-[480px]"
+              />
+            </div>
+          )}
+        </article>
+
+        <div className="text-center mt-10">
+          <Link
+            to="/projects"
+            className="text-blue-600 hover:underline text-sm md:text-base font-medium"
+          >
+            ← Back to Projects
+          </Link>
         </div>
-      </div>
+      </section>
     </LayoutWeb>
   );
 }

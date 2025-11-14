@@ -10,3 +10,5 @@ export { default as experienceService } from "./experienceService";
 export { default as profileService } from "./profileService";
 export { default as projectService } from "./projectService";
 export { default as roleService } from "./roleService";
+
+export { publicService } from "./publicService";
