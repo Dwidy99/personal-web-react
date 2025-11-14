@@ -1,219 +1,175 @@
-//import react
-import { useEffect, useRef, useState } from "react";
-//import react-router-dom
+import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-//quill CSS
-import "react-quill/dist/quill.snow.css";
-
-//import LayoutAdmin
-import LayoutAdmin from "../../../layouts/Admin";
-
-//import Api
-import Api from "../../../services/Api";
-
-//import Cookies js
-import Cookies from "js-cookie";
-//import toast js
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
-import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
+import ReactQuillEditor from "@/components/general/ReactQuillEditor";
+import { projectService } from "@/services";
+import type { Project } from "@/types/project";
 
 export default function ProjectEdit() {
-  document.title = "Edit Posts - My Portfolio";
+  document.title = "Edit Project - My Portfolio";
 
   const navigate = useNavigate();
-  const quillRef = useRef(null);
-  const formRef = useRef(null);
+  const { id } = useParams<{ id: string }>();
+  const formRef = useRef<HTMLFormElement>(null);
+  const quillDescRef = useRef<any>(null);
+  const quillCaptionRef = useRef<any>(null);
 
-  const { id } = useParams();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
-  const [link, setLink] = useState("");
-  const [caption, setCaption] = useState("");
+  const [project, setProject] = useState<Project | null>(null);
+  const [image, setImage] = useState<File | null>(null);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  const [errors, setErrors] = useState([]);
-
-  const [projectImage, setProjectImage] = useState("");
-  const token = Cookies.get("token");
-
-  const fetchDataProject = async () => {
-    await Api.get(`/api/admin/projects/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then((response) => {
-      setTitle(response.data.data.title);
-      setDescription(response.data.data.description);
-      setCaption(response.data.data.caption);
-      setProjectImage(response.data.data.image);
-      setLink(response.data.data.link);
-    });
-  };
-
+  // 🔹 Fetch data
   useEffect(() => {
-    fetchDataProject();
-  }, []);
+    const fetchProject = async () => {
+      try {
+        if (!id) return;
+        const data = await projectService.getById(id);
+        setProject(data);
+      } catch {
+        toast.error("Failed to load project");
+      }
+    };
+    fetchProject();
+  }, [id]);
 
-  const updateProjects = async (e) => {
+  // 🔹 Update Handler
+  const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
+    if (!id || !project) return;
+
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("image", image);
-    formData.append("link", link);
-    formData.append("caption", caption);
+    formData.append("title", project.title);
+    formData.append("description", project.description);
+    formData.append("caption", project.caption);
+    formData.append("link", project.link);
+    if (image) formData.append("image", image);
     formData.append("_method", "PUT");
 
-    await Api.post(`/api/admin/projects/${id}`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "content-type": "multipart/form-data",
-      },
-    })
-      .then((response) => {
-        toast.success(response.data.message, {
-          position: "top-center",
-          duration: 6000,
-        });
-        navigate("/admin/projects");
-      })
-      .catch((error) => {
-        setErrors(error.response.data);
-      });
+    try {
+      const res = await projectService.update(id, formData);
+      toast.success(res.message || "Project updated successfully!");
+      navigate("/admin/projects");
+    } catch (err: any) {
+      setErrors(err.response?.data || {});
+      toast.error("Failed to update project");
+    }
   };
 
+  // 🔹 Reset
   const handleReset = () => {
-    if (formRef.current) formRef.current.reset();
-    setTitle("");
-    setDescription("");
-    setCaption("");
-    setImage("");
-    setLink("");
-    setErrors([]);
+    formRef.current?.reset();
+    setImage(null);
+    setErrors({});
   };
 
   return (
     <LayoutAdmin>
       <Link
-        to="/admin/projects/"
-        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-lime-400 focus:outline-none"
+        to="/admin/projects"
+        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-lime-400"
       >
         <i className="fa-solid fa-arrow-left mr-2"></i> Back
       </Link>
 
       <div className="rounded-lg border bg-white shadow-md mt-8 p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          Edit Project
-        </h3>
-        <form ref={formRef} onSubmit={updateProjects}>
-          <div className="my-2">
-            <label className="my-3 block text-black">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter  title.."
-              className="w-full rounded-lg border border-stroke py-3 px-5 text-black outline-none transition focus:border-primary"
-            />
-            {errors.title && (
-              <p className="text-sm text-red-600">{errors.title[0]}</p>
-            )}
-          </div>
-          <div className="basis-64">
-            {projectImage ? (
-              <div className="relative">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Edit Project</h3>
+
+        {project ? (
+          <form ref={formRef} onSubmit={handleUpdate}>
+            {/* Title */}
+            <div className="my-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+              <input
+                type="text"
+                value={project.title}
+                onChange={(e) => setProject({ ...project, title: e.target.value })}
+                className="w-full rounded-lg border border-stroke py-3 px-5 text-black focus:border-primary"
+              />
+              {errors.title && <p className="text-sm text-red-600">{errors.title[0]}</p>}
+            </div>
+
+            {/* Image preview */}
+            {project.image && (
+              <div className="my-4">
                 <img
-                  src={projectImage}
-                  className="w-full h-auto rounded-lg shadow-md object-cover"
-                  style={{ maxWidth: "150px", maxHeight: "150px" }}
+                  src={project.image}
+                  alt={project.title}
+                  className="w-32 h-32 rounded-lg shadow-md object-cover"
                 />
               </div>
-            ) : (
-              <div className="flex items-center justify-center h-32 bg-gray-200 rounded-lg">
-                <p className="text-sm text-gray-600">No icon available</p>
-              </div>
             )}
-          </div>
 
-          {/* Post Image */}
-          <div className="grid grid-cols-2 gap-2">
+            {/* Image upload */}
             <div className="my-2">
-              <label className="mb-3 block text-black">Project</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Image</label>
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setImage(e.target.files[0])}
-                className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-black dark:focus:border-primary"
+                onChange={(e) => setImage(e.target.files?.[0] || null)}
+                className="w-full cursor-pointer rounded-lg border border-stroke py-3 px-5"
               />
-              {errors.image && (
-                <p className="text-red-500 text-xs mt-1">{errors.image[0]}</p>
-              )}
+              {errors.image && <p className="text-sm text-red-600">{errors.image[0]}</p>}
             </div>
 
+            {/* Link */}
             <div className="my-2">
-              <label className="mb-3 block text-black">Link</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Project Link</label>
               <input
                 type="text"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="Enter link.."
-                className="w-full rounded-lg border border-stroke py-3 px-5 text-black outline-none transition focus:border-primary"
+                value={project.link}
+                onChange={(e) => setProject({ ...project, link: e.target.value })}
+                className="w-full rounded-lg border border-stroke py-3 px-5 text-black focus:border-primary"
               />
-              {errors.link && (
-                <p className="text-sm text-red-600">{errors.link[0]}</p>
+              {errors.link && <p className="text-sm text-red-600">{errors.link[0]}</p>}
+            </div>
+
+            {/* Description */}
+            <div className="my-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+              <ReactQuillEditor
+                ref={quillDescRef}
+                value={project.description}
+                onChange={(val) => setProject({ ...project, description: val })}
+                placeholder="Enter description..."
+              />
+              {errors.description && (
+                <p className="text-sm text-red-600">{errors.description[0]}</p>
               )}
             </div>
-          </div>
 
-          {/* Description */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <ReactQuillEditor
-              ref={quillRef}
-              value={description}
-              onChange={setDescription}
-              placeholder="Enter Caption..."
-            />
-            {errors.description && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.description[0]}
-              </p>
-            )}
-          </div>
+            {/* Caption */}
+            <div className="my-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Caption</label>
+              <ReactQuillEditor
+                ref={quillCaptionRef}
+                value={project.caption}
+                onChange={(val) => setProject({ ...project, caption: val })}
+                placeholder="Enter caption..."
+              />
+              {errors.caption && <p className="text-sm text-red-600">{errors.caption[0]}</p>}
+            </div>
 
-          {/* Caption */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700">
-              Caption
-            </label>
-            <ReactQuillEditor
-              ref={quillRef}
-              value={caption}
-              onChange={setCaption}
-              placeholder="Enter Caption..."
-            />
-            {errors.caption && (
-              <p className="text-red-500 text-xs mt-1">{errors.caption[0]}</p>
-            )}
-          </div>
-
-          {/* Buttons */}
-          <div className="flex mt-5.5 items-center space-x-4">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500 focus:outline-none"
-            >
-              <i className="fa-solid fa-save mr-2"></i> Save
-            </button>
-            <button
-              type="reset"
-              onClick={handleReset}
-              className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400 focus:outline-none"
-            >
-              <i className="fa-solid fa-redo mr-2"></i> Reset
-            </button>
-          </div>
-        </form>
+            {/* Buttons */}
+            <div className="flex mt-6 space-x-4">
+              <button
+                type="submit"
+                className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500"
+              >
+                <i className="fa-solid fa-save mr-2"></i> Save
+              </button>
+              <button
+                type="reset"
+                onClick={handleReset}
+                className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400"
+              >
+                <i className="fa-solid fa-redo mr-2"></i> Reset
+              </button>
+            </div>
+          </form>
+        ) : (
+          <p className="text-gray-500">Loading project data...</p>
+        )}
       </div>
     </LayoutAdmin>
   );
