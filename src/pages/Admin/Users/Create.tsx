@@ -1,124 +1,87 @@
-//improt Link, useNavigate
+import { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-//improt useEffect, useState
-import { useEffect, useState } from "react";
-
-//import LayoutAdmiin
-import LayoutAdmin from "../../../layouts/Admin";
-
-//import LayoutAdmiin
-import Api from "../../../services/Api";
-
-//import toast
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
-//import toast
-import Cookies from "js-cookie";
 import { FaArrowLeft, FaUserGear } from "react-icons/fa6";
-import { FaRegSave } from "react-icons/fa";
 import { CiRedo } from "react-icons/ci";
+import { userService, roleService } from "@/services";
+import type { UserForm } from "@/types/user";
+import type { Role } from "@/types/role";
+import { FaRegSave } from "react-icons/fa";
 
 export default function UsersCreate() {
-  // title page
   document.title = "Create User - Desa Digital";
 
-  //navigate
   const navigate = useNavigate();
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [formData, setFormData] = useState<UserForm>({
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+    roles: [],
+  });
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  //define state for form
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [errors, setErrors] = useState([]);
-
-  //token
-  const token = Cookies.get("token");
-
-  //function "fetchDataRoles"
-  const fetchDataRole = async () => {
-    await Api.get(`/api/admin/roles/all`, {
-      //header
-      headers: {
-        //header + Token
-        Authorization: `Bearer ${token}`,
-      },
-    }).then((response) => {
-      //set response data to state "roles"
-      setRoles(response.data.data);
-    });
+  // 🔹 Fetch all roles
+  const fetchRoles = async () => {
+    try {
+      const res = await roleService.getAll(1, "");
+      setRoles(res.items);
+    } catch {
+      toast.error("Failed to load roles");
+    }
   };
 
-  //useEffect
   useEffect(() => {
-    //call function "fetchDataRoles"
-    fetchDataRole();
+    fetchRoles();
   }, []);
 
-  const handleCheckboxChange = (e) => {
-    const { value, checked } = e.target;
-    setSelectedRoles((prev) => {
-      if (checked) {
-        // Add the role if it's not already present
-        return [...new Set([...prev, value])];
-      } else {
-        // Remove the role
-        return prev.filter((role) => role !== value);
-      }
-    });
+  // 🔹 Handle input change
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const storeUser = async (e) => {
+  // 🔹 Handle role checkbox
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      roles: checked ? [...prev.roles, value] : prev.roles.filter((r) => r !== value),
+    }));
+  };
+
+  // 🔹 Handle submit
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setErrors({});
 
-    // Clear any existing errors
-    setErrors([]);
-
-    // Basic frontend validation
-    if (password.length < 3) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        password: ["Password should be at least 3 characters long"],
-      }));
+    if (formData.password && formData.password.length < 3) {
+      setErrors({ password: ["Password must be at least 3 characters"] });
       return;
     }
 
     try {
-      const response = await Api.post(
-        `/api/admin/users`,
-        {
-          name,
-          email,
-          password,
-          password_confirmation: passwordConfirmation,
-          roles: selectedRoles, // Send the selected roles
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Show success message if backend validation passes
-      toast.success(response.data.message, {
-        position: "top-center",
-        duration: 4000,
-      });
+      const res = await userService.create(formData);
+      toast.success(res.message || "User created successfully");
       navigate("/admin/users");
-    } catch (err) {
-      // Handle backend validation errors
-      if (err.response && err.response.data) {
-        setErrors(err.response.data);
-      } else {
-        toast.error("An error occurred while creating the user", {
-          position: "top-center",
-          duration: 4000,
-        });
-      }
+    } catch (err: any) {
+      setErrors(err.response?.data || {});
     }
   };
+
+  // 🔹 Reset form
+  const handleReset = () => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+      roles: [],
+    });
+    setErrors({});
+  };
+
   return (
     <LayoutAdmin>
       <main className="p-6 sm:p-10">
@@ -126,12 +89,13 @@ export default function UsersCreate() {
           <div className="mb-5">
             <Link
               to="/admin/users"
-              className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm focus:ring-2 focus:ring-blue-400"
             >
               <FaArrowLeft className="mr-2" />
               Back
             </Link>
           </div>
+
           <div className="bg-white rounded-lg shadow-md border-t-4 border-green-500">
             <div className="p-6">
               <h6 className="font-semibold text-lg text-gray-800 flex items-center mb-4">
@@ -139,141 +103,103 @@ export default function UsersCreate() {
                 Create User
               </h6>
               <hr className="mb-4" />
-              <form onSubmit={storeUser} className="space-y-4">
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Name + Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                    >
-                      Full Name
-                    </label>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
                     <input
                       type="text"
-                      id="name"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter Full Name.."
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter full name"
                     />
-                    {errors.name && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {errors.name[0]}
-                      </div>
-                    )}
+                    {errors.name && <p className="text-red-500 text-xs">{errors.name[0]}</p>}
                   </div>
+
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                    >
-                      Email Address
-                    </label>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
                     <input
                       type="email"
-                      id="email"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter Email Address.."
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter email address"
                     />
-                    {errors.email && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {errors.email[0]}
-                      </div>
-                    )}
+                    {errors.email && <p className="text-red-500 text-xs">{errors.email[0]}</p>}
                   </div>
                 </div>
 
+                {/* Password */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label
-                      htmlFor="password"
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                    >
-                      Password
-                    </label>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
                     <input
                       type="password"
-                      id="password"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter Password.."
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter password"
                     />
                     {errors.password && (
-                      <div className="text-red-500 text-sm mt-1">
-                        {errors.password[0]}
-                      </div>
+                      <p className="text-red-500 text-xs">{errors.password[0]}</p>
                     )}
                   </div>
                   <div>
-                    <label
-                      htmlFor="passwordConfirmation"
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                    >
-                      Password Confirmation
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Confirm Password
                     </label>
                     <input
                       type="password"
-                      id="passwordConfirmation"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={passwordConfirmation}
-                      onChange={(e) => setPasswordConfirmation(e.target.value)}
-                      placeholder="Enter Password Confirmation.."
+                      name="password_confirmation"
+                      value={formData.password_confirmation}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Confirm password"
                     />
                   </div>
                 </div>
 
+                {/* Roles */}
                 <hr className="my-4" />
-                <div className="mb-4">
-                  <label
-                    htmlFor="roles"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Roles *
-                  </label>
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Roles</label>
                   <div className="flex flex-wrap gap-4">
                     {roles.map((role) => (
-                      <div key={role.id} className="flex items-center">
+                      <label key={role.id} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                           value={role.name}
-                          checked={selectedRoles.includes(role.name)}
+                          checked={formData.roles.includes(role.name)}
                           onChange={handleCheckboxChange}
-                          id={`role-${role.id}`}
+                          className="h-4 w-4 text-green-600 border-gray-300 rounded"
                         />
-                        <label
-                          htmlFor={`role-${role.id}`}
-                          className="ml-2 block text-sm text-gray-700"
-                        >
-                          {role.name}
-                        </label>
-                      </div>
+                        <span>{role.name}</span>
+                      </label>
                     ))}
                   </div>
-                  {errors.roles && (
-                    <div className="text-red-500 text-sm mt-1">
-                      {errors.roles[0]}
-                    </div>
-                  )}
+                  {errors.roles && <p className="text-red-500 text-xs">{errors.roles[0]}</p>}
                 </div>
 
-                <div className="flex gap-2">
+                {/* Buttons */}
+                <div className="flex gap-3 mt-6">
                   <button
                     type="submit"
-                    className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                   >
-                    <FaRegSave className="inline mr-2" />
-                    Save
+                    <FaRegSave className="inline mr-2" /> Save
                   </button>
                   <button
-                    type="reset"
-                    className="bg-yellow-500 hover:bg-yellow-700 text-white py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+                    type="button"
+                    onClick={handleReset}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
                   >
-                    <CiRedo className="inline mr-2" />
-                    Reset
+                    <CiRedo className="inline mr-2" /> Reset
                   </button>
                 </div>
               </form>

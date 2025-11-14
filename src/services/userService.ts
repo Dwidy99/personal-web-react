@@ -1,31 +1,56 @@
-// src/services/userService.ts
 import Api from "./Api";
-import type { ApiResponse, PaginatedResponse, ID } from "@/types/common";
-import type { User } from "@/types/user";
+import Cookies from "js-cookie";
+import type { User, UserResponse, UserForm } from "@/types/user";
+import type { ApiResponse, ID } from "@/types/common";
 
-export const userService = {
-    async getUsers(page = 1): Promise<PaginatedResponse<User>> {
-        const res = await Api.get(`/users?page=${page}`);
+const token = Cookies.get("token");
+
+const userService = {
+    async getAll(page = 1, search = "") {
+        const res = await Api.get<ApiResponse<UserResponse>>(`/api/admin/users`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { page, search },
+        });
+
+        const data = res.data.data;
+
+        return {
+            items: data.items || [],
+            pagination: {
+                current_page: data.current_page || 1,
+                per_page: data.per_page || 10,
+                total: data.total || 0,
+            },
+        };
+    },
+
+    async getById(id: ID) {
+        const res = await Api.get<ApiResponse<User>>(`/api/admin/users/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data.data;
+    },
+
+    async create(data: UserForm) {
+        const res = await Api.post<ApiResponse<User>>(`/api/admin/users`, data, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
         return res.data;
     },
 
-    async getUserById(id: ID): Promise<ApiResponse<User>> {
-        const res = await Api.get(`/users/${id}`);
+    async update(id: ID, data: UserForm) {
+        const res = await Api.post<ApiResponse<User>>(
+            `/api/admin/users/${id}`,
+            { ...data, _method: "PUT" },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
         return res.data;
     },
 
-    async createUser(data: Omit<User, "id" | "created_at" | "updated_at">): Promise<ApiResponse<User>> {
-        const res = await Api.post("/users", data);
-        return res.data;
-    },
-
-    async updateUser(id: ID, data: Partial<User>): Promise<ApiResponse<User>> {
-        const res = await Api.put(`/users/${id}`, data);
-        return res.data;
-    },
-
-    async deleteUser(id: ID): Promise<ApiResponse<null>> {
-        const res = await Api.delete(`/users/${id}`);
+    async delete(id: ID) {
+        const res = await Api.delete<ApiResponse<null>>(`/api/admin/users/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
         return res.data;
     },
 };
