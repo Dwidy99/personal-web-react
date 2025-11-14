@@ -1,16 +1,6 @@
-export interface AuthResponse {
-    token: string;
-    user: {
-        id: number;
-        name: string;
-        email: string;
-        role: string;
-    };
-    permissions?: string[];
-}
-
-export interface ValidationErrors {
-    [key: string]: string[] | undefined;
+export interface AuthCredentials {
+    email: string;
+    password: string;
 }
 
 export interface ForgotPasswordPayload {
@@ -24,7 +14,6 @@ export interface ResetPasswordPayload {
     password_confirmation: string;
 }
 
-export interface LoginPayload {
-    email: string;
-    password: string;
+export interface ValidationErrors {
+    [key: string]: string[] | undefined;
 }

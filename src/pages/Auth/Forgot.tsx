@@ -1,21 +1,23 @@
 import { useState, FormEvent } from "react";
-import { NavLink } from "react-router-dom";
 import LayoutAuth from "../../layouts/Auth";
 import toast from "react-hot-toast";
 import { FaEnvelope } from "react-icons/fa6";
-import { authService } from "../../services/authService";
+import { NavLink } from "react-router-dom";
 import { ValidationErrors } from "../../types/auth";
+
+// Service
+import { authService } from "../../services";
 
 export default function ForgotPassword() {
   document.title = "Forgot Password - Admin CMS Portfolio";
 
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     setErrors({});
 
     try {
@@ -23,54 +25,51 @@ export default function ForgotPassword() {
       toast.success(res.message || "Password reset link sent!");
       setEmail("");
     } catch (error: any) {
-      const apiErrors = error.response?.data?.errors;
-      if (apiErrors) setErrors(apiErrors);
-      else toast.error(error.response?.data?.message || "Something went wrong.");
+      setErrors(error.response?.data?.errors || {});
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <LayoutAuth>
-      <div className="flex items-center justify-center">
+      <div className="flex justify-center items-center">
         <div className="w-full max-w-md bg-white rounded-xl shadow-md border-t-4 border-yellow-500 p-6">
-          <h4 className="text-center text-xl font-semibold mb-2 text-gray-800">
-            Forgot Your Password?
-          </h4>
-          <p className="text-center text-gray-500 text-sm mb-6">
+          <h4 className="text-center text-xl font-semibold mb-4">Forgot Password</h4>
+          <p className="text-center text-gray-500 text-sm mb-4">
             Enter your email to receive a reset link.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <div className="relative mt-1">
+              <label className="block text-sm font-medium mb-1">Email Address</label>
+              <div className="relative">
                 <FaEnvelope className="absolute left-3 top-3 text-gray-500" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border py-2 pl-9 pr-3 focus:ring-2 focus:ring-yellow-400"
+                  className="w-full pl-9 border rounded-md py-2"
                   placeholder="Enter your email"
                   required
                 />
               </div>
-              {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email[0]}</p>}
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email[0]}</p>}
             </div>
 
             <div className="flex justify-between items-center">
               <NavLink to="/login" className="text-sm text-blue-600 hover:underline">
-                Back to login
+                Back to Login
               </NavLink>
               <button
                 type="submit"
-                disabled={loading}
-                className={`px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 ${
-                  loading ? "opacity-60 cursor-not-allowed" : ""
+                disabled={isSubmitting}
+                className={`bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 ${
+                  isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                {loading ? "Sending..." : "Send Reset Link"}
+                {isSubmitting ? "Sending..." : "Send Link"}
               </button>
             </div>
           </form>

@@ -1,18 +1,17 @@
-import { Link } from "react-router-dom";
 import LayoutAuth from "../../layouts/Auth";
+import { Link } from "react-router-dom";
 
 export default function Forbidden() {
   return (
     <LayoutAuth>
-      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
-        <img src="/images/no-touch.png" alt="Access Denied" width={200} className="mb-6" />
-        <h2 className="text-2xl font-semibold mb-2 text-white">Access Denied</h2>
-        <p className="text-gray-300 mb-6">You don’t have permission to view this page.</p>
+      <div className="flex flex-col justify-center items-center h-[80vh] text-center">
+        <img src="/images/no-touch.png" alt="Access Denied" width={180} className="mb-6" />
+        <h2 className="text-2xl font-bold text-white mb-3">Access Denied</h2>
         <Link
           to="/admin/dashboard"
-          className="inline-flex items-center bg-yellow-500 text-white py-2 px-6 rounded-lg hover:bg-yellow-600"
+          className="bg-white text-black py-2 px-5 rounded-md font-medium hover:bg-gray-200 transition"
         >
-          <i className="fa fa-long-arrow-alt-left mr-2"></i> Back to Dashboard
+          <i className="fa fa-arrow-left mr-2"></i> Back to Dashboard
         </Link>
       </div>
     </LayoutAuth>
