@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import AccordionItem from "../../../components/general/AccordionItem";
 import SEO from "../../../components/general/SEO";
 import LayoutWeb from "../../../layouts/Web";
+import Loader from "@/components/general/Loader";
 
 export default function AboutPage() {
   const [profile, setProfile] = useState<any>(null);
@@ -57,7 +58,7 @@ export default function AboutPage() {
     return (
       <LayoutWeb>
         <div className="container mt-20 text-center text-gray-600 dark:text-gray-300">
-          Loading profile...
+          <Loader />
         </div>
       </LayoutWeb>
     );

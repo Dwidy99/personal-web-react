@@ -40,7 +40,7 @@ export default function BlogIndex() {
     <LayoutWeb>
       <SEO />
       <section className="container mx-auto px-4 py-10">
-        <h1 className="text-center font-bold text-3xl md:text-5xl mb-10 text-slate-700 dark:text-sky-400">
+        <h1 className="text-center font-bold text-3xl md:text-5xl mb-10 mt-15 text-slate-700 dark:text-sky-400">
           Latest Posts & Topics
         </h1>
 
