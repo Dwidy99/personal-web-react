@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import LayoutWeb from "../../../layouts/Web";
-import LoadingTailwind from "../../../components/general/LoadingTailwind";
 import { publicService } from "../../../services/publicService";
 import CardCategory from "../../../components/general/CardCategory";
 import CardPost from "../../../components/general/CardPost";
@@ -8,6 +7,7 @@ import RandomColors from "../../../utils/RandomColors";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import SEO from "../../../components/general/SEO";
+import Loader from "@/components/general/Loader";
 
 export default function HomePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -38,7 +38,7 @@ export default function HomePage() {
     fetchAll();
   }, []);
 
-  if (loading) return <LoadingTailwind />;
+  if (loading) return <Loader />;
 
   return (
     <LayoutWeb>

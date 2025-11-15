@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import CardProjects from "../../../components/general/CardProjects";
 import SEO from "../../../components/general/SEO";
-import LoadingTailwind from "../../../components/general/LoadingTailwind";
 
 // Service
 import { publicService } from "../../../services/";
+import Loader from "@/components/general/Loader";
 
 export default function ProjectsIndex() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -54,7 +54,7 @@ export default function ProjectsIndex() {
 
         {/* Projects Grid */}
         {loading ? (
-          <LoadingTailwind />
+          <Loader />
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : projects.length > 0 ? (

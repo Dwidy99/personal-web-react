@@ -69,7 +69,7 @@ import Home from "../pages/Web/Home/Index";
 // import Blogs
 import BlogsIndex from "../pages/Web/Post/Index";
 import BlogsShow from "../pages/Web/Post/Show";
-import CategoryPostsIndex from "../pages/Web/Post/CategoryPostsIndex";
+import CategoryPostsIndex from "../pages/Web/Post/PostByCategory";
 // import About
 import AboutIndex from "../pages/Web/About/Index";
 // import Projects

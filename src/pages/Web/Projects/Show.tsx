@@ -2,11 +2,11 @@ import { useEffect, useState, useCallback } from "react";
 import LayoutWeb from "../../../layouts/Web";
 import { publicService } from "../../../services/publicService";
 import { Link, useParams } from "react-router-dom";
-import LoadingTailwind from "../../../components/general/LoadingTailwind";
 import { FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
 import formatDate from "../../../utils/Date";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML";
+import Loader from "@/components/general/Loader";
 
 export default function ProjectShow() {
   const [project, setProject] = useState<any>(null);
@@ -35,7 +35,7 @@ export default function ProjectShow() {
     return (
       <LayoutWeb>
         <div className="container mx-auto px-4 py-20">
-          <LoadingTailwind />
+          <Loader />
         </div>
       </LayoutWeb>
     );

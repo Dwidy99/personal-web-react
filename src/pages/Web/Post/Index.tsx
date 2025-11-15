@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import LayoutWeb from "../../../layouts/Web";
-import LoadingTailwind from "../../../components/general/LoadingTailwind";
 import { publicService } from "../../../services/publicService";
 import CardCategory from "../../../components/general/CardCategory";
 import RandomColors from "../../../utils/RandomColors";
 import CardPost from "../../../components/general/CardPost";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
+import Loader from "@/components/general/Loader";
 
 export default function BlogIndex() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -34,7 +34,7 @@ export default function BlogIndex() {
     fetchData();
   }, []);
 
-  if (loading) return <LoadingTailwind />;
+  if (loading) return <Loader />;
 
   return (
     <LayoutWeb>

@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import LayoutWeb from "../../../layouts/Web";
 import { Link, useParams } from "react-router-dom";
-import LoadingTailwind from "../../../components/general/LoadingTailwind";
 import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
 import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
@@ -10,6 +9,7 @@ import ContentRenderer from "../../../components/general/SanitizedHTML";
 
 // Service
 import { publicService } from "../../../services";
+import Loader from "@/components/general/Loader";
 
 export default function BlogShow() {
   const [post, setPost] = useState<any>(null);
@@ -39,7 +39,7 @@ export default function BlogShow() {
     fetchData();
   }, [fetchData]);
 
-  if (loading) return <LoadingTailwind />;
+  if (loading) return <Loader />;
 
   if (!post) {
     return (
