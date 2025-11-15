@@ -6,7 +6,7 @@ import type { ApiResponse } from "@/types/common";
 import type { Project } from "@/types/project";
 
 interface ProjectsCreateProps {
-  fetchData: () => Promise<void>;
+  fetchData?: () => Promise<void>;
 }
 
 export default function ProjectsCreate({ fetchData }: ProjectsCreateProps) {
@@ -37,7 +37,7 @@ export default function ProjectsCreate({ fetchData }: ProjectsCreateProps) {
       toast.success(res.message || "Project created successfully!", {
         position: "top-center",
       });
-      fetchData();
+      fetchData?.(); // ✅ safe optional call
       handleReset();
     } catch (err: any) {
       setErrors(err.response?.data || {});

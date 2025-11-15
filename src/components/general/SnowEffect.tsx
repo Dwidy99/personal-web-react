@@ -1,41 +1,60 @@
 import { useRef, useEffect } from "react";
-import PropTypes from "prop-types";
 
-const SnowEffect = ({ snowSpeedFactor = 1 }) => {
-  // snowSpeedFactor untuk kontrol kecepatan
-  const canvasRef = useRef(null);
-  const snowflakesRef = useRef([]);
-  const animationRef = useRef(null);
+// ==== Types ====
+interface SnowEffectProps {
+  /** Mengatur kecepatan jatuhnya salju (default: 1) */
+  snowSpeedFactor?: number;
+}
+
+interface Snowflake {
+  x: number;
+  y: number;
+  opacity: number;
+  speedX: number;
+  speedY: number;
+  radius: number;
+}
+
+// ==== Komponen utama ====
+export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JSX.Element {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const snowflakesRef = useRef<Snowflake[]>([]);
+  const animationRef = useRef<number | null>(null);
 
   const PARTICLE_COUNT = window.innerWidth > 768 ? 100 : 50;
 
-  const createSnowflakes = () => {
-    const snowflakes = [];
+  // Membuat partikel salju awal
+  const createSnowflakes = (): void => {
+    const snowflakes: Snowflake[] = [];
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       snowflakes.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
         opacity: Math.random(),
-        speedX: (Math.random() * 1 - 0.5) * snowSpeedFactor, // Menggunakan snowSpeedFactor
-        speedY: (Math.random() * 1 + 0.5) * snowSpeedFactor, // Menggunakan snowSpeedFactor
+        speedX: (Math.random() * 1 - 0.5) * snowSpeedFactor,
+        speedY: (Math.random() * 1 + 0.5) * snowSpeedFactor,
         radius: Math.random() * 2 + 1,
       });
     }
     snowflakesRef.current = snowflakes;
   };
 
-  const drawSnowflakes = (ctx) => {
+  // Menggambar partikel salju
+  const drawSnowflakes = (ctx: CanvasRenderingContext2D): void => {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     ctx.beginPath();
+
     snowflakesRef.current.forEach((flake) => {
       ctx.moveTo(flake.x, flake.y);
       ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2, true);
     });
+
     ctx.fillStyle = "rgba(205, 205, 205, 0.8)";
     ctx.fill();
   };
 
-  const updateSnowflakes = () => {
+  // Memperbarui posisi partikel salju
+  const updateSnowflakes = (): void => {
     snowflakesRef.current = snowflakesRef.current.map((flake) => {
       let newX = flake.x + flake.speedX;
       let newY = flake.y + flake.speedY;
@@ -44,6 +63,7 @@ const SnowEffect = ({ snowSpeedFactor = 1 }) => {
         newY = 0;
         newX = Math.random() * window.innerWidth;
       }
+
       if (newX > window.innerWidth) newX = 0;
       else if (newX < 0) newX = window.innerWidth;
 
@@ -51,12 +71,15 @@ const SnowEffect = ({ snowSpeedFactor = 1 }) => {
     });
   };
 
-  const animateSnow = () => {
+  // Loop animasi salju
+  const animateSnow = (): void => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
 
-    const animate = () => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const animate = (): void => {
       drawSnowflakes(ctx);
       updateSnowflakes();
       animationRef.current = requestAnimationFrame(animate);
@@ -65,6 +88,7 @@ const SnowEffect = ({ snowSpeedFactor = 1 }) => {
     animate();
   };
 
+  // Inisialisasi efek salju
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -75,7 +99,7 @@ const SnowEffect = ({ snowSpeedFactor = 1 }) => {
     createSnowflakes();
     animateSnow();
 
-    const handleResize = () => {
+    const handleResize = (): void => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       createSnowflakes();
@@ -85,9 +109,7 @@ const SnowEffect = ({ snowSpeedFactor = 1 }) => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, []);
 
@@ -98,11 +120,4 @@ const SnowEffect = ({ snowSpeedFactor = 1 }) => {
       style={{ pointerEvents: "none" }}
     ></canvas>
   );
-};
-
-// Validasi propTypes
-SnowEffect.propTypes = {
-  snowSpeedFactor: PropTypes.number, // Mengatur kecepatan salju (default = 1)
-};
-
-export default SnowEffect;
+}

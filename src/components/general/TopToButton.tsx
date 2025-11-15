@@ -1,40 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 
-const TopToButton = () => {
-  const toTopRef = useRef(null); // Reference for the to-top button
-  const [isVisible, setIsVisible] = useState(false); // State to toggle visibility of the button
+export default function TopToButton(): JSX.Element | null {
+  const toTopRef = useRef<HTMLButtonElement | null>(null);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  // Handle scroll to toggle "to-top" button visibility
+  // Handle scroll to toggle visibility
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = (): void => {
       const scrollTop = window.scrollY;
-      if (scrollTop > 200) {
-        // Show button after scrolling 200px
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(scrollTop > 200); // tampil setelah scroll > 200px
     };
 
     window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  return (
-    isVisible && (
-      <button
-        ref={toTopRef}
-        id="to-top"
-        className="fixed bottom-6 right-6 p-3 bg-primary text-white rounded-full shadow-lg transition-all duration-300 ease-in-out"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      >
-        ↑
-      </button>
-    )
-  );
-};
+  // Return null jika belum visible
+  if (!isVisible) return null;
 
-export default TopToButton;
+  return (
+    <button
+      ref={toTopRef}
+      id="to-top"
+      className="fixed bottom-6 right-6 p-3 bg-primary text-white rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-primary/80 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Scroll to top"
+    >
+      ↑
+    </button>
+  );
+}

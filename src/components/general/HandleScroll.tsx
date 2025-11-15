@@ -1,11 +1,14 @@
-// src/components/general/HandleScroll.tsx
-import { useEffect } from "react";
-import PropTypes from "prop-types";
+import { useEffect, RefObject } from "react";
 
-const HandleScroll = ({ setIsFixed, toTopRef }) => {
+interface HandleScrollProps {
+  setIsFixed: (value: boolean) => void;
+  toTopRef: RefObject<HTMLElement>;
+}
+
+export default function HandleScroll({ setIsFixed, toTopRef }: HandleScrollProps): null {
   useEffect(() => {
-    const handleScroll = () => {
-      const header = document.querySelector("header");
+    const handleScroll = (): void => {
+      const header = document.querySelector<HTMLElement>("header");
       if (!header) return;
 
       const fixedNav = header.offsetTop;
@@ -37,12 +40,4 @@ const HandleScroll = ({ setIsFixed, toTopRef }) => {
   }, [setIsFixed, toTopRef]);
 
   return null;
-};
-
-HandleScroll.propTypes = {
-  setIsFixed: PropTypes.func.isRequired,
-  toTopRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) })
-    .isRequired,
-};
-
-export default HandleScroll;
+}

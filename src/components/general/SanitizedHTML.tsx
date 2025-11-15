@@ -1,14 +1,30 @@
 import { Suspense, lazy } from "react";
-import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 import LoadingTailwind from "./LoadingTailwind";
 
 // Lazy load ReactQuill
 const ReactQuill = lazy(() => import("react-quill"));
 
-// SanitizedHTML Component
-const SanitizedHTML = ({ html, className }) => {
-  const sanitizedHtml = DOMPurify.sanitize(html || "", {
+// ===== Types =====
+interface SanitizedHTMLProps {
+  html?: string;
+  className?: string;
+}
+
+interface QuillViewerProps {
+  content: string;
+  className?: string;
+}
+
+interface ContentRendererProps {
+  content?: string;
+  className?: string;
+  isQuillContent?: boolean;
+}
+
+// ===== SanitizedHTML Component =====
+const SanitizedHTML = ({ html = "", className = "" }: SanitizedHTMLProps): JSX.Element => {
+  const sanitizedHtml = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
     ALLOWED_TAGS: [
       "h1",
@@ -64,12 +80,12 @@ const SanitizedHTML = ({ html, className }) => {
   );
 };
 
-// QuillViewer Component
-const QuillViewer = ({ content, className }) => (
+// ===== QuillViewer Component =====
+const QuillViewer = ({ content, className = "" }: QuillViewerProps): JSX.Element => (
   <Suspense fallback={<LoadingTailwind />}>
     <ReactQuill
       value={content}
-      readOnly={true}
+      readOnly
       modules={{ toolbar: false }}
       formats={[
         "header",
@@ -92,21 +108,19 @@ const QuillViewer = ({ content, className }) => (
   </Suspense>
 );
 
-// Main ContentRenderer Component
-const ContentRenderer = ({ content, className, isQuillContent = false }) => {
-  const isQuill = isQuillContent || content?.includes("ql-editor");
+// ===== Main ContentRenderer Component =====
+const ContentRenderer = ({
+  content = "",
+  className = "",
+  isQuillContent = false,
+}: ContentRendererProps): JSX.Element => {
+  const isQuill = isQuillContent || content.includes("ql-editor");
 
   return isQuill ? (
     <QuillViewer content={content} className={className} />
   ) : (
     <SanitizedHTML html={content} className={className} />
   );
-};
-
-ContentRenderer.propTypes = {
-  content: PropTypes.string,
-  className: PropTypes.string,
-  isQuillContent: PropTypes.bool,
 };
 
 export default ContentRenderer;

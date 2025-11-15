@@ -1,9 +1,31 @@
-import PropTypes from "prop-types";
 import { useRef, useEffect, useState } from "react";
 
-const AccordionItem = ({ exp, isOpen, onClick, index, formatDate }) => {
-  const contentRef = useRef(null);
-  const [height, setHeight] = useState(0);
+interface Experience {
+  image: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  description?: string;
+  highlights?: string[];
+}
+
+interface AccordionItemProps {
+  exp: Experience;
+  isOpen: boolean;
+  onClick: (index: number) => void;
+  index: number;
+  formatDate: (date: string) => string;
+}
+
+export default function AccordionItem({
+  exp,
+  isOpen,
+  onClick,
+  index,
+  formatDate,
+}: AccordionItemProps): JSX.Element {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>(0);
 
   useEffect(() => {
     if (isOpen && contentRef.current) {
@@ -31,21 +53,21 @@ const AccordionItem = ({ exp, isOpen, onClick, index, formatDate }) => {
               height={48}
               loading="lazy"
               decoding="async"
-              className="object-contain h-10 w-10 p-1" // Adjusted size with padding
+              className="object-contain h-10 w-10 p-1"
               onError={(e) => {
-                e.target.src = "/placeholder-image.svg"; // Fallback image
+                const target = e.currentTarget as HTMLImageElement;
+                target.src = "/placeholder-image.svg";
               }}
             />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              {exp.name}
-            </h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{exp.name}</h3>
             <p className="text-sm text-gray-500">
               {formatDate(exp.start_date)} - {formatDate(exp.end_date)}
             </p>
           </div>
         </div>
+
         <span
           className="text-gray-500 ml-2 transition-transform duration-200"
           aria-hidden="true"
@@ -70,7 +92,8 @@ const AccordionItem = ({ exp, isOpen, onClick, index, formatDate }) => {
               dangerouslySetInnerHTML={{ __html: exp.description }}
             />
           )}
-          {exp.highlights?.length > 0 && (
+
+          {exp.highlights && exp.highlights.length > 0 && (
             <ul className="list-disc ml-5 space-y-2 mt-4 text-gray-600 dark:text-gray-400 pb-3">
               {exp.highlights.map((item, i) => (
                 <li key={i} className="leading-relaxed">
@@ -83,21 +106,4 @@ const AccordionItem = ({ exp, isOpen, onClick, index, formatDate }) => {
       </div>
     </div>
   );
-};
-
-AccordionItem.propTypes = {
-  exp: PropTypes.shape({
-    image: PropTypes.string,
-    name: PropTypes.string,
-    start_date: PropTypes.string,
-    end_date: PropTypes.string,
-    description: PropTypes.string,
-    highlights: PropTypes.arrayOf(PropTypes.string),
-  }).isRequired,
-  isOpen: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
-  formatDate: PropTypes.func.isRequired,
-};
-
-export default AccordionItem;
+}

@@ -1,12 +1,24 @@
-import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 import { Link } from "react-router-dom";
+import { ReactNode, PropsWithChildren } from "react";
+
+interface CardProjectsProps {
+  title?: string;
+  description?: string;
+  caption?: string;
+  image?: string;
+  link?: string;
+  children?: ReactNode;
+}
 
 /**
  * Helper untuk cek apakah link eksternal
  */
-const isExternalLink = (url) => /^https?:\/\//i.test(url);
+const isExternalLink = (url: string): boolean => /^https?:\/\//i.test(url);
 
+/**
+ * CardProjects Component
+ */
 export default function CardProjects({
   title,
   description,
@@ -14,10 +26,12 @@ export default function CardProjects({
   caption,
   link,
   children,
-}) {
-  // 🔹 Tentukan elemen pembungkus gambar berdasarkan jenis link
-  const ImageWrapper = ({ children }) => {
-    if (!link) return children;
+}: CardProjectsProps): JSX.Element {
+  /**
+   * Sub-komponen wrapper untuk gambar
+   */
+  const ImageWrapper = ({ children }: PropsWithChildren): JSX.Element => {
+    if (!link) return <>{children}</>;
 
     if (isExternalLink(link)) {
       return (
@@ -40,6 +54,7 @@ export default function CardProjects({
             src={image}
             alt={title || "Project image"}
             className="w-full h-60 object-cover hover:opacity-90 transition-opacity duration-300"
+            loading="lazy"
           />
         </ImageWrapper>
       )}
@@ -71,12 +86,3 @@ export default function CardProjects({
     </div>
   );
 }
-
-CardProjects.propTypes = {
-  title: PropTypes.string,
-  description: PropTypes.string,
-  caption: PropTypes.string,
-  image: PropTypes.string,
-  link: PropTypes.string,
-  children: PropTypes.node,
-};

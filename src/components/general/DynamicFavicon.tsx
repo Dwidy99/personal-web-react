@@ -1,9 +1,12 @@
 import { useEffect } from "react";
-import PropTypes from "prop-types";
 
-export default function DynamicFavicon({ faviconUrl }) {
+interface DynamicFaviconProps {
+  faviconUrl: string;
+}
+
+export default function DynamicFavicon({ faviconUrl }: DynamicFaviconProps): null {
   useEffect(() => {
-    let link = document.querySelector("link[rel*='icon']");
+    let link = document.querySelector<HTMLLinkElement>("link[rel*='icon']");
     if (!link) {
       link = document.createElement("link");
       link.rel = "icon";
@@ -14,7 +17,3 @@ export default function DynamicFavicon({ faviconUrl }) {
 
   return null;
 }
-
-DynamicFavicon.propTypes = {
-  faviconUrl: PropTypes.string.isRequired,
-};
