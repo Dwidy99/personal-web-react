@@ -4,24 +4,47 @@
 
 @layer base {
   body {
-    @apply font-satoshi font-normal text-base text-body bg-whiten relative z-1;
+    @apply font-satoshi font-normal text-base text-body bg-whiten dark:text-bodydark dark:bg-dark relative z-1;
+  }
+
+  /* Optional: default smooth transition for light/dark mode */
+  html {
+    @apply transition-colors duration-300 ease-in-out;
   }
 }
+
 
 @layer components {
 }
 
 @layer utilities {
-  /* Chrome, Safari and Opera */
+  /* Custom width, height, and margin utilities */
+  .w-4\.5 { width: 1.125rem; }
+  .w-5\.5 { width: 1.375rem; }
+  .w-6\.5 { width: 1.625rem; }
+  .w-7\.5 { width: 1.875rem; }
+  .h-7\.5 { height: 1.875rem; }
+  .mt-22\.5 { margin-top: 5.625rem; }
+
+  /* Shadow custom utilities */
+  .shadow-7 {
+    box-shadow: -5px 0 0 #313D4A, 5px 0 0 #313D4A;
+  }
+
+  .shadow-elevated-8 {
+    @apply shadow-[1px_0_0_#313D4A,_-1px_0_0_#313D4A,_0_1px_0_#313D4A,_0_-1px_0_#313D4A,_0_3px_13px_rgb(0_0_0_/_8%)];
+  }
+
+  /* Scrollbar hide */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-
   .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
+  /* Chat/inbox layout heights */
   .chat-height {
     @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
   }
@@ -29,6 +52,7 @@
     @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
   }
 }
+
 
 /* third-party libraries CSS */
 
@@ -94,7 +118,7 @@
   @apply dark:!border-b-boxdark;
 }
 .flatpickr-calendar {
-  @apply !p-6 dark:!bg-boxdark dark:!text-bodydark dark:!shadow-8 2xsm:!w-auto;
+  @apply !p-6 dark:!bg-boxdark dark:!text-bodydark dark:!shadow-elevated-8 2xsm:!w-auto;
 }
 .flatpickr-day {
   @apply dark:!text-bodydark dark:hover:!border-meta-4 dark:hover:!bg-meta-4;

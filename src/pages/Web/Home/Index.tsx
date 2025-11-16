@@ -26,9 +26,23 @@ export default function HomePage() {
           publicService.getCategories(),
           publicService.getPostsHome(),
         ]);
-        setProfile(profiles[0]);
-        setCategories(cats);
-        setPosts(postsData);
+
+        console.log("postsData:", postsData);
+
+        setProfile(profiles[0] || null);
+        setCategories(Array.isArray(cats) ? cats : []);
+
+        // ✅ Sanitasi data post biar tidak ada undefined/null
+        const safePosts = (Array.isArray(postsData) ? postsData : []).map((post) => ({
+          id: post?.id ?? Math.random(), // fallback ID
+          slug: post?.slug ?? "#",
+          title: post?.title ?? "Untitled Post",
+          content: typeof post?.content === "string" ? post.content : "",
+          category: post?.category ?? null,
+          date: post?.created_at ?? null,
+        }));
+
+        setPosts(safePosts);
       } catch (err: any) {
         toast.error(err.message || "Failed to load home data");
       } finally {
@@ -43,10 +57,10 @@ export default function HomePage() {
   return (
     <LayoutWeb>
       <SEO />
-      <section className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-20 py-10 md:py-16">
+      <section className="container mx-auto px-6 sm:px-6 md:px-8 lg:px-10 xl:px-20 py-10 md:py-16">
         {/* Hero / Headline */}
         <div className="text-center mb-12 md:mb-20">
-          <h1 className="font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight">
+          <h1 className="font-extrabold text-3xl mt-8 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight">
             Hello, folks! <br className="hidden sm:block" /> Discover my stories and creative ideas.
           </h1>
           <p className="mt-4 text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
@@ -143,17 +157,15 @@ export default function HomePage() {
           </div>
 
           {posts.length > 0 ? (
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-              {posts.map((p, i) => (
+            <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+              {posts.map((post) => (
                 <CardPost
-                  key={i}
-                  index={i}
-                  image={p.image}
-                  slug={p.slug}
-                  title={p.title}
-                  category={p.category}
-                  content={p.content}
-                  date={p.created_at}
+                  key={post.id}
+                  date={post.date}
+                  title={post.title}
+                  content={post.content}
+                  slug={post.slug}
+                  category={post.category}
                 />
               ))}
             </ul>

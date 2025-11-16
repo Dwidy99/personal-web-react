@@ -12,15 +12,19 @@ const projectService = {
             params: { page, search },
         });
 
+        // handle dua kemungkinan struktur: data.items atau data.data
+        const dataList = res.data.data.items || res.data.data.data || [];
+
         return {
-            items: res.data.data.items,
+            items: dataList,
             pagination: {
-                current_page: res.data.data.current_page,
-                per_page: res.data.data.per_page,
-                total: res.data.data.total,
+                current_page: res.data.data.current_page || 1,
+                per_page: res.data.data.per_page || 10,
+                total: res.data.data.total || dataList.length,
             },
         };
     },
+
 
     async getById(id: number | string): Promise<Project> {
         const res = await Api.get<ApiResponse<Project>>(`/api/admin/projects/${id}`, {

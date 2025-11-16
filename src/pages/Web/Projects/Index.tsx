@@ -43,11 +43,11 @@ export default function ProjectsIndex() {
       <section className="container mx-auto px-4 sm:px-6 lg:px-10 xl:px-20 py-10 md:py-16">
         {/* Header */}
         <header className="mb-10 text-center md:text-left">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 dark:text-gray-100">
+          <h1 className="text-center font-bold text-3xl mt-16 md:text-5xl mb-10 mt-15 text-slate-700 dark:text-sky-400">
             My Projects
           </h1>
           <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto md:mx-0">
-            A collection of my open-source works, prototypes, and client collaborations.
+            A collection of my open-source works, and prototypes.
           </p>
           <hr className="mt-6 border-gray-200 dark:border-gray-700" />
         </header>

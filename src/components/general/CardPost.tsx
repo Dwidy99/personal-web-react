@@ -1,73 +1,84 @@
 import { Link } from "react-router-dom";
 import { GoArrowRight } from "react-icons/go";
 
-// ✅ Define TypeScript types
 interface Category {
-  name: string;
+  name?: string;
 }
 
 interface CardPostProps {
   index?: number;
-  image?: string;
-  slug: string;
-  title?: string;
-  content: string;
+  slug?: string; // ✅ bahkan slug optional biar gak crash
+  title?: string | null;
+  content?: string | null;
   category?: Category;
-  date: string | Date;
+  date?: string | Date | null;
 }
 
 export default function CardPost({
   index,
-  image,
-  slug,
-  title,
-  content,
+  slug = "#", // ✅ fallback aman
+  title = "Untitled Post",
+  content = "",
   category,
   date,
 }: CardPostProps) {
-  const dateObj = new Date(date);
-  const formattedDate = dateObj.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  // ✅ Aman untuk semua format tanggal
+  let formattedDate = "—";
+  if (date) {
+    const parsed = new Date(date);
+    if (!isNaN(parsed.getTime())) {
+      formattedDate = parsed.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+  }
+
+  // ✅ content aman tanpa substring error
+  const preview =
+    typeof content === "string" && content.trim().length > 0
+      ? content.slice(0, 160)
+      : "No description available.";
 
   return (
-    <li key={index} className="grid grid-cols-3 gap-4 mb-6 sm:flex sm:flex-wrap lg:grid">
-      <div className="flex mb-4 min-w-0 flex-auto">
-        <p className="text-md font-semibold text-gray-500">{formattedDate}</p>
+    <li
+      key={index}
+      className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-x-10 gap-y-4 border-t border-gray-200 dark:border-gray-800 py-8"
+    >
+      {/* Kolom kiri - tanggal */}
+      <div className="text-sm font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest md:text-right">
+        {formattedDate}
       </div>
 
-      <div className="col-span-2 flex flex-col justify-start sm:flex sm:items-start">
-        {/* ✅ optional image */}
-        {image && (
-          <img
-            src={image}
-            alt={title || "Post image"}
-            className="w-full mb-3 rounded-lg object-cover"
-          />
+      {/* Kolom kanan */}
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-sky-600 transition-colors">
+          <Link to={`/blog/${slug}`}>{title}</Link>
+        </h2>
+
+        {category?.name && (
+          <p className="text-xs uppercase tracking-wide text-sky-600 font-medium">
+            {category.name}
+          </p>
         )}
 
-        <span className="font-bold text-lg text-gray-800 dark:text-gray-100 text-left">
-          {title || "Untitled Post"}
-        </span>
-
-        {category && (
-          <span className="text-xs text-blue-600 font-medium mb-2">{category.name}</span>
-        )}
-
-        <span
-          className="text-sm text-gray-600 dark:text-gray-400 text-left"
+        <p
+          className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl"
           dangerouslySetInnerHTML={{
-            __html: `${content.substring(0, 120)}...`,
+            __html: `${preview}...`,
           }}
-        ></span>
+        ></p>
 
-        <p className="mt-1 text-sm font-medium text-right text-blue-600">
-          <Link to={`/blog/${slug}`} className="hover:underline">
-            Read more <GoArrowRight className="inline" />
+        <div>
+          <Link
+            to={`/blog/${slug}`}
+            className="inline-flex items-center text-sm font-semibold text-sky-600 hover:text-sky-700 transition-colors"
+          >
+            Read more
+            <GoArrowRight className="ml-1 text-base" />
           </Link>
-        </p>
+        </div>
       </div>
     </li>
   );

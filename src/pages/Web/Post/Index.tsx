@@ -40,7 +40,7 @@ export default function BlogIndex() {
     <LayoutWeb>
       <SEO />
       <section className="container mx-auto px-4 py-10">
-        <h1 className="text-center font-bold text-3xl md:text-5xl mb-10 mt-15 text-slate-700 dark:text-sky-400">
+        <h1 className="text-center font-bold text-3xl mt-16 md:text-5xl mb-10 mt-15 text-slate-700 dark:text-sky-400">
           Latest Posts & Topics
         </h1>
 
@@ -75,18 +75,17 @@ export default function BlogIndex() {
           <p className="text-gray-500 mb-4">Discover the newest articles and insights.</p>
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {posts.length > 0 ? (
-              posts.map((p, i) => (
-                <CardPost
-                  key={i}
-                  index={i}
-                  image={p.image}
-                  slug={p.slug}
-                  title={p.title}
-                  category={p.category}
-                  content={p.content}
-                  date={p.created_at}
-                />
-              ))
+              <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+                {posts.map((post) => (
+                  <CardPost
+                    key={post.id}
+                    date={post.created_at}
+                    title={post.title}
+                    content={post.content}
+                    slug={post.slug}
+                  />
+                ))}
+              </ul>
             ) : (
               <p className="text-center text-gray-500">No posts available.</p>
             )}

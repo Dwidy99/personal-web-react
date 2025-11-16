@@ -17,12 +17,14 @@ export interface PaginatedResponse<T> {
     message?: string;
     data: {
         current_page?: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-        items: T[];
+        last_page?: number;
+        per_page?: number;
+        total?: number;
+        items?: T[];
+        data?: T[];
     };
 }
+
 
 /**
  * Reusable status type for UI and model states

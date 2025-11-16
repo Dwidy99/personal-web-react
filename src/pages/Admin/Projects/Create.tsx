@@ -37,7 +37,7 @@ export default function ProjectsCreate({ fetchData }: ProjectsCreateProps) {
       toast.success(res.message || "Project created successfully!", {
         position: "top-center",
       });
-      fetchData?.(); // ✅ safe optional call
+      fetchData?.();
       handleReset();
     } catch (err: any) {
       setErrors(err.response?.data || {});
@@ -57,87 +57,110 @@ export default function ProjectsCreate({ fetchData }: ProjectsCreateProps) {
   };
 
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-        <h3 className="font-bold text-black dark:text-white">Add New Project</h3>
+    <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+      {/* Header */}
+      <div className="border-b border-stroke px-4 py-3 sm:px-6 sm:py-4 dark:border-strokedark">
+        <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100">
+          Add New Project
+        </h3>
       </div>
 
-      <div className="flex flex-col gap-5.5 p-6.5">
-        <form ref={formRef} onSubmit={handleSubmit}>
+      {/* Form */}
+      <div className="p-4 sm:p-6 md:p-8 space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
-          <div className="my-2">
-            <label className="mb-2 font-semibold text-black">Title</label>
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              Title
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter title..."
-              className="w-full rounded-lg border border-stroke py-3 px-5 outline-none transition focus:border-primary"
+              placeholder="Enter project title..."
+              className="w-full rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-strokedark dark:text-white dark:placeholder-gray-500"
             />
-            {errors.title && <p className="text-sm text-red-600">{errors.title[0]}</p>}
+            {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title[0]}</p>}
           </div>
 
           {/* Image & Link */}
-          <div className="grid grid-cols-2 gap-4 my-4">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {/* Image */}
             <div>
-              <label className="mb-2 font-semibold text-black">Image</label>
+              <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                Image
+              </label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImage(e.target.files?.[0] || null)}
-                className="w-full cursor-pointer rounded-lg border border-stroke py-3 px-5 file:mr-4 file:border-0 file:bg-whiter file:py-2 file:px-4 focus:border-primary"
+                className="w-full cursor-pointer rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2 hover:file:bg-gray-200 focus:border-primary focus:ring-1 focus:ring-primary dark:border-strokedark dark:text-white dark:file:bg-boxdark-2 dark:hover:file:bg-boxdark"
               />
-              {errors.image && <p className="text-sm text-red-600">{errors.image[0]}</p>}
+              {errors.image && <p className="mt-1 text-sm text-red-500">{errors.image[0]}</p>}
             </div>
+
+            {/* Link */}
             <div>
-              <label className="mb-2 font-semibold text-black">Link</label>
+              <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                Link
+              </label>
               <input
                 type="text"
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                placeholder="Enter project link..."
-                className="w-full rounded-lg border border-stroke py-3 px-5 outline-none transition focus:border-primary"
+                placeholder="https://example.com"
+                className="w-full rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-strokedark dark:text-white dark:placeholder-gray-500"
               />
-              {errors.link && <p className="text-sm text-red-600">{errors.link[0]}</p>}
+              {errors.link && <p className="mt-1 text-sm text-red-500">{errors.link[0]}</p>}
             </div>
           </div>
 
           {/* Description */}
-          <div className="my-4">
-            <label className="mb-2 font-semibold text-black">Description</label>
-            <ReactQuillEditor
-              ref={quillDescRef}
-              value={description}
-              onChange={setDescription}
-              placeholder="Enter description..."
-            />
-            {errors.description && <p className="text-sm text-red-600">{errors.description[0]}</p>}
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              Description
+            </label>
+            <div className="min-h-[160px] sm:min-h-[200px] md:min-h-[240px]">
+              <ReactQuillEditor
+                ref={quillDescRef}
+                value={description}
+                onChange={setDescription}
+                placeholder="Enter project description..."
+              />
+            </div>
+            {errors.description && (
+              <p className="mt-1 text-sm text-red-500">{errors.description[0]}</p>
+            )}
           </div>
 
           {/* Caption */}
-          <div className="my-4">
-            <label className="mb-2 font-semibold text-black">Caption</label>
-            <ReactQuillEditor
-              ref={quillCaptionRef}
-              value={caption}
-              onChange={setCaption}
-              placeholder="Enter caption..."
-            />
-            {errors.caption && <p className="text-sm text-red-600">{errors.caption[0]}</p>}
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              Caption
+            </label>
+            <div className="min-h-[100px] sm:min-h-[160px] md:min-h-[200px]">
+              <ReactQuillEditor
+                ref={quillCaptionRef}
+                value={caption}
+                onChange={setCaption}
+                placeholder="Enter short project caption..."
+              />
+            </div>
+            {errors.caption && <p className="mt-1 text-sm text-red-500">{errors.caption[0]}</p>}
           </div>
 
           {/* Buttons */}
-          <div className="flex mt-5">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
               type="submit"
-              className="mx-2 inline-flex items-center justify-center rounded-md bg-blue-600 py-2 px-6 text-sm font-medium text-white hover:bg-opacity-90"
+              className="flex items-center justify-center rounded-md bg-primary px-5 py-2 text-sm sm:text-base font-medium text-white hover:bg-opacity-90 transition-colors"
             >
               <i className="fa-solid fa-plus mr-2"></i> Add
             </button>
             <button
               type="reset"
               onClick={handleReset}
-              className="mx-2 inline-flex items-center justify-center rounded-md bg-slate-600 py-2 px-6 text-sm font-medium text-white hover:bg-opacity-90"
+              className="flex items-center justify-center rounded-md bg-slate-600 px-5 py-2 text-sm sm:text-base font-medium text-white hover:bg-opacity-90 transition-colors"
             >
               <i className="fa-solid fa-eraser mr-2"></i> Reset
             </button>
