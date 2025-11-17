@@ -56,7 +56,7 @@ module.exports = {
         whiter: "#F5F7FD",
 
         /* 🌙 DARK MODE */
-        dark: "#FFD966",
+        dark: "#8A99AF",
         bodydark: "#AEB7C0",
         bodydark1: "#DEE4EE",
         bodydark2: "#8A99AF",

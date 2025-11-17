@@ -96,3 +96,28 @@ body {
   overflow-y: auto;
   width: 100%;
 }
+
+/* Haluskan rotasi ikon */
+.fa-xmark,
+.fa-bars {
+  transition: transform 0.3s ease;
+}
+
+/* Sembunyikan tombol di desktop */
+@media (min-width: 1024px) {
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+/* Haluskan animasi hamburger */
+.sidebar-toggle span {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Sembunyikan toggle di desktop */
+@media (min-width: 1024px) {
+  .sidebar-toggle {
+    display: none !important;
+  }
+}
