@@ -34,31 +34,38 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   }, [navigate]);
 
   return (
-    <header className="sticky top-0 z-50 flex w-full bg-white drop-shadow-sm dark:bg-boxdark">
-      <div className="flex flex-grow items-center justify-end px-4 py-4 sm:justify-between md:justify-end">
-        <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
+    <header className="sticky top-0 z-50 flex w-full bg-white drop-shadow-sm dark:bg-boxdark transition-all duration-300">
+      <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        {/* === Left Section (Logo + Hamburger) === */}
+        <div className="flex items-center gap-3">
+          {/* Hamburger: visible only on mobile/tablet */}
           <button
             aria-controls="sidebar"
             onClick={(e) => {
               e.stopPropagation();
               setSidebarOpen(!sidebarOpen);
             }}
-            className="rounded-sm border border-stroke bg-white p-1.5 shadow-sm dark:border-strokedark dark:bg-boxdark"
+            className="sidebar-toggle relative z-50 flex h-16 w-16 flex-col items-center justify-center space-y-3.5 rounded-md bg-primary text-white shadow-md hover:bg-primary/90 active:scale-95 transition-all duration-300 lg:hidden"
           >
-            <span className="block h-5.5 w-5.5 cursor-pointer">
-              <span
-                className={`block h-0.5 w-full bg-black dark:bg-white ${
-                  sidebarOpen ? "rotate-45" : ""
-                }`}
-              ></span>
-            </span>
+            <span
+              className={`block h-[4px] w-10 rounded-full bg-white transition-transform duration-300 ease-in-out ${
+                sidebarOpen ? "translate-y-[17px] rotate-45" : ""
+              }`}
+            ></span>
+            <span
+              className={`block h-[4px] w-10 rounded-full bg-white transition-opacity duration-300 ease-in-out ${
+                sidebarOpen ? "opacity-0" : "opacity-100"
+              }`}
+            ></span>
+            <span
+              className={`block h-[4px] w-10 rounded-full bg-white transition-transform duration-300 ease-in-out ${
+                sidebarOpen ? "-translate-y-[17px] -rotate-45" : ""
+              }`}
+            ></span>
           </button>
-
-          <Link to="/" className="block flex-shrink-0 lg:hidden">
-            <img src={LogoIcon} alt="Logo" />
-          </Link>
         </div>
 
+        {/* === Right Section (User dropdown) === */}
         <div className="flex items-center gap-3">
           <DropdownUser logout={logout} user={user} />
         </div>

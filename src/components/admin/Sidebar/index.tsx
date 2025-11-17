@@ -100,34 +100,43 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       lg:static lg:translate-x-0 lg:h-screen lg:w-72
       w-64 sm:w-72 md:w-72`}
     >
-      {/* ===== Header ===== */}
-      <div className="flex items-center justify-between gap-2 px-6 py-4 border-b border-gray-700 lg:py-5">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-strokedark">
         <Link to="/admin/dashboard" className="flex items-center gap-3">
-          <img
-            src="/src/assets/admin/images/logo/logo-icon.svg"
-            alt="Logo"
-            className="w-6 h-6 object-contain"
-          />
-          <span className="text-base md:text-lg font-semibold text-gray-200 truncate max-w-[140px] md:max-w-none">
+          <img src="/src/assets/admin/images/logo/logo-icon.svg" alt="Logo" className="w-6 h-6" />
+          <span className="text-base font-semibold text-gray-300 dark:text-gray-500 truncate">
             Portfolio Admin
           </span>
         </Link>
 
-        {/* Close button for mobile */}
+        {/* Toggle button (mobile only) */}
         <button
+          aria-controls="sidebar"
           ref={trigger}
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-controls="sidebar"
-          aria-expanded={sidebarOpen}
-          className="lg:hidden text-gray-300 hover:text-white"
+          className="relative z-50 flex h-9 w-9 flex-col items-center justify-center space-y-1 rounded-md bg-primary text-white shadow-md hover:bg-primary/90 transition-all duration-300 lg:hidden"
         >
-          <i className="fa-solid fa-xmark text-xl"></i>
+          <span
+            className={`block h-[2px] w-5 bg-white transition-transform duration-300 ease-in-out ${
+              sidebarOpen ? "translate-y-[6px] rotate-45" : ""
+            }`}
+          ></span>
+          <span
+            className={`block h-[2px] w-5 bg-white transition-opacity duration-300 ease-in-out ${
+              sidebarOpen ? "opacity-0" : "opacity-100"
+            }`}
+          ></span>
+          <span
+            className={`block h-[2px] w-5 bg-white transition-transform duration-300 ease-in-out ${
+              sidebarOpen ? "-translate-y-[6px] -rotate-45" : ""
+            }`}
+          ></span>
         </button>
       </div>
 
       {/* ===== Sidebar Content ===== */}
-      <div className="no-scrollbar flex flex-col overflow-y-auto px-6 py-6">
-        <nav className="space-y-6">
+      <div className="flex-1 overflow-y-auto px-5 py-6 no-scrollbar">
+        <nav className="space-y-8">
           {/* === Main Dashboard === */}
           <section>
             <h3 className="my-4 flex items-center text-sm font-semibold text-bodydark2">
@@ -136,7 +145,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <ul className="flex flex-col gap-2 pl-4">
               {hasAnyPermission(["profiles.index"]) && (
                 <li className="flex items-center gap-2">
-                  <ImProfile />
+                  <ImProfile className="text-slate-300" />
                   {renderNavLink("/admin/dashboard", "Dashboard", activeRoute[2] === "dashboard")}
                 </li>
               )}
