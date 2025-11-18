@@ -1,6 +1,12 @@
 body {
-  font-family: 'Quicksand', sans-serif !important;
-  background-color: #e5e5e5 !important;
+  font-family: 'Quicksand', sans-serif;
+  background-color: #e5e5e5;
+}
+
+body.dark {
+  background-color: #1a222c;
+  /* warna sesuai boxdark */
+  color: #f1f5f9;
 }
 
 .border-top-success {
