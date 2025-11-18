@@ -81,24 +81,29 @@ export default function AboutPage() {
 
           {/* Profile Section */}
           <div className="flex flex-col xl:grid xl:grid-cols-3 xl:gap-x-8">
-            <div className="flex flex-col items-center my-10 text-center xl:items-start">
+            {/* === Left Profile Section === */}
+            <div className="flex flex-col items-center my-10 text-center xl:items-start transition-colors duration-300">
               <img
                 src={profile.image}
                 alt={profile.name}
-                className="h-48 w-48 rounded-full object-cover shadow-md"
+                className="h-48 w-48 rounded-full object-cover shadow-md dark:shadow-[0_4px_15px_rgba(56,189,248,0.15)] transition-all duration-300"
               />
-              <h3 className="pt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <h3 className="pt-4 text-2xl font-bold text-gray-900 dark:text-gray-100 transition-colors duration-300">
                 {profile.name}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400">{profile.title}</p>
+              <p className="text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                {profile.title}
+              </p>
+
+              {/* Social Contacts */}
               <ul className="flex flex-wrap justify-center gap-2 mt-4">
                 {contacts.map((c, i) => (
                   <li key={i}>
-                    <a href={c.link} target="_blank" rel="noopener noreferrer">
+                    <a href={c.link} target="_blank" rel="noopener noreferrer" className="group">
                       <img
                         src={c.image}
                         alt={c.name}
-                        className="w-10 h-10 rounded-full hover:scale-105 transition-all"
+                        className="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm group-hover:scale-110 transition-transform duration-300 ease-in-out"
                       />
                     </a>
                   </li>
@@ -106,18 +111,30 @@ export default function AboutPage() {
               </ul>
             </div>
 
-            {/* About Content */}
-            <div className="xl:col-span-2 mt-10 xl:mt-0 prose dark:prose-invert">
-              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+            {/* === About / Content Section === */}
+            <div className="xl:col-span-2 mt-10 xl:mt-0 prose dark:prose-invert max-w-none transition-colors duration-300">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white transition-colors duration-300">
                 Hello! 👋 I'm {profile.name}
               </h2>
-              <div dangerouslySetInnerHTML={{ __html: profile.about }} />
-              <h2 className="text-3xl font-bold mt-6 mb-4">Why this blog?</h2>
-              <div dangerouslySetInnerHTML={{ __html: profile.description }} />
 
-              <h2 className="text-3xl font-bold mt-8 mb-3">Career Journey</h2>
+              <div
+                className="text-gray-700 dark:text-gray-300 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: profile.about }}
+              />
+
+              <h2 className="text-3xl font-bold mt-6 mb-4 text-gray-900 dark:text-white">
+                Why this blog?
+              </h2>
+              <div
+                className="text-gray-700 dark:text-gray-300 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: profile.description }}
+              />
+
+              <h2 className="text-3xl font-bold mt-8 mb-3 text-gray-900 dark:text-white">
+                Career Journey
+              </h2>
               {loading.experiences ? (
-                <p>Loading experiences...</p>
+                <p className="text-gray-500 dark:text-gray-400">Loading experiences...</p>
               ) : (
                 experiences.map((exp, i) => (
                   <AccordionItem
@@ -131,8 +148,13 @@ export default function AboutPage() {
                 ))
               )}
 
-              <h2 className="text-3xl font-bold mt-8 mb-3">Tech Stack</h2>
-              <div dangerouslySetInnerHTML={{ __html: profile.tech_description }} />
+              <h2 className="text-3xl font-bold mt-8 mb-3 text-gray-900 dark:text-white">
+                Tech Stack
+              </h2>
+              <div
+                className="text-gray-700 dark:text-gray-300 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: profile.tech_description }}
+              />
             </div>
           </div>
         </div>
