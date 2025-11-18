@@ -67,7 +67,7 @@ export default function AboutPage() {
   return (
     <LayoutWeb>
       <SEO />
-      <main className="container mx-auto px-4 mt-20 mb-10">
+      <main className="container mx-auto px-4 my-25">
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {/* Title Section */}
           <div className="space-y-3 pb-8 text-center md:text-left">
@@ -80,8 +80,8 @@ export default function AboutPage() {
           </div>
 
           {/* Profile Section */}
-          <div className="flex flex-col xl:grid xl:grid-cols-3 xl:gap-x-8 mt-8">
-            <div className="flex flex-col items-center text-center xl:items-start">
+          <div className="flex flex-col xl:grid xl:grid-cols-3 xl:gap-x-8">
+            <div className="flex flex-col items-center my-10 text-center xl:items-start">
               <img
                 src={profile.image}
                 alt={profile.name}

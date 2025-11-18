@@ -115,18 +115,16 @@ export default function HomePage() {
 
         {/* Categories */}
         <section className="mb-16 lg:mb-24">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 text-center md:text-left">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-gray-200">
-                Popular Tags
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mt-1">
-                Most loved topics from my readers.
-              </p>
-            </div>
+          <div className="text-center mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-gray-200">
+              Popular Tags
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mt-1">
+              Most loved topics from my readers.
+            </p>
           </div>
 
-          <div className="flex flex-wrap justify-center md:justify-start gap-3 sm:gap-4 md:gap-5">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5">
             {categories.length > 0 ? (
               categories.map((cat, i) => (
                 <CardCategory
