@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "rollup": "4.21.0",
     "@lottiefiles/dotlottie-react": "^0.13.0",
     "@tailwindcss/typography": "^0.5.16",
     "axios": "^1.7.7",
