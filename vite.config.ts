@@ -9,7 +9,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ["@rollup/rollup-linux-x64-gnu"], // skip native binary
+  },
   build: {
+    target: "esnext",
     chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
