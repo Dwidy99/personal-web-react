@@ -96,15 +96,37 @@ export default function AboutPage() {
               </p>
 
               {/* Social Contacts */}
-              <ul className="flex flex-wrap justify-center gap-2 mt-4">
+              {/* Social Contacts */}
+              <ul className="flex flex-wrap justify-center gap-3 mt-4">
                 {contacts.map((c, i) => (
                   <li key={i}>
-                    <a href={c.link} target="_blank" rel="noopener noreferrer" className="group">
+                    <a
+                      href={c.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative inline-block"
+                    >
                       <img
                         src={c.image}
                         alt={c.name}
-                        className="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm group-hover:scale-110 transition-transform duration-300 ease-in-out"
+                        className="
+            w-10 h-10 rounded-full 
+            border border-gray-200 dark:border-gray-700 
+            shadow-sm dark:bg-gray-3 dark:shadow-[0_0_10px_rgba(56,189,248,0.1)] 
+            group-hover:scale-110 
+            transition-all duration-300 ease-in-out 
+            dark:group-hover:shadow-[0_0_20px_rgba(56,189,248,0.3)]
+          "
                       />
+                      {/* Optional: subtle glow ring */}
+                      <span
+                        className="
+            absolute inset-0 rounded-full 
+            ring-0 group-hover:ring-2 
+            ring-sky-400/50 dark:ring-sky-500/40 
+            transition-all duration-300
+          "
+                      ></span>
                     </a>
                   </li>
                 ))}
