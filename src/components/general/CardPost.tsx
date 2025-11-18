@@ -7,7 +7,7 @@ interface Category {
 
 interface CardPostProps {
   index?: number;
-  slug?: string; // ✅ bahkan slug optional biar gak crash
+  slug?: string;
   title?: string | null;
   content?: string | null;
   category?: Category;
@@ -16,13 +16,13 @@ interface CardPostProps {
 
 export default function CardPost({
   index,
-  slug = "#", // ✅ fallback aman
+  slug = "#",
   title = "Untitled Post",
   content = "",
   category,
   date,
 }: CardPostProps) {
-  // ✅ Aman untuk semua format tanggal
+  // ✅ Format tanggal aman
   let formattedDate = "—";
   if (date) {
     const parsed = new Date(date);
@@ -35,24 +35,19 @@ export default function CardPost({
     }
   }
 
-  // ✅ content aman tanpa substring error
+  // ✅ Preview aman
   const preview =
     typeof content === "string" && content.trim().length > 0
       ? content.slice(0, 160)
       : "No description available.";
 
   return (
-    <li
+    <div
       key={index}
-      className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-x-10 gap-y-4 border-t border-gray-200 dark:border-gray-800 py-8"
+      className="flex flex-col md:flex-row justify-between gap-6 border-t border-gray-200 dark:border-gray-800 py-8 transition-all duration-300 hover:bg-gray-50 dark:hover:bg-boxdark/40 rounded-lg px-4"
     >
-      {/* Kolom kiri - tanggal */}
-      <div className="text-sm font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest md:text-right">
-        {formattedDate}
-      </div>
-
-      {/* Kolom kanan */}
-      <div className="space-y-2">
+      {/* ====== Konten utama ====== */}
+      <div className="flex-2 space-y-2 order-2">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-sky-600 transition-colors">
           <Link to={`/blog/${slug}`}>{title}</Link>
         </h2>
@@ -80,6 +75,11 @@ export default function CardPost({
           </Link>
         </div>
       </div>
-    </li>
+
+      {/* ====== Kolom tanggal ====== */}
+      <div className="text-sm font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest text-left md:text-left order-1 md:ml-8 flex-shrink-0">
+        {formattedDate}
+      </div>
+    </div>
   );
 }
