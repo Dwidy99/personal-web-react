@@ -57,7 +57,7 @@ export default function HomePage() {
   return (
     <LayoutWeb>
       <SEO />
-      <section className="container mx-auto px-6 sm:px-6 md:px-8 lg:px-10 xl:px-20 py-10 md:py-16">
+      <section className="container mx-auto my-5 px-6 py-12 md:px-8 lg:px-10 xl:px-20 md:py-16">
         {/* Hero / Headline */}
         <div className="text-center mb-12 md:mb-20">
           <h1 className="font-extrabold text-3xl mt-8 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight">
