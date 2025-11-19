@@ -42,8 +42,8 @@ export default function ProjectsIndex() {
       <SEO />
       <section className="container mx-auto px-4 sm:px-6 lg:px-10 xl:px-20 py-10 md:py-16">
         {/* Header */}
-        <header className="mb-10 text-center md:text-left">
-          <h1 className="text-center font-bold text-3xl mt-16 md:text-5xl mb-10 mt-15 text-slate-700 dark:text-sky-400">
+        <header className="text-center md:text-left">
+          <h1 className="text-center font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
             My Projects
           </h1>
           <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto md:mx-0">

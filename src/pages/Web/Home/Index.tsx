@@ -60,7 +60,7 @@ export default function HomePage() {
       <section className="container mx-auto my-5 px-6 py-12 md:px-8 lg:px-10 xl:px-20 md:py-16">
         {/* Hero / Headline */}
         <div className="text-center mb-12 md:mb-20">
-          <h1 className="font-extrabold text-3xl mt-8 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight">
+          <h1 className="font-extrabold text-3xl mt-24 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight mb-4">
             Hello, folks! <br className="hidden sm:block" /> Discover my stories and creative ideas.
           </h1>
           <p className="mt-4 text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">

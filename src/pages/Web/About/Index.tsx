@@ -67,11 +67,11 @@ export default function AboutPage() {
   return (
     <LayoutWeb>
       <SEO />
-      <main className="container mx-auto px-4 my-25">
+      <main className="container mx-auto px-6 sm:px-8 md:px-10 my-25">
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {/* Title Section */}
           <div className="space-y-3 pb-8 text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-sky-400">
               About Me
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-base">
