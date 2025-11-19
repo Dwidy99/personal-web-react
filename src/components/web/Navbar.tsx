@@ -24,7 +24,7 @@ export default function Navbar(): JSX.Element {
     <>
       {/* Navbar */}
       <header
-        className={`w-full my-4 fixed top-0 left-0 transition-all duration-300 shadow-lg ${
+        className={`w-full my-4 fixed top-0 left-0 transition-all duration-300 shadow-md dark:shadow-slate-700/40 ${
           isFixed ? "bg-transparent navbar-fixed dark:bg-transparent" : ""
         }`}
       >
@@ -74,7 +74,7 @@ export default function Navbar(): JSX.Element {
                     <li className="group">
                       <Link
                         to="/blog"
-                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-300"
+                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
                       >
                         Blog
                       </Link>
@@ -82,7 +82,7 @@ export default function Navbar(): JSX.Element {
                     <li className="group">
                       <Link
                         to="/projects"
-                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-300"
+                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
                       >
                         Projects
                       </Link>
@@ -90,7 +90,7 @@ export default function Navbar(): JSX.Element {
                     <li className="group">
                       <Link
                         to="/about"
-                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-300"
+                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
                       >
                         About
                       </Link>
@@ -99,7 +99,7 @@ export default function Navbar(): JSX.Element {
                     {/* Dark Mode Toggle */}
                     <li className="mt-1 items-center pl-8 lg:mt-0">
                       <div className="flex items-center">
-                        <span className="mr-2 text-sm text-slate-500 dark:text-slate-200">
+                        <span className="mr-2 text-sm text-slate-500 dark:text-slate-500">
                           <IoSunnySharp />
                         </span>
 
@@ -118,7 +118,7 @@ export default function Navbar(): JSX.Element {
                           </div>
                         </label>
 
-                        <span className="ml-2 text-sm text-slate-500 dark:text-slate-200">
+                        <span className="ml-2 text-sm text-slate-500 dark:text-slate-500">
                           <BsMoonStarsFill />
                         </span>
                       </div>
