@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML";
 
-// Service
 import { publicService } from "../../../services";
 import Loader from "@/components/general/Loader";
 
@@ -23,7 +22,7 @@ export default function BlogShow() {
     try {
       setLoading(true);
       const [detail, allPosts] = await Promise.all([
-        publicService.getPostBySlug?.(slug), // we’ll add this below
+        publicService.getPostBySlug?.(slug),
         publicService.getPostsHome(),
       ]);
       setPost(detail);
@@ -44,12 +43,12 @@ export default function BlogShow() {
   if (!post) {
     return (
       <LayoutWeb>
-        <div className="container text-center py-20">
+        <main className="container text-center py-20">
           <h1 className="text-2xl font-bold text-red-500">Post not found</h1>
-          <Link to="/blog" className="text-blue-600 hover:underline mt-4 inline-block">
+          <a href="/blog" className="text-blue-600 hover:underline mt-4 inline-block">
             Back to Blog
-          </Link>
-        </div>
+          </a>
+        </main>
       </LayoutWeb>
     );
   }
@@ -57,12 +56,13 @@ export default function BlogShow() {
   return (
     <LayoutWeb disableSnow>
       <SEO title={post.title} description={post.excerpt} />
-      <div className="container mx-auto px-4 mt-10 md:mt-16 lg:mt-22.5">
-        <div className="lg:grid lg:grid-cols-3 gap-8">
-          {/* Post Content */}
-          <div className="lg:col-span-2">
-            <article className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-6 text-gray-700 dark:text-gray-200">
-              <div className="flex flex-wrap gap-5 mb-4 text-sm text-gray-500 dark:text-gray-400">
+
+      <main className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
+        <div className="lg:grid pt-12 lg:grid-cols-3 gap-8">
+          {/* Article */}
+          <article className="lg:col-span-2">
+            <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-6 text-gray-700 dark:text-gray-200">
+              <header className="flex flex-wrap gap-5 mb-4 text-sm text-gray-500 dark:text-gray-400">
                 {post.user && (
                   <span>
                     <FaUserEdit className="inline mr-1" />
@@ -73,7 +73,7 @@ export default function BlogShow() {
                   <FaCalendarAlt className="inline mr-1" />
                   {formatDate(new Date(post.created_at))}
                 </span>
-              </div>
+              </header>
 
               <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
                 {post.title}
@@ -88,22 +88,23 @@ export default function BlogShow() {
                 </Link>
               )}
 
-              <div className="mt-6 prose dark:prose-invert max-w-none">
+              <section className="mt-6 prose dark:prose-invert max-w-none">
                 <ContentRenderer content={post.content} isQuillContent />
-              </div>
-            </article>
-          </div>
+              </section>
+            </div>
+          </article>
 
           {/* Sidebar */}
           <aside className="lg:col-span-1 mt-10 lg:mt-0">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
                 Recent Articles
               </h2>
+
               <div className="space-y-4">
                 {relatedPosts.length > 0 ? (
                   relatedPosts.map((p, i) => (
-                    <div key={i} className="flex items-center gap-3">
+                    <article key={i} className="flex items-center gap-3">
                       <img
                         src={p.image}
                         alt={p.title}
@@ -119,16 +120,16 @@ export default function BlogShow() {
                           {p.created_at && formatDate(new Date(p.created_at))}
                         </p>
                       </div>
-                    </div>
+                    </article>
                   ))
                 ) : (
                   <p className="text-gray-500">No other posts.</p>
                 )}
               </div>
-            </div>
+            </section>
           </aside>
         </div>
-      </div>
+      </main>
     </LayoutWeb>
   );
 }

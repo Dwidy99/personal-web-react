@@ -40,29 +40,24 @@ export default function ProjectsIndex() {
     <LayoutWeb>
       <SEO />
 
-      {/* Main Wrapper */}
-      <main className="container mx-auto px-6 sm:px-8 lg:px-10 xl:px-20 py-10 md:py-16">
-        {/* Page Header Section */}
+      <main className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
         <header className="text-center md:text-left">
-          <h1 className="text-center font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
+          <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
             My Projects
           </h1>
-
           <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto md:mx-0">
             A collection of my open-source works, and prototypes.
           </p>
-
           <hr className="mt-6 border-gray-200 dark:border-gray-700" />
         </header>
 
-        {/* Project Grid Section */}
         <section className="mt-10">
           {loading ? (
             <Loader />
           ) : error ? (
             <p className="text-center text-red-500">{error}</p>
           ) : projects.length > 0 ? (
-            <article className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {projects.map((project, i) => (
                 <CardProjects
                   key={i}
@@ -77,7 +72,7 @@ export default function ProjectsIndex() {
                   </p>
                 </CardProjects>
               ))}
-            </article>
+            </div>
           ) : (
             <p className="text-center text-gray-500 dark:text-gray-400 mt-10">
               No projects available.

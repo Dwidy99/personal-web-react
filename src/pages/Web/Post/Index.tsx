@@ -42,25 +42,21 @@ export default function BlogIndex() {
     <LayoutWeb>
       <SEO />
 
-      {/* Main Wrapper */}
-      <main className="container mx-auto px-6 sm:px-8 md:px-10 py-10">
-        {/* Page Header */}
+      <main className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
         <header className="text-center">
           <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
             Latest Posts & Topics
           </h1>
         </header>
 
-        {/* Categories Section */}
+        {/* Categories */}
         <section className="mb-16">
-          <header>
-            <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">
-              Popular Tags
-            </h2>
-            <p className="text-gray-500 mb-4">Browse by category and explore diverse ideas.</p>
-          </header>
+          <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">
+            Popular Tags
+          </h2>
+          <p className="text-gray-500 mb-4">Browse by category and explore diverse ideas.</p>
 
-          <nav className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4">
             {categories.length > 0 ? (
               categories.map((cat, i) => (
                 <CardCategory
@@ -74,35 +70,31 @@ export default function BlogIndex() {
             ) : (
               <p className="text-gray-500">No categories found.</p>
             )}
-          </nav>
+          </div>
         </section>
 
-        {/* Posts Section */}
+        {/* Posts list */}
         <section>
-          <header>
-            <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">
-              Recent Posts
-            </h2>
-            <p className="text-gray-500 mb-4">Discover the newest articles and insights.</p>
-          </header>
+          <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">
+            Recent Posts
+          </h2>
+          <p className="text-gray-500 mb-4">Discover the newest articles and insights.</p>
 
-          <article>
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {posts.length > 0 ? (
-              <ul className="divide-y divide-gray-200 dark:divide-gray-800">
-                {posts.map((post) => (
-                  <CardPost
-                    key={post.id}
-                    date={post.created_at}
-                    title={post.title}
-                    content={post.content}
-                    slug={post.slug}
-                  />
-                ))}
-              </ul>
+              posts.map((post) => (
+                <CardPost
+                  key={post.id}
+                  date={post.created_at}
+                  title={post.title}
+                  content={post.content}
+                  slug={post.slug}
+                />
+              ))
             ) : (
               <p className="text-center text-gray-500">No posts available.</p>
             )}
-          </article>
+          </ul>
         </section>
       </main>
     </LayoutWeb>

@@ -56,9 +56,8 @@ export default function HomePage() {
     <LayoutWeb>
       <SEO />
 
-      {/* Main Wrapper */}
-      <main className="container mx-auto my-5 px-6 py-12 md:px-8 lg:px-10 xl:px-20 md:py-16">
-        {/* Hero Section */}
+      <main className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
+        {/* Hero */}
         <header className="text-center mb-12 md:mb-20">
           <h1 className="font-extrabold text-3xl mt-24 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight mb-4">
             Hello, folks! <br className="hidden sm:block" /> Discover my stories and creative ideas.
@@ -71,16 +70,14 @@ export default function HomePage() {
         {/* Profile Intro */}
         {profile && (
           <section className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-16 lg:mb-24">
-            {/* Profile Image */}
-            <aside className="flex justify-center order-1 md:order-none">
+            <figure className="flex justify-center order-1 md:order-none">
               <img
                 src={profile.image}
                 alt={profile.name}
                 className="w-full max-w-[380px] sm:max-w-[420px] md:max-w-[480px] rounded-3xl shadow-md hover:shadow-xl transition-shadow duration-300 object-cover"
               />
-            </aside>
+            </figure>
 
-            {/* Profile Text */}
             <article className="space-y-5 text-center md:text-left px-2 sm:px-4">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800 dark:text-gray-100">
                 Hi, I’m <span className="text-sky-600 dark:text-sky-400">{profile.name}</span> —{" "}
@@ -113,7 +110,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Categories Section */}
+        {/* Categories */}
         <section className="mb-16 lg:mb-24">
           <header className="text-center mb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-gray-200">
@@ -143,7 +140,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Recent Posts Section */}
+        {/* Recent Posts */}
         <section>
           <header className="mb-6 text-center md:text-left">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-gray-200">
