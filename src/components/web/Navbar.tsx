@@ -71,7 +71,7 @@ export default function Navbar(): JSX.Element {
                   }`}
                 >
                   <ul className="block lg:flex">
-                    <li className="group">
+                    <li className="group my-2">
                       <Link
                         to="/blog"
                         className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
@@ -79,7 +79,7 @@ export default function Navbar(): JSX.Element {
                         Blog
                       </Link>
                     </li>
-                    <li className="group">
+                    <li className="group my-2">
                       <Link
                         to="/projects"
                         className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
@@ -87,7 +87,7 @@ export default function Navbar(): JSX.Element {
                         Projects
                       </Link>
                     </li>
-                    <li className="group">
+                    <li className="group my-2">
                       <Link
                         to="/about"
                         className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
@@ -97,7 +97,7 @@ export default function Navbar(): JSX.Element {
                     </li>
 
                     {/* Dark Mode Toggle */}
-                    <li className="mt-1 items-center pl-8 lg:mt-0">
+                    <li className="my-4 items-center pl-8 lg:mt-3">
                       <div className="flex items-center">
                         <span className="mr-2 text-sm text-slate-500 dark:text-slate-500">
                           <IoSunnySharp />
