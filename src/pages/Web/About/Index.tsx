@@ -1,3 +1,4 @@
+// Web/About/Index.tsx
 import { useState, useEffect, useCallback } from "react";
 import { publicService } from "../../../services/publicService";
 import toast from "react-hot-toast";
@@ -68,35 +69,35 @@ export default function AboutPage() {
     <LayoutWeb>
       <SEO />
       <main className="container mx-auto px-6 sm:px-8 md:px-10 my-25">
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <section className="divide-y divide-gray-200 dark:divide-gray-700">
           {/* Title Section */}
-          <div className="space-y-3 pb-8 text-center md:text-left">
+          <header className="space-y-3 pb-8 text-center md:text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-sky-400">
               About Me
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-base">
               A closer look into my journey, experiences, and inspirations.
             </p>
-          </div>
+          </header>
 
           {/* Profile Section */}
-          <div className="flex flex-col xl:grid xl:grid-cols-3 xl:gap-x-8">
-            {/* === Left Profile Section === */}
-            <div className="flex flex-col items-center my-10 text-center xl:items-start transition-colors duration-300">
+          <section className="flex flex-col xl:grid xl:grid-cols-3 xl:gap-x-8">
+            {/* Left Profile */}
+            <aside className="flex flex-col items-center my-10 text-center xl:items-start transition-colors duration-300">
               <img
                 src={profile.image}
                 alt={profile.name}
                 className="h-48 w-48 rounded-full object-cover shadow-md dark:shadow-[0_4px_15px_rgba(56,189,248,0.15)] transition-all duration-300"
               />
+
               <h3 className="pt-4 text-2xl font-bold text-gray-900 dark:text-gray-100 transition-colors duration-300">
                 {profile.name}
               </h3>
+
               <p className="text-gray-500 dark:text-gray-400 transition-colors duration-300">
                 {profile.title}
               </p>
 
-              {/* Social Contacts */}
-              {/* Social Contacts */}
               <ul className="flex flex-wrap justify-center gap-3 mt-4">
                 {contacts.map((c, i) => (
                   <li key={i}>
@@ -109,34 +110,19 @@ export default function AboutPage() {
                       <img
                         src={c.image}
                         alt={c.name}
-                        className="
-            w-10 h-10 rounded-full 
-            border border-gray-200 dark:border-gray-700 
-            shadow-sm dark:bg-gray-3 dark:shadow-[0_0_10px_rgba(56,189,248,0.1)] 
-            group-hover:scale-110 
-            transition-all duration-300 ease-in-out 
-            dark:group-hover:shadow-[0_0_20px_rgba(56,189,248,0.3)]
-          "
+                        className="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-3 dark:shadow-[0_0_10px_rgba(56,189,248,0.1)] group-hover:scale-110 transition-all duration-300 ease-in-out dark:group-hover:shadow-[0_0_20px_rgba(56,189,248,0.3)]"
                       />
-                      {/* Optional: subtle glow ring */}
-                      <span
-                        className="
-            absolute inset-0 rounded-full 
-            ring-0 group-hover:ring-2 
-            ring-sky-400/50 dark:ring-sky-500/40 
-            transition-all duration-300
-          "
-                      ></span>
+                      <span className="absolute inset-0 rounded-full ring-0 group-hover:ring-2 ring-sky-400/50 dark:ring-sky-500/40 transition-all duration-300" />
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </aside>
 
-            {/* === About / Content Section === */}
-            <div className="xl:col-span-2 mt-10 xl:mt-0 prose dark:prose-invert max-w-none transition-colors duration-300">
-              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white transition-colors duration-300">
-                Hello! 👋 I'm {profile.name}
+            {/* Main About Content */}
+            <article className="xl:col-span-2 mt-10 xl:mt-0 prose dark:prose-invert max-w-none transition-colors duration-300">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+                Hello! I'm {profile.name}
               </h2>
 
               <div
@@ -147,6 +133,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mt-6 mb-4 text-gray-900 dark:text-white">
                 Why this blog?
               </h2>
+
               <div
                 className="text-gray-700 dark:text-gray-300 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: profile.description }}
@@ -155,6 +142,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mt-8 mb-3 text-gray-900 dark:text-white">
                 Career Journey
               </h2>
+
               {loading.experiences ? (
                 <p className="text-gray-500 dark:text-gray-400">Loading experiences...</p>
               ) : (
@@ -173,13 +161,14 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mt-8 mb-3 text-gray-900 dark:text-white">
                 Tech Stack
               </h2>
+
               <div
                 className="text-gray-700 dark:text-gray-300 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: profile.tech_description }}
               />
-            </div>
-          </div>
-        </div>
+            </article>
+          </section>
+        </section>
       </main>
     </LayoutWeb>
   );

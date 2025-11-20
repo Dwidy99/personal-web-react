@@ -1,3 +1,4 @@
+// Web/Home/Index.tsx
 import { useEffect, useState } from "react";
 import LayoutWeb from "../../../layouts/Web";
 import { publicService } from "../../../services/publicService";
@@ -27,14 +28,11 @@ export default function HomePage() {
           publicService.getPostsHome(),
         ]);
 
-        console.log("postsData:", postsData);
-
         setProfile(profiles[0] || null);
         setCategories(Array.isArray(cats) ? cats : []);
 
-        // ✅ Sanitasi data post biar tidak ada undefined/null
         const safePosts = (Array.isArray(postsData) ? postsData : []).map((post) => ({
-          id: post?.id ?? Math.random(), // fallback ID
+          id: post?.id ?? Math.random(),
           slug: post?.slug ?? "#",
           title: post?.title ?? "Untitled Post",
           content: typeof post?.content === "string" ? post.content : "",
@@ -57,31 +55,33 @@ export default function HomePage() {
   return (
     <LayoutWeb>
       <SEO />
-      <section className="container mx-auto my-5 px-6 py-12 md:px-8 lg:px-10 xl:px-20 md:py-16">
-        {/* Hero / Headline */}
-        <div className="text-center mb-12 md:mb-20">
+
+      {/* Main Wrapper */}
+      <main className="container mx-auto my-5 px-6 py-12 md:px-8 lg:px-10 xl:px-20 md:py-16">
+        {/* Hero Section */}
+        <header className="text-center mb-12 md:mb-20">
           <h1 className="font-extrabold text-3xl mt-24 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-slate-700 dark:text-sky-400 leading-tight tracking-tight mb-4">
             Hello, folks! <br className="hidden sm:block" /> Discover my stories and creative ideas.
           </h1>
           <p className="mt-4 text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Explore thoughts, projects, and reflections — all in one digital space.
           </p>
-        </div>
+        </header>
 
         {/* Profile Intro */}
         {profile && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-16 lg:mb-24">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center mb-16 lg:mb-24">
             {/* Profile Image */}
-            <div className="flex justify-center order-1 md:order-none">
+            <aside className="flex justify-center order-1 md:order-none">
               <img
                 src={profile.image}
                 alt={profile.name}
                 className="w-full max-w-[380px] sm:max-w-[420px] md:max-w-[480px] rounded-3xl shadow-md hover:shadow-xl transition-shadow duration-300 object-cover"
               />
-            </div>
+            </aside>
 
             {/* Profile Text */}
-            <div className="space-y-5 text-center md:text-left px-2 sm:px-4">
+            <article className="space-y-5 text-center md:text-left px-2 sm:px-4">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800 dark:text-gray-100">
                 Hi, I’m <span className="text-sky-600 dark:text-sky-400">{profile.name}</span> —{" "}
                 {profile.caption}
@@ -92,7 +92,7 @@ export default function HomePage() {
                 dangerouslySetInnerHTML={{ __html: profile.content }}
               />
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mt-6 font-medium text-gray-700 dark:text-gray-300">
+              <nav className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mt-6 font-medium text-gray-700 dark:text-gray-300">
                 <Link to="/blog" className="hover:underline hover:text-sky-600 transition-colors">
                   📝 Writings
                 </Link>
@@ -108,21 +108,21 @@ export default function HomePage() {
                 <Link to="/about" className="hover:underline hover:text-sky-600 transition-colors">
                   💼 Career
                 </Link>
-              </div>
-            </div>
-          </div>
+              </nav>
+            </article>
+          </section>
         )}
 
-        {/* Categories */}
+        {/* Categories Section */}
         <section className="mb-16 lg:mb-24">
-          <div className="text-center mb-6">
+          <header className="text-center mb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-gray-200">
               Popular Tags
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mt-1">
               Most loved topics from my readers.
             </p>
-          </div>
+          </header>
 
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5">
             {categories.length > 0 ? (
@@ -143,16 +143,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Recent Posts */}
+        {/* Recent Posts Section */}
         <section>
-          <div className="mb-6 text-center md:text-left">
+          <header className="mb-6 text-center md:text-left">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-gray-200">
               Recent Posts
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mt-1">
               Latest insights and thoughts.
             </p>
-          </div>
+          </header>
 
           {posts.length > 0 ? (
             <ul className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -173,7 +173,7 @@ export default function HomePage() {
             </p>
           )}
         </section>
-      </section>
+      </main>
     </LayoutWeb>
   );
 }
