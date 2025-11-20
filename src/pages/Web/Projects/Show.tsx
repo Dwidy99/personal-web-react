@@ -58,8 +58,8 @@ export default function ProjectShow() {
     <LayoutWeb disableSnow>
       <SEO title={project.title} description={project.caption || project.description} />
 
-      <main className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
-        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10">
+      <main className="container mx-auto px-6 pt-10 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
+        <article className="bg-white mt-10 dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10">
           <header className="mb-6">
             <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400">
               <FaCalendarAlt className="inline" />
