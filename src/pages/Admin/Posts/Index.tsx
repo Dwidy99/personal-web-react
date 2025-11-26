@@ -2,7 +2,6 @@ import { useEffect, useState, ChangeEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
 import { Link } from "react-router-dom";
 import Pagination from "../../../components/general/Pagination";
-import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
 import hasAnyPermissions from "../../../utils/Permissions";
 import { postService } from "../../../services/postService";
@@ -10,6 +9,7 @@ import { Post, PaginationMeta } from "../../../types/post";
 import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
+import { confirmAlert } from "react-confirm-alert";
 
 export default function PostsIndex() {
   document.title = "Posts - My Portfolio";

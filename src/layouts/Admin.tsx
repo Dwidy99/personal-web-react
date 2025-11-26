@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/admin/Header";
 import Sidebar from "@/components/admin/Sidebar";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
