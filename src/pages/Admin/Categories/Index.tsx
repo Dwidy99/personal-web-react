@@ -52,9 +52,13 @@ export default function CategoriesIndex() {
         {
           label: "YES",
           onClick: async () => {
+            setCategories((prev) => prev.filter((p) => p.id !== id));
+
             await categoryService.delete(id);
+
             toast.success("Category deleted successfully!");
-            fetchData(pagination.current_page);
+
+            fetchData(pagination.current_page, keywords);
           },
         },
         { label: "NO" },
@@ -66,7 +70,7 @@ export default function CategoriesIndex() {
     <LayoutAdmin>
       <div className="rounded-lg border bg-white p-6 shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-xl font-semibold">Category List</h4>
+          <h4 className="text-xl mx-6 font-semibold">Category List</h4>
           {hasAnyPermissions(["categories.create"]) && (
             <Link
               to="/admin/categories/create"

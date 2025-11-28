@@ -18,10 +18,13 @@ export interface UserForm {
     roles: string[];
 }
 
-export interface UserResponse {
+
+export interface UserPagination {
     current_page: number;
-    last_page?: number;
     per_page: number;
     total: number;
-    items: User[];
+    data: User[];
 }
+
+export interface UserResponse extends UserPagination { }
+

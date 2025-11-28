@@ -55,12 +55,19 @@ export default function RolesIndex() {
         {
           label: "Yes",
           onClick: async () => {
+            setRoles((prev) => prev.filter((item) => item.id !== id));
+
             try {
               const res = await roleService.delete(id);
               toast.success(res.message || "Role deleted");
-              fetchData(pagination.currentPage, keywords);
-            } catch {
-              toast.error("Failed to delete role");
+
+              setTimeout(() => {
+                fetchData(pagination.currentPage ?? 1, keywords);
+              }, 0);
+            } catch (error: any) {
+              toast.error(error?.response?.data?.message || "Failed to delete role");
+
+              fetchData(pagination.currentPage ?? 1, keywords);
             }
           },
         },
@@ -118,7 +125,7 @@ export default function RolesIndex() {
                     {role.permissions.map((p) => (
                       <span
                         key={p.id}
-                        className="inline-block bg-primary bg-opacity-10 text-primary text-xs px-3 py-1 rounded-full m-1"
+                        className="inline-block bg-primary bg-opacity-10 text-slate-600 text-xs px-3 py-1 rounded-full m-1"
                       >
                         {p.name}
                       </span>

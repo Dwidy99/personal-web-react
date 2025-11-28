@@ -76,7 +76,7 @@ export default function ExperiencesCreate() {
       toast.success(res.data.message, { position: "top-center" });
       navigate("/admin/experiences");
     } catch (err: any) {
-      setErrors(err.response?.data || {});
+      setErrors(err.response?.data?.errors || {});
     }
   };
 

@@ -50,8 +50,12 @@ export default function PostsIndex() {
         {
           label: "YES",
           onClick: async () => {
+            setPosts((prev) => prev.filter((p) => p.id !== id));
+
             await postService.delete(id);
+
             toast.success("Post deleted successfully!");
+
             fetchData(pagination.current_page, keywords);
           },
         },
@@ -64,7 +68,7 @@ export default function PostsIndex() {
     <LayoutAdmin>
       <div className="rounded-lg border bg-white shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-xl font-semibold">Posts List</h4>
+          <h4 className="text-xl mx-6 font-semibold">Posts List</h4>
           {hasAnyPermissions(["posts.create"]) && (
             <Link
               to="/admin/posts/create"

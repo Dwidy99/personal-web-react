@@ -3,26 +3,29 @@ import Cookies from "js-cookie";
 import type { Role, RoleResponse, RoleForm } from "@/types/role";
 import type { ApiResponse, ID } from "@/types/common";
 
-const token = Cookies.get("token");
-
 const roleService = {
     async getAll(page = 1, search = "") {
-        const res = await Api.get<ApiResponse<RoleResponse>>(`/api/admin/roles`, {
+        const token = Cookies.get("token");
+
+        const res = await Api.get(`/api/admin/roles`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page, search },
         });
-        const data = res.data.data;
+
+        const data = res.data.data; // backend "data"
+
         return {
-            items: data.items || [],
+            items: data.data || [],                 // array of roles
             pagination: {
-                current_page: data.current_page || 1,
-                per_page: data.per_page || 10,
-                total: data.total || 0,
-            },
+                current_page: data.current_page,
+                per_page: data.per_page,
+                total: data.total,
+            }
         };
     },
 
     async getById(id: ID) {
+        const token = Cookies.get("token"); // ✔ always fresh
         const res = await Api.get<ApiResponse<Role>>(`/api/admin/roles/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -30,6 +33,7 @@ const roleService = {
     },
 
     async create(data: RoleForm) {
+        const token = Cookies.get("token"); // ✔ always fresh
         const res = await Api.post<ApiResponse<Role>>(`/api/admin/roles`, data, {
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -37,6 +41,7 @@ const roleService = {
     },
 
     async update(id: ID, data: RoleForm) {
+        const token = Cookies.get("token"); // ✔ always fresh
         const res = await Api.post<ApiResponse<Role>>(
             `/api/admin/roles/${id}`,
             { ...data, _method: "PUT" },
@@ -46,6 +51,7 @@ const roleService = {
     },
 
     async delete(id: ID) {
+        const token = Cookies.get("token"); // ✔ always fresh
         const res = await Api.delete<ApiResponse<null>>(`/api/admin/roles/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });

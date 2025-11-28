@@ -61,12 +61,24 @@ export default function ProjectsIndex() {
         {
           label: "Yes",
           onClick: async () => {
+            // (optimistic update)
+            setProjects((prev) => prev.filter((item) => item.id !== id));
+
             try {
+              // API delete
               const res = await projectService.delete(id);
+
               toast.success(res.message || "Project deleted successfully");
-              fetchData(pagination.currentPage, keywords);
+
+              // (new state)
+              setTimeout(() => {
+                fetchData(pagination.currentPage ?? 1, keywords);
+              }, 0);
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Failed to delete project");
+              toast.error(error?.response?.data?.message || "Failed to delete project");
+
+              //  Restore data (opsional but best practice)
+              fetchData(pagination.currentPage ?? 1, keywords);
             }
           },
         },

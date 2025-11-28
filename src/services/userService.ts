@@ -3,28 +3,29 @@ import Cookies from "js-cookie";
 import type { User, UserResponse, UserForm } from "@/types/user";
 import type { ApiResponse, ID } from "@/types/common";
 
-const token = Cookies.get("token");
-
 const userService = {
     async getAll(page = 1, search = "") {
+        const token = Cookies.get("token");
+
         const res = await Api.get<ApiResponse<UserResponse>>(`/api/admin/users`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page, search },
         });
 
-        const data = res.data.data;
+        const pagination = res.data.data;
 
         return {
-            items: data.items || [],
+            items: pagination.data || [],
             pagination: {
-                current_page: data.current_page || 1,
-                per_page: data.per_page || 10,
-                total: data.total || 0,
+                current_page: pagination.current_page,
+                per_page: pagination.per_page,
+                total: pagination.total,
             },
         };
     },
 
     async getById(id: ID) {
+        const token = Cookies.get("token");
         const res = await Api.get<ApiResponse<User>>(`/api/admin/users/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -32,6 +33,7 @@ const userService = {
     },
 
     async create(data: UserForm) {
+        const token = Cookies.get("token");
         const res = await Api.post<ApiResponse<User>>(`/api/admin/users`, data, {
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -39,6 +41,7 @@ const userService = {
     },
 
     async update(id: ID, data: UserForm) {
+        const token = Cookies.get("token");
         const res = await Api.post<ApiResponse<User>>(
             `/api/admin/users/${id}`,
             { ...data, _method: "PUT" },
@@ -48,6 +51,7 @@ const userService = {
     },
 
     async delete(id: ID) {
+        const token = Cookies.get("token");
         const res = await Api.delete<ApiResponse<null>>(`/api/admin/users/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });

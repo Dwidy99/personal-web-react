@@ -120,7 +120,7 @@ export default function ProjectsCreate({ fetchData }: ProjectsCreateProps) {
             <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
               Description
             </label>
-            <div className="min-h-[160px] sm:min-h-[200px] md:min-h-[240px]">
+            <div className="min-h-[160px] sm:min-h-[200px] md:min-h-[100px]">
               <ReactQuillEditor
                 ref={quillDescRef}
                 value={description}
@@ -138,7 +138,7 @@ export default function ProjectsCreate({ fetchData }: ProjectsCreateProps) {
             <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
               Caption
             </label>
-            <div className="min-h-[100px] sm:min-h-[160px] md:min-h-[200px]">
+            <div className="min-h-[100px] sm:min-h-[160px] md:min-h-[100px]">
               <ReactQuillEditor
                 ref={quillCaptionRef}
                 value={caption}

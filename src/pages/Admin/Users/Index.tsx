@@ -54,12 +54,23 @@ export default function UsersIndex() {
         {
           label: "Yes",
           onClick: async () => {
+            // 1️⃣ Optimistic update: immediately remove the user from UI
+            setUsers((prev) => prev.filter((item) => item.id !== id));
+
             try {
+              // 2️⃣ Perform API delete request
               await userService.delete(id);
+
               toast.success("User deleted successfully");
-              fetchData();
-            } catch {
+
+              // 3️⃣ Refresh data to ensure pagination and count remain accurate
+              setTimeout(() => {
+                fetchData(pagination.currentPage ?? 1, keywords);
+              }, 0);
+            } catch (error) {
+              // 4️⃣ Rollback (restore data) if the delete request fails
               toast.error("Failed to delete user");
+              fetchData(pagination.currentPage ?? 1, keywords);
             }
           },
         },
@@ -97,56 +108,66 @@ export default function UsersIndex() {
           </div>
         </div>
 
-        <table className="w-full text-left border-collapse border border-stroke">
+        <table className="w-full table-auto border border-stroke rounded-lg overflow-hidden">
           <thead className="bg-gray-200">
-            <tr>
-              <th className="border p-2">No.</th>
-              <th className="border p-2">Full Name</th>
-              <th className="border p-2">Email</th>
-              <th className="border p-2">Roles</th>
-              <th className="border p-2 text-center">Actions</th>
+            <tr className="text-left">
+              <th className="border p-3 w-[5%] text-center">No.</th>
+              <th className="border p-3 w-[25%]">Full Name</th>
+              <th className="border p-3 w-[30%]">Email</th>
+              <th className="border p-3 w-[25%]">Roles</th>
+              <th className="border p-3 w-[15%] text-center">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {users.length > 0 ? (
               users.map((user, index) => (
-                <tr key={user.id}>
-                  <td className="border p-2 text-center">
+                <tr key={user.id} className="hover:bg-gray-50 transition">
+                  <td className="border p-3 text-center font-medium">
                     {index + 1 + (pagination.currentPage - 1) * pagination.perPage}
                   </td>
-                  <td className="border p-2">{user.name}</td>
-                  <td className="border p-2">{user.email}</td>
-                  <td className="border p-2">
-                    {user.roles.map((role) => (
-                      <span
-                        key={role.id}
-                        className="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded mr-1 text-xs"
-                      >
-                        {role.name}
-                      </span>
-                    ))}
+
+                  <td className="border p-3">{user.name}</td>
+
+                  <td className="border p-3">{user.email}</td>
+
+                  <td className="border p-3">
+                    <div className="flex flex-wrap gap-2">
+                      {user.roles.map((role) => (
+                        <span
+                          key={role.id}
+                          className="bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-medium"
+                        >
+                          {role.name}
+                        </span>
+                      ))}
+                    </div>
                   </td>
-                  <td className="border p-2 text-center space-x-2">
-                    <Link
-                      to={`/admin/users/edit/${user.id}`}
-                      className="text-blue-500 hover:text-blue-700"
-                    >
-                      <FaEdit />
-                    </Link>
-                    {hasAnyPermissions(["users.delete"]) && (
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-500 hover:text-red-700"
+
+                  <td className="border p-3 text-center">
+                    <div className="flex justify-center gap-3">
+                      <Link
+                        to={`/admin/users/edit/${user.id}`}
+                        className="text-blue-600 hover:text-blue-800"
                       >
-                        <FaTrash />
-                      </button>
-                    )}
+                        <FaEdit />
+                      </Link>
+
+                      {hasAnyPermissions(["users.delete"]) && (
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-red-500">
+                <td colSpan={5} className="p-6 text-center text-red-500 font-medium">
                   No users found
                 </td>
               </tr>

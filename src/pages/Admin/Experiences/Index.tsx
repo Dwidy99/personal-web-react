@@ -73,7 +73,7 @@ export default function ExperiencesIndex() {
     fetchData(1, value);
   };
 
-  // ✅ Delete handler
+  //  Delete handler
   const deleteExperience = (id: number) => {
     confirmAlert({
       title: "Are you sure?",
@@ -82,14 +82,26 @@ export default function ExperiencesIndex() {
         {
           label: "YES",
           onClick: async () => {
+            // 1️⃣ UI langsung hilang
+            setExperiences((prev) => prev.filter((item) => item.id !== id));
+
             try {
-              const res = await Api.delete(`/api/admin/experiences/${id}`, {
+              // 2️⃣ Delete API
+              await Api.delete(`/api/admin/experiences/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
-              toast.success(res.data.message, { position: "top-center" });
-              fetchData(pagination.currentPage, keywords);
+
+              toast.success("Deleted successfully!");
+
+              // 3️⃣ Sync data ulang dengan state terbaru
+              setTimeout(() => {
+                fetchData(((prev) => prev)(pagination.currentPage) ?? 1, keywords);
+              }, 0);
             } catch (err: any) {
               toast.error(err.response?.data?.message || "Failed to delete");
+
+              // ❗ 4️⃣ Optional: restore data kalau gagal
+              fetchData(pagination.currentPage ?? 1, keywords);
             }
           },
         },

@@ -52,9 +52,13 @@ export default function ContactsIndex() {
         {
           label: "YES",
           onClick: async () => {
+            setContacts((prev) => prev.filter((p) => p.id !== id));
+
             await contactService.delete(id);
-            toast.success("Contact deleted!");
-            fetchData(pagination.current_page);
+
+            toast.success("Contact deleted successfully!");
+
+            fetchData(pagination.current_page, keywords);
           },
         },
         { label: "NO" },
@@ -66,7 +70,7 @@ export default function ContactsIndex() {
     <LayoutAdmin>
       <div className="rounded-lg border bg-white shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-xl font-semibold">Contacts List</h4>
+          <h4 className="text-xl mx-6 font-semibold">Contacts List</h4>
           {hasAnyPermissions(["contacts.create"]) && (
             <Link
               to="/admin/contacts/create"
