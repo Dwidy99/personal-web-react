@@ -9,6 +9,7 @@ import Footer from "@/components/web/Footer";
 import SnowEffect from "@/components/general/SnowEffect";
 import { Helmet } from "react-helmet-async";
 import { useEffect } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 interface WebLayoutProps {
   children: React.ReactNode;
@@ -77,6 +78,7 @@ export default function WebLayout({
               </p>
             </section>
           )}
+          <SpeedInsights />
         </main>
 
         <footer
