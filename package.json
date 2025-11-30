@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "rollup": "4.21.0",
     "@lottiefiles/dotlottie-react": "^0.13.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.7.7",
     "dompurify": "^3.2.6",
     "flowbite": "^3.0.0",
@@ -31,7 +31,8 @@
     "react-icons": "^5.4.0",
     "react-js-pagination": "^3.0.3",
     "react-quill": "^2.0.0",
-    "react-router-dom": "^6.27.0"
+    "react-router-dom": "^6.27.0",
+    "rollup": "4.21.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
