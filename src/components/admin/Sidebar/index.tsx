@@ -4,6 +4,8 @@ import SidebarLinkGroup from "./SidebarLinkGroup";
 import Cookies from "js-cookie";
 import hasAnyPermission from "@/utils/Permissions";
 
+import Logo from "@/assets/admin/images/logo/logo-icon.svg";
+
 import {
   FaBarsProgress,
   FaCircleChevronDown,
@@ -103,7 +105,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-strokedark">
         <Link to="/admin/dashboard" className="flex items-center gap-3">
-          <img src="/src/assets/admin/images/logo/logo-icon.svg" alt="Logo" className="w-6 h-6" />
+          <img src={Logo} alt="Logo" className="w-6 h-6" />
           <span className="text-base font-semibold text-gray-300 dark:text-gray-500 truncate">
             Portfolio Admin
           </span>
