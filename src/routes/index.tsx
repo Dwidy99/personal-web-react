@@ -73,8 +73,8 @@ import CategoryPostsIndex from "../pages/Web/Post/PostByCategory";
 // import About
 import AboutIndex from "../pages/Web/About/Index";
 // import Projects
-import ProjectsHome from "../pages/Web/Projects/Index";
-import ProjectShow from "../pages/Web/Projects/Show";
+import ProjectsHome from "../pages/Web/Project/Index";
+import ProjectShow from "../pages/Web/Project/Show";
 
 export default function RoutesIndex() {
   const [loading, setLoading] = useState<boolean>(true);

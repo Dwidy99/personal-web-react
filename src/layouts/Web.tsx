@@ -1,3 +1,4 @@
+// src/layouts/Web.tsx
 import "@/assets/web/css/index.css";
 import "@/assets/web/css/tailwind.css";
 import "@/assets/web/js/script.js";
@@ -29,7 +30,6 @@ export default function WebLayout({
     pageDescription ||
     "Personal portfolio showcasing projects in web development, React, and Laravel";
 
-  // 🔒 Disable copy, right-click, and text select ONLY on Web
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     const handleCopy = (e: ClipboardEvent) => e.preventDefault();
@@ -49,6 +49,7 @@ export default function WebLayout({
   return (
     <>
       {!disableSnow && <SnowEffect />}
+
       <Helmet>
         <title>{defaultTitle}</title>
         <meta name="description" content={defaultDesc} />
@@ -68,16 +69,20 @@ export default function WebLayout({
         </header>
 
         <main id="main-content" role="main" className="min-h-[calc(100vh-160px)]">
-          {children ?? (
-            <section aria-labelledby="missing-content-heading">
-              <h1 id="missing-content-heading" className="sr-only">
-                Missing Content
-              </h1>
-              <p role="alert" className="text-center py-10 text-gray-500">
-                No content provided.
-              </p>
-            </section>
-          )}
+          {/* 🔹 Global content container & spacing for all Web pages */}
+          <div className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
+            {children ?? (
+              <section aria-labelledby="missing-content-heading">
+                <h1 id="missing-content-heading" className="sr-only">
+                  Missing Content
+                </h1>
+                <p role="alert" className="text-center py-10 text-gray-500">
+                  No content provided.
+                </p>
+              </section>
+            )}
+          </div>
+
           <SpeedInsights />
         </main>
 
