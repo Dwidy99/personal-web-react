@@ -1,7 +1,6 @@
 // src/services/postService.ts
 import Api from "./Api";
 import Cookies from "js-cookie";
-import { Post } from "../types/post";
 
 const token = Cookies.get("token");
 

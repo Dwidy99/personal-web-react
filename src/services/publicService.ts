@@ -2,6 +2,13 @@
 import Api from "./Api";
 import { ApiResponse } from "../types/common";
 
+type PublicPostsResponse<T> = {
+    current_page: number;
+    per_page: number;
+    total: number;
+    data: T[];
+};
+
 // All public-facing API endpoints for the web pages
 export const publicService = {
     getProfiles: async () => {
@@ -29,10 +36,32 @@ export const publicService = {
         return res.data.data;
     },
 
+    getPosts: async (page = 1, perPage = 8) => {
+        const res = await Api.get("/api/public/posts", {
+            params: {
+                page,
+                per_page: perPage, // 🔥 ini WAJIB
+            },
+        });
+
+        const p = res.data.data;
+
+        return {
+            current_page: p.current_page,
+            per_page: p.per_page,
+            total: p.total,
+            data: p.data,
+        };
+    },
+
+
     getPostsByCategory: async (slug: string, page = 1) => {
-        const res = await Api.get(`/api/public/categories/${slug}/posts?page=${page}`);
+        const res = await Api.get(`/api/public/categories/${slug}/posts`, {
+            params: { page },
+        });
         return res.data.data;
     },
+
     getPostBySlug: async (slug: string | undefined) => {
         if (!slug) return null;
         const res = await Api.get(`/api/public/posts/${slug}`);
@@ -47,4 +76,6 @@ export const publicService = {
         const res = await Api.get(`/api/public/projects/${slug}`);
         return res.data.data;
     },
+
+
 };
