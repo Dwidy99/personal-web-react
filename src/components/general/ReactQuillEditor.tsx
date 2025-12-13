@@ -1,34 +1,46 @@
 // src/components/ReactQuillEditor.tsx
-import React, { forwardRef } from "react";
+import React, { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
-import PropTypes from "prop-types";
 import "react-quill/dist/quill.snow.css";
 
-// ✅ Definisikan tipe props
+// ✅ highlight.js (syntax highlighting)
+import hljs from "highlight.js";
+import "highlight.js/styles/atom-one-dark.css"; // 🔥 this makes it look like the demo
+
 interface ReactQuillEditorProps {
   value: string;
   onChange: (content: string) => void;
   placeholder?: string;
 }
 
-// ✅ forwardRef ke instance ReactQuill (bukan HTMLDivElement)
 const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
   ({ value, onChange, placeholder = "Enter text..." }, ref) => {
-    const modules = {
-      toolbar: [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        [{ font: [] }],
-        [{ size: ["small", false, "large", "huge"] }],
-        ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
-        [{ color: [] }, { background: [] }],
-        [{ script: "sub" }, { script: "super" }],
-        [{ list: "ordered" }, { list: "bullet" }],
-        [{ indent: "-1" }, { indent: "+1" }],
-        [{ align: [] }],
-        ["link", "image", "video"],
-        ["clean"],
-      ],
-    };
+    const modules = useMemo(
+      () => ({
+        toolbar: [
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          [{ font: [] }],
+          [{ size: ["small", false, "large", "huge"] }],
+
+          ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
+
+          [{ color: [] }, { background: [] }],
+          [{ script: "sub" }, { script: "super" }],
+          [{ list: "ordered" }, { list: "bullet" }],
+          [{ indent: "-1" }, { indent: "+1" }],
+          [{ align: [] }],
+
+          ["link", "image", "video"],
+          ["clean"],
+        ],
+
+        // ✅ THIS is the key: syntax module
+        syntax: {
+          highlight: (text: string) => hljs.highlightAuto(text).value,
+        },
+      }),
+      []
+    );
 
     const formats = [
       "header",
@@ -52,7 +64,6 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
       "video",
     ];
 
-    // ✅ ref diarahkan langsung ke ReactQuill instance
     return (
       <ReactQuill
         ref={ref}
@@ -67,14 +78,5 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
   }
 );
 
-// ✅ Tambahkan nama komponen
 ReactQuillEditor.displayName = "ReactQuillEditor";
-
-// ✅ Tambahkan prop-types untuk runtime check
-ReactQuillEditor.propTypes = {
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  placeholder: PropTypes.string,
-};
-
 export default ReactQuillEditor;
