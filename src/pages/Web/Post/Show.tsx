@@ -69,79 +69,77 @@ export default function BlogShow() {
     <LayoutWeb disableSnow>
       <SEO title={post.title} description={post.excerpt} />
 
-      <main className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
-        <div className="lg:grid pt-12 lg:grid-cols-3 gap-8">
-          {/* Article */}
-          <article className="lg:col-span-2">
-            <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-6 text-gray-700 dark:text-gray-200">
-              <header className="flex flex-wrap gap-5 mb-4 text-sm text-gray-500 dark:text-gray-400">
-                {post.user && (
-                  <span>
-                    <FaUserEdit className="inline mr-1" />
-                    {post.user.name}
-                  </span>
-                )}
+      <div className="lg:grid pt-12 lg:grid-cols-3 gap-8">
+        {/* Article */}
+        <article className="lg:col-span-2">
+          <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-6 text-gray-700 dark:text-gray-200">
+            <header className="flex flex-wrap gap-5 mb-4 text-sm text-gray-500 dark:text-gray-400">
+              {post.user && (
                 <span>
-                  <FaCalendarAlt className="inline mr-1" />
-                  {formatDate(new Date(post.created_at))}
+                  <FaUserEdit className="inline mr-1" />
+                  {post.user.name}
                 </span>
-              </header>
-
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-                {post.title}
-              </h1>
-
-              {post.category && (
-                <Link
-                  to={`/blog/category/${post.category.slug}`}
-                  className="inline-block bg-gray-700 text-white py-1 px-3 rounded-md hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 mb-4"
-                >
-                  #{post.category.name}
-                </Link>
               )}
+              <span>
+                <FaCalendarAlt className="inline mr-1" />
+                {formatDate(new Date(post.created_at))}
+              </span>
+            </header>
 
-              <section className="mt-6 prose dark:prose-invert max-w-none">
-                <ContentRenderer content={post.content} isQuillContent />
-              </section>
-            </div>
-          </article>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+              {post.title}
+            </h1>
 
-          {/* Sidebar */}
-          <aside className="lg:col-span-1 mt-10 lg:mt-0">
-            <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                Recent Articles
-              </h2>
+            {post.category && (
+              <Link
+                to={`/blog/category/${post.category.slug}`}
+                className="inline-block bg-gray-700 text-white py-1 px-3 rounded-md hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 mb-4"
+              >
+                #{post.category.name}
+              </Link>
+            )}
 
-              <div className="space-y-4">
-                {relatedPosts.length > 0 ? (
-                  relatedPosts.map((p, i) => (
-                    <article key={i} className="flex items-center gap-3">
-                      <img
-                        src={p.image}
-                        alt={p.title}
-                        className="w-20 h-20 object-cover rounded-md"
-                      />
-                      <div>
-                        <Link to={`/blog/${p.slug}`}>
-                          <h3 className="font-medium hover:underline text-gray-800 dark:text-gray-100">
-                            {p.title.length > 40 ? `${p.title.slice(0, 40)}...` : p.title}
-                          </h3>
-                        </Link>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {p.created_at && formatDate(new Date(p.created_at))}
-                        </p>
-                      </div>
-                    </article>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No other posts.</p>
-                )}
-              </div>
+            <section className="mt-6 prose dark:prose-invert max-w-none">
+              <ContentRenderer content={post.content} isQuillContent />
             </section>
-          </aside>
-        </div>
-      </main>
+          </div>
+        </article>
+
+        {/* Sidebar */}
+        <aside className="lg:col-span-1 mt-10 lg:mt-0">
+          <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Recent Articles
+            </h2>
+
+            <div className="space-y-4">
+              {relatedPosts.length > 0 ? (
+                relatedPosts.map((p, i) => (
+                  <article key={i} className="flex items-center gap-3">
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="w-20 h-20 object-cover rounded-md"
+                    />
+                    <div>
+                      <Link to={`/blog/${p.slug}`}>
+                        <h3 className="font-medium hover:underline text-gray-800 dark:text-gray-100">
+                          {p.title.length > 40 ? `${p.title.slice(0, 40)}...` : p.title}
+                        </h3>
+                      </Link>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {p.created_at && formatDate(new Date(p.created_at))}
+                      </p>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="text-gray-500">No other posts.</p>
+              )}
+            </div>
+          </section>
+        </aside>
+      </div>
     </LayoutWeb>
   );
 }

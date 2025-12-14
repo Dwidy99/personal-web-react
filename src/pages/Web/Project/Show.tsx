@@ -70,54 +70,52 @@ export default function ProjectShow() {
     <LayoutWeb disableSnow>
       <SEO title={project.title} description={project.caption || project.description} />
 
-      <main className="container mx-auto px-6 pt-10 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
-        <article className="bg-white mt-10 dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10">
-          <header className="mb-6">
-            <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400">
-              <FaCalendarAlt className="inline" />
-              <span>{formatDate(new Date(project.created_at))}</span>
-            </div>
+      <article className="bg-white mt-10 dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10">
+        <header className="mb-6">
+          <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400">
+            <FaCalendarAlt className="inline" />
+            <span>{formatDate(new Date(project.created_at))}</span>
+          </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold mt-3 text-gray-800 dark:text-gray-100">
-              {project.title}
-            </h1>
+          <h1 className="text-3xl md:text-4xl font-bold mt-3 text-gray-800 dark:text-gray-100">
+            {project.title}
+          </h1>
 
-            {project.link && (
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 mt-3 hover:underline"
-              >
-                Visit Project <FaExternalLinkAlt className="text-sm" />
-              </a>
-            )}
-          </header>
-
-          <section className="prose dark:prose-invert max-w-none">
-            <ContentRenderer content={project.description} isQuillContent />
-          </section>
-
-          {project.image && (
-            <figure className="mt-10">
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full rounded-lg shadow-md object-cover max-h-[480px]"
-              />
-            </figure>
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 mt-3 hover:underline"
+            >
+              Visit Project <FaExternalLinkAlt className="text-sm" />
+            </a>
           )}
-        </article>
+        </header>
 
-        <nav className="text-center mt-10">
-          <Link
-            to="/projects"
-            className="text-blue-600 hover:underline text-sm md:text-base font-medium"
-          >
-            ← Back to Projects
-          </Link>
-        </nav>
-      </main>
+        <section className="prose dark:prose-invert max-w-none">
+          <ContentRenderer content={project.description} isQuillContent />
+        </section>
+
+        {project.image && (
+          <figure className="mt-10">
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full rounded-lg shadow-md object-cover max-h-[480px]"
+            />
+          </figure>
+        )}
+      </article>
+
+      <nav className="text-center mt-10">
+        <Link
+          to="/projects"
+          className="text-blue-600 hover:underline text-sm md:text-base font-medium"
+        >
+          ← Back to Projects
+        </Link>
+      </nav>
     </LayoutWeb>
   );
 }
