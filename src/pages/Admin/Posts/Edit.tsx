@@ -17,6 +17,7 @@ export default function PostEdit() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [loading, setLoading] = useState(true);
@@ -54,12 +55,14 @@ export default function PostEdit() {
       navigate("/admin/posts");
     } catch (err: any) {
       setErrors(err.response?.data || {});
+      toast.error(err?.response?.data?.message || "Failed to update post");
     }
   };
 
   const handleReset = () => {
     formRef.current?.reset();
     setImage(null);
+    setImagePreview("");
     setErrors({});
   };
 
@@ -67,7 +70,7 @@ export default function PostEdit() {
     return (
       <LayoutAdmin>
         <div className="flex justify-center items-center h-96">
-          <p>Loading post data...</p>
+          <p className="text-gray-500">Loading post data...</p>
         </div>
       </LayoutAdmin>
     );
@@ -77,29 +80,36 @@ export default function PostEdit() {
     <LayoutAdmin>
       <Link
         to="/admin/posts"
-        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-lime-400 mb-4"
+        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-5 text-sm font-medium hover:bg-opacity-90 mb-4"
       >
         <i className="fa-solid fa-arrow-left mr-2"></i> Back
       </Link>
 
-      <div className="rounded-lg border bg-white shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Edit Post</h3>
+      <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold mb-6 text-slate-800 dark:text-slate-100">
+          Edit Post
+        </h3>
 
-        <form ref={formRef} onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          {/* Title + Category */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-medium mb-1">Title</label>
+              <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+                Title
+              </label>
               <input
                 type="text"
                 value={post?.title || ""}
                 onChange={(e) => setPost((prev) => prev && { ...prev, title: e.target.value })}
-                className="w-full border rounded-md p-3"
+                className="w-full rounded-lg border border-stroke bg-transparent p-3 text-sm dark:text-white dark:border-strokedark focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              {errors.title && <p className="text-red-500 text-xs">{errors.title[0]}</p>}
+              {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title[0]}</p>}
             </div>
 
             <div>
-              <label className="block font-medium mb-1">Category</label>
+              <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+                Category
+              </label>
               <SelectGroupTwo
                 value={post?.category_id?.toString() || ""}
                 onChange={(val) => setPost((prev) => prev && { ...prev, category_id: Number(val) })}
@@ -107,51 +117,67 @@ export default function PostEdit() {
                 placeholder="-- Select Category --"
               />
               {errors.category_id && (
-                <p className="text-red-500 text-xs">{errors.category_id[0]}</p>
+                <p className="text-red-500 text-xs mt-1">{errors.category_id[0]}</p>
               )}
             </div>
           </div>
 
           {/* Image */}
-          <div className="mb-6">
-            {post?.image && (
-              <img
-                src={post.image}
-                alt={post.title}
-                className="w-24 h-24 object-cover mb-2 rounded-md"
-              />
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              className="w-full border rounded-md p-2 cursor-pointer"
-            />
-            {errors.image && <p className="text-red-500 text-xs">{errors.image[0]}</p>}
+          <div>
+            <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+              Image
+            </label>
+
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
+              {(imagePreview || post?.image) && (
+                <img
+                  src={imagePreview || post?.image}
+                  alt={post?.title}
+                  className="w-28 h-28 rounded-lg object-cover border"
+                />
+              )}
+
+              <div className="w-full">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null;
+                    setImage(file);
+                    setImagePreview(file ? URL.createObjectURL(file) : "");
+                  }}
+                  className="w-full rounded-lg border border-stroke p-2 text-sm cursor-pointer dark:border-strokedark"
+                />
+                {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image[0]}</p>}
+              </div>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="mb-6">
-            <label className="block font-medium mb-1">Content</label>
+          <div>
+            <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+              Content
+            </label>
             <ReactQuillEditor
               ref={quillRef}
               value={post?.content || ""}
               onChange={(val) => setPost((prev) => prev && { ...prev, content: val })}
             />
-            {errors.content && <p className="text-red-500 text-xs">{errors.content[0]}</p>}
+            {errors.content && <p className="text-red-500 text-xs mt-2">{errors.content[0]}</p>}
           </div>
 
-          <div className="flex gap-4">
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500"
+              className="inline-flex items-center justify-center rounded-lg bg-primary text-white py-2 px-6 text-sm font-medium hover:bg-opacity-90"
             >
               <i className="fa-solid fa-save mr-2"></i> Save
             </button>
             <button
               type="reset"
               onClick={handleReset}
-              className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400"
+              className="inline-flex items-center justify-center rounded-lg bg-gray-500 text-white py-2 px-6 text-sm font-medium hover:bg-opacity-90"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset
             </button>

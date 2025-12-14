@@ -18,6 +18,7 @@ export default function PostCreate() {
   const [categoryID, setCategoryID] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -28,6 +29,7 @@ export default function PostCreate() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setImage(file);
+    setImagePreview(file ? URL.createObjectURL(file) : "");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -45,6 +47,7 @@ export default function PostCreate() {
       navigate("/admin/posts");
     } catch (err: any) {
       setErrors(err.response?.data || {});
+      toast.error(err?.response?.data?.message || "Failed to create post");
     }
   };
 
@@ -54,6 +57,7 @@ export default function PostCreate() {
     setCategoryID("");
     setContent("");
     setImage(null);
+    setImagePreview("");
     setErrors({});
   };
 
@@ -61,78 +65,98 @@ export default function PostCreate() {
     <LayoutAdmin>
       <Link
         to="/admin/posts"
-        className="inline-flex items-center justify-center rounded-md bg-lime-50 text-black py-2 px-6 text-sm font-medium hover:bg-opacity-90 outline outline-2 outline-black mb-4"
+        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-5 text-sm font-medium hover:bg-opacity-90 mb-4"
       >
         <i className="fa-solid fa-arrow-left mr-2"></i> Back
       </Link>
 
-      <div className="rounded-lg border bg-white shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Add Post</h3>
+      <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold mb-6 text-slate-800 dark:text-slate-100">
+          Add Post
+        </h3>
 
-        <form ref={formRef} onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block font-medium mb-1">Title</label>
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          {/* Title */}
+          <div>
+            <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+              Title
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border rounded-md p-3"
+              className="w-full rounded-lg border border-stroke bg-transparent p-3 text-sm dark:text-white dark:border-strokedark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Enter post title..."
             />
-            {errors.title && <p className="text-red-500 text-xs">{errors.title[0]}</p>}
+            {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title[0]}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Category + Image */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-medium mb-1">Category</label>
+              <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+                Category
+              </label>
               <SelectGroupTwo
                 value={categoryID}
                 onChange={setCategoryID}
-                options={categories.map((cat) => ({
-                  value: cat.id,
-                  label: cat.name,
-                }))}
+                options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
                 placeholder="-- Select Category --"
               />
               {errors.category_id && (
-                <p className="text-red-500 text-xs">{errors.category_id[0]}</p>
+                <p className="text-red-500 text-xs mt-1">{errors.category_id[0]}</p>
               )}
             </div>
 
             <div>
-              <label className="block font-medium mb-1">Image</label>
+              <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+                Image
+              </label>
+
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-24 h-24 rounded-lg object-cover border mb-2"
+                />
+              )}
+
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="w-full border rounded-md p-2 cursor-pointer"
+                className="w-full rounded-lg border border-stroke p-2 text-sm cursor-pointer dark:border-strokedark"
               />
-              {errors.image && <p className="text-red-500 text-xs">{errors.image[0]}</p>}
+              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image[0]}</p>}
             </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block font-medium mb-1">Content</label>
+          {/* Content */}
+          <div>
+            <label className="block font-semibold mb-1 text-sm text-slate-700 dark:text-gray-200">
+              Content
+            </label>
             <ReactQuillEditor
               ref={quillRef}
               value={content}
               onChange={setContent}
               placeholder="Write post content..."
             />
-            {errors.content && <p className="text-red-500 text-xs mt-1">{errors.content[0]}</p>}
+            {errors.content && <p className="text-red-500 text-xs mt-2">{errors.content[0]}</p>}
           </div>
 
-          <div className="flex gap-4">
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500"
+              className="inline-flex items-center justify-center rounded-lg bg-primary text-white py-2 px-6 text-sm font-medium hover:bg-opacity-90"
             >
               <i className="fa-solid fa-plus mr-2"></i> Add
             </button>
             <button
               type="reset"
               onClick={handleReset}
-              className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400"
+              className="inline-flex items-center justify-center rounded-lg bg-gray-500 text-white py-2 px-6 text-sm font-medium hover:bg-opacity-90"
             >
               <i className="fa-solid fa-eraser mr-2"></i> Reset
             </button>
