@@ -1,11 +1,16 @@
 // src/components/ReactQuillEditor.tsx
-import React, { forwardRef, useMemo } from "react";
+import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-// ✅ highlight.js (syntax highlighting)
+// ✅ Highlight.js
 import hljs from "highlight.js";
-import "highlight.js/styles/atom-one-dark.css"; // 🔥 this makes it look like the demo
+import "highlight.js/styles/github-dark.css"; // ✅ pick ONE theme only
+
+// Quill's syntax module uses window.hljs
+if (typeof window !== "undefined") {
+  (window as any).hljs = hljs;
+}
 
 interface ReactQuillEditorProps {
   value: string;
@@ -21,48 +26,46 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
           [{ header: [1, 2, 3, 4, 5, 6, false] }],
           [{ font: [] }],
           [{ size: ["small", false, "large", "huge"] }],
-
           ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
-
           [{ color: [] }, { background: [] }],
           [{ script: "sub" }, { script: "super" }],
           [{ list: "ordered" }, { list: "bullet" }],
           [{ indent: "-1" }, { indent: "+1" }],
           [{ align: [] }],
-
           ["link", "image", "video"],
           ["clean"],
         ],
 
-        // ✅ THIS is the key: syntax module
-        syntax: {
-          highlight: (text: string) => hljs.highlightAuto(text).value,
-        },
+        // ✅ Enable syntax highlight
+        syntax: true,
       }),
       []
     );
 
-    const formats = [
-      "header",
-      "font",
-      "size",
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "blockquote",
-      "code-block",
-      "color",
-      "background",
-      "script",
-      "list",
-      "bullet",
-      "indent",
-      "align",
-      "link",
-      "image",
-      "video",
-    ];
+    const formats = useMemo(
+      () => [
+        "header",
+        "font",
+        "size",
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "blockquote",
+        "code-block",
+        "color",
+        "background",
+        "script",
+        "list",
+        "bullet",
+        "indent",
+        "align",
+        "link",
+        "image",
+        "video",
+      ],
+      []
+    );
 
     return (
       <ReactQuill

@@ -6,6 +6,7 @@ import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML";
+import hljs from "highlight.js";
 
 import { publicService } from "../../../services";
 import Loader from "@/components/general/Loader";
@@ -37,6 +38,17 @@ export default function BlogShow() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (!post) return;
+
+    // highlight Quill code blocks (<pre class="ql-syntax">)
+    const blocks = document.querySelectorAll("pre.ql-syntax, pre code");
+
+    blocks.forEach((el) => {
+      hljs.highlightElement(el as HTMLElement);
+    });
+  }, [post]);
 
   if (loading) return <Loader />;
 

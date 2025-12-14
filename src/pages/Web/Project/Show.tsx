@@ -7,6 +7,7 @@ import formatDate from "../../../utils/Date";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML";
 import Loader from "@/components/general/Loader";
+import hljs from "highlight.js";
 
 export default function ProjectShow() {
   const [project, setProject] = useState<any>(null);
@@ -30,6 +31,17 @@ export default function ProjectShow() {
   useEffect(() => {
     fetchProject();
   }, [fetchProject]);
+
+  useEffect(() => {
+    if (!project) return;
+
+    // highlight Quill code blocks (<pre class="ql-syntax">)
+    const blocks = document.querySelectorAll("pre.ql-syntax, pre code");
+
+    blocks.forEach((el) => {
+      hljs.highlightElement(el as HTMLElement);
+    });
+  }, [project]);
 
   if (loading) {
     return (
