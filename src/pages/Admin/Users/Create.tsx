@@ -2,18 +2,21 @@ import { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
-import { FaArrowLeft, FaUserGear } from "react-icons/fa6";
-import { CiRedo } from "react-icons/ci";
 import { userService, roleService } from "@/services";
 import type { UserForm } from "@/types/user";
 import type { Role } from "@/types/role";
-import { FaRegSave } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa6";
+
+type FieldErrors = Record<string, string[]>;
 
 export default function UsersCreate() {
   document.title = "Create User - Desa Digital";
 
   const navigate = useNavigate();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [loadingRoles, setLoadingRoles] = useState(true);
+
   const [formData, setFormData] = useState<UserForm>({
     name: "",
     email: "",
@@ -21,28 +24,26 @@ export default function UsersCreate() {
     password_confirmation: "",
     roles: [],
   });
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
-
-  // 🔹 Fetch all roles
-  const fetchRoles = async () => {
-    try {
-      const res = await roleService.getAll(1, "");
-      setRoles(res.items);
-    } catch {
-      toast.error("Failed to load roles");
-    }
-  };
 
   useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await roleService.getAll(1, "");
+        setRoles(res.items || []);
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message || "Failed to load roles");
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
     fetchRoles();
   }, []);
 
-  // 🔹 Handle input change
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 Handle role checkbox
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     setFormData((prev) => ({
@@ -51,7 +52,6 @@ export default function UsersCreate() {
     }));
   };
 
-  // 🔹 Handle submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -66,11 +66,11 @@ export default function UsersCreate() {
       toast.success(res.message || "User created successfully");
       navigate("/admin/users");
     } catch (err: any) {
-      setErrors(err.response?.data || {});
+      setErrors(err?.response?.data || {});
+      toast.error(err?.response?.data?.message || "Failed to create user");
     }
   };
 
-  // 🔹 Reset form
   const handleReset = () => {
     setFormData({
       name: "",
@@ -84,129 +84,141 @@ export default function UsersCreate() {
 
   return (
     <LayoutAdmin>
-      <main className="p-6 sm:p-10">
-        <div className="container mx-auto">
-          <div className="mb-5">
-            <Link
-              to="/admin/users"
-              className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm focus:ring-2 focus:ring-blue-400"
-            >
-              <FaArrowLeft className="mr-2" />
-              Back
-            </Link>
-          </div>
+      <div className="mb-4">
+        <Link
+          to="/admin/users"
+          className="inline-flex items-center justify-center rounded-lg bg-meta-4 px-5 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+        >
+          <FaArrowLeft className="mr-2" /> Back
+        </Link>
+      </div>
 
-          <div className="bg-white rounded-lg shadow-md border-t-4 border-green-500">
-            <div className="p-6">
-              <h6 className="font-semibold text-lg text-gray-800 flex items-center mb-4">
-                <FaUserGear className="mr-2" />
-                Create User
-              </h6>
-              <hr className="mb-4" />
+      <div className="rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-2 sm:p-4 lg:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
+          Create User
+        </h3>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Name + Email */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter full name"
-                    />
-                    {errors.name && <p className="text-red-500 text-xs">{errors.name[0]}</p>}
-                  </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name + Email */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter full name"
+              />
+              {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name[0]}</p>}
+            </div>
 
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter email address"
-                    />
-                    {errors.email && <p className="text-red-500 text-xs">{errors.email[0]}</p>}
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter password"
-                    />
-                    {errors.password && (
-                      <p className="text-red-500 text-xs">{errors.password[0]}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Confirm Password
-                    </label>
-                    <input
-                      type="password"
-                      name="password_confirmation"
-                      value={formData.password_confirmation}
-                      onChange={handleChange}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      placeholder="Confirm password"
-                    />
-                  </div>
-                </div>
-
-                {/* Roles */}
-                <hr className="my-4" />
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Roles</label>
-                  <div className="flex flex-wrap gap-4">
-                    {roles.map((role) => (
-                      <label key={role.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          value={role.name}
-                          checked={formData.roles.includes(role.name)}
-                          onChange={handleCheckboxChange}
-                          className="h-4 w-4 text-green-600 border-gray-300 rounded"
-                        />
-                        <span>{role.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.roles && <p className="text-red-500 text-xs">{errors.roles[0]}</p>}
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3 mt-6">
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                  >
-                    <FaRegSave className="inline mr-2" /> Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
-                  >
-                    <CiRedo className="inline mr-2" /> Reset
-                  </button>
-                </div>
-              </form>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter email address"
+              />
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email[0]}</p>}
             </div>
           </div>
-        </div>
-      </main>
+
+          {/* Passwords */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password || ""}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter password"
+              />
+              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password[0]}</p>}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="password_confirmation"
+                value={formData.password_confirmation || ""}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Confirm password"
+              />
+            </div>
+          </div>
+
+          {/* Roles */}
+          <div>
+            <div className="flex items-center justify-between gap-3">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Roles
+              </label>
+              <span className="text-xs text-gray-500">Selected: {formData.roles.length}</span>
+            </div>
+
+            {loadingRoles ? (
+              <div className="mt-3 rounded-lg border border-stroke dark:border-strokedark p-4 text-sm text-gray-500">
+                Loading roles...
+              </div>
+            ) : (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {roles.map((role) => (
+                  <label
+                    key={role.id}
+                    className="flex items-center gap-2 rounded-lg border border-stroke dark:border-strokedark p-3 hover:bg-gray-50 dark:hover:bg-boxdark-2 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      value={role.name}
+                      checked={formData.roles.includes(role.name)}
+                      onChange={handleCheckboxChange}
+                      className="h-5 w-5"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-gray-200">{role.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {errors.roles && <p className="mt-2 text-xs text-red-500">{errors.roles[0]}</p>}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-end pt-2">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+            >
+              <i className="fa-solid fa-redo mr-2"></i> Reset
+            </button>
+
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+            >
+              <i className="fa-solid fa-save mr-2"></i> Save
+            </button>
+          </div>
+        </form>
+      </div>
     </LayoutAdmin>
   );
 }
