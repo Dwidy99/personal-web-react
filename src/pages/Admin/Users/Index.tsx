@@ -205,7 +205,7 @@ export default function UsersIndex() {
             users.map((user) => (
               <div
                 key={user.id}
-                className="rounded-xl border border-stroke dark:border-strokedark bg-white dark:bg-boxdark px-6 shadow-sm"
+                className="rounded-xl border border-stroke dark:border-strokedark bg-white dark:bg-boxdark p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
