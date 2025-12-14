@@ -168,10 +168,10 @@ export default function BlogIndex() {
                     title={post.title}
                     caption={post.category?.name ? post.category.name : "Blog Post"}
                     description={truncate(post.content, 160)}
-                    link={`/posts/${post.slug}`}
+                    link={`/blog/${post.slug}`}
                   >
                     <p className="text-sm font-medium text-right text-blue-600 hover:underline mt-2">
-                      <Link to={`/posts/${post.slug}`}>Read more →</Link>
+                      <Link to={`/blog/${post.slug}`}>Read more →</Link>
                     </p>
                   </CardProjects>
                 ))}
