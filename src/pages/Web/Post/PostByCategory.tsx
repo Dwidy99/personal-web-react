@@ -36,7 +36,7 @@ export default function CategoryPostsIndex(): JSX.Element {
       <SEO />
 
       <header>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">
+        <h1 className="font-bold text-2xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
           Posts in Category: {category?.name || "Loading..."}
         </h1>
       </header>
