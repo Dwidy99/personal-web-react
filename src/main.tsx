@@ -5,6 +5,13 @@ import "../src/assets/admin/css/style.css";
 import "../src/assets/admin/css/satoshi.css";
 import { BrowserRouter } from "react-router-dom";
 
+import hljs from "highlight.js";
+import "highlight.js/styles/github-dark.css";
+
+if (typeof window !== "undefined") {
+  (window as any).hljs = hljs;
+}
+
 const rootElement = document.getElementById("root") as HTMLElement;
 
 createRoot(rootElement).render(

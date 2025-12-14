@@ -1,16 +1,8 @@
-// src/components/ReactQuillEditor.tsx
+// src/components/general/ReactQuillEditor.tsx
 import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-
-// ✅ Highlight.js
 import hljs from "highlight.js";
-import "highlight.js/styles/github-dark.css"; // ✅ pick ONE theme only
-
-// Quill's syntax module uses window.hljs
-if (typeof window !== "undefined") {
-  (window as any).hljs = hljs;
-}
 
 interface ReactQuillEditorProps {
   value: string;
@@ -36,8 +28,10 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
           ["clean"],
         ],
 
-        // ✅ Enable syntax highlight
-        syntax: true,
+        // ✅ Explicit highlighter (prevents "hljs missing" issues)
+        syntax: {
+          highlight: (text: string) => hljs.highlightAuto(text).value,
+        },
       }),
       []
     );
