@@ -1,7 +1,6 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import "@/lib/hljs";
 import DOMPurify from "dompurify";
-import hljs from "highlight.js";
 
 // Lazy load ReactQuill
 const ReactQuill = lazy(() => import("react-quill"));
@@ -40,25 +39,36 @@ const SanitizedHTML = ({ html = "", className = "" }: SanitizedHTMLProps): JSX.E
 };
 
 // ===== QuillViewer Component =====
-const QuillViewer = ({ content, className = "" }: QuillViewerProps): JSX.Element => {
-  // ✅ Ensure hljs exists globally BEFORE Quill mounts
+const QuillViewer = ({ content, className = "" }: { content: string; className?: string }) => {
+  const [hljsReady, setHljsReady] = useState(false);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      (window as any).hljs = hljs;
-    }
+    let mounted = true;
+
+    const init = async () => {
+      if (!(window as any).hljs) {
+        const mod = await import("highlight.js");
+        (window as any).hljs = mod.default;
+      }
+      if (mounted) setHljsReady(true);
+    };
+
+    init();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
+  if (!hljsReady) return <div className="text-sm text-gray-500">Loading content...</div>;
+
   return (
-    <Suspense fallback={<div>Loading content...</div>}>
+    <Suspense fallback={<div>Loading editor...</div>}>
       <ReactQuill
         value={content}
         readOnly
+        modules={{ toolbar: false, syntax: true }} // ✅ safe now
         theme="bubble"
         className={`quill-viewer ${className}`}
-        modules={{
-          toolbar: false,
-          syntax: true, // ✅ IMPORTANT: enable highlight
-        }}
       />
     </Suspense>
   );

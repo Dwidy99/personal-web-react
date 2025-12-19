@@ -1,9 +1,9 @@
-// src/components/general/ReactQuillEditor.tsx
-import "@/lib/hljs";
-import { forwardRef, useMemo } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import hljs from "highlight.js";
+
+// ✅ ONE highlight.js theme
+import "highlight.js/styles/github-dark.css";
 
 interface ReactQuillEditorProps {
   value: string;
@@ -13,6 +13,28 @@ interface ReactQuillEditorProps {
 
 const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
   ({ value, onChange, placeholder = "Enter text..." }, ref) => {
+    const [hljsReady, setHljsReady] = useState(false);
+
+    // ✅ Ensure hljs exists BEFORE Quill mounts
+    useEffect(() => {
+      let mounted = true;
+
+      const init = async () => {
+        if (!(window as any).hljs) {
+          const mod = await import("highlight.js");
+          (window as any).hljs = mod.default;
+        }
+
+        if (mounted) setHljsReady(true);
+      };
+
+      init();
+
+      return () => {
+        mounted = false;
+      };
+    }, []);
+
     const modules = useMemo(
       () => ({
         toolbar: [
@@ -28,11 +50,7 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
           ["link", "image", "video"],
           ["clean"],
         ],
-
-        // ✅ Explicit highlighter (prevents "hljs missing" issues)
-        syntax: {
-          highlight: (text: string) => hljs.highlightAuto(text).value,
-        },
+        syntax: true, // ✅ safe now
       }),
       []
     );
@@ -61,6 +79,11 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
       ],
       []
     );
+
+    // ✅ Don't mount ReactQuill until hljs exists
+    if (!hljsReady) {
+      return <div className="text-sm text-gray-500 dark:text-gray-400">Loading editor...</div>;
+    }
 
     return (
       <ReactQuill
