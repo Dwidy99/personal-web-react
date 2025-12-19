@@ -66,7 +66,7 @@ const QuillViewer = ({ content, className = "" }: { content: string; className?:
       <ReactQuill
         value={content}
         readOnly
-        modules={{ toolbar: false, syntax: true }} // ✅ safe now
+        modules={{ toolbar: false, syntax: false }} // ✅ safe now
         theme="bubble"
         className={`quill-viewer ${className}`}
       />

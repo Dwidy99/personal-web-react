@@ -2,8 +2,13 @@ import { forwardRef, useEffect, useMemo, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
+import Quill from "quill";
+
 // ✅ ONE highlight.js theme
 import "highlight.js/styles/github-dark.css";
+
+import Syntax from "quill/modules/syntax";
+Quill.register("modules/syntax", Syntax, true);
 
 interface ReactQuillEditorProps {
   value: string;
