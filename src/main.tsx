@@ -1,20 +1,15 @@
+import "./lib/hljs";
 import App from "./App";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
-import hljs from "highlight.js";
-
 import "@/assets/admin/css/style.css";
 import "@/assets/admin/css/satoshi.css";
 import "react-quill/dist/quill.snow.css";
 import "react-quill/dist/quill.bubble.css";
 import "highlight.js/styles/github-dark.css";
-
-if (typeof window !== "undefined") {
-  (window as any).hljs = hljs;
-}
 
 const rootElement = document.getElementById("root") as HTMLElement;
 

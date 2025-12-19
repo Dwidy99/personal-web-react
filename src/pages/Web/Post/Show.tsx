@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import LayoutWeb from "../../../layouts/Web";
 import { Link, useParams } from "react-router-dom";
 import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
@@ -12,6 +12,7 @@ import { publicService } from "../../../services";
 import Loader from "@/components/general/Loader";
 
 export default function BlogShow() {
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const [post, setPost] = useState<any>(null);
   const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,22 +37,18 @@ export default function BlogShow() {
   }, [slug]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!contentRef.current) return;
 
-  useEffect(() => {
-    if (!post?.content) return;
-
-    const t = window.setTimeout(() => {
-      requestAnimationFrame(() => {
-        document.querySelectorAll("pre.ql-syntax, pre code").forEach((el) => {
-          hljs.highlightElement(el as HTMLElement);
-        });
-      });
+    const timer = setTimeout(() => {
+      hljs.highlightAll();
     }, 0);
 
-    return () => window.clearTimeout(t);
-  }, [post?.content]);
+    return () => clearTimeout(timer);
+  }, [post]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) return <Loader />;
 
@@ -102,8 +99,12 @@ export default function BlogShow() {
               </Link>
             )}
 
-            <section className="mt-6 prose dark:prose-invert max-w-none">
-              <ContentRenderer content={post.content} isQuillContent />
+            <section ref={contentRef} className="mt-6">
+              <ContentRenderer
+                content={post.content}
+                isQuillContent
+                className="prose dark:prose-invert max-w-none"
+              />
             </section>
           </div>
         </article>
