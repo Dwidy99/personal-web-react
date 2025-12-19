@@ -40,15 +40,18 @@ export default function BlogShow() {
   }, [fetchData]);
 
   useEffect(() => {
-    if (!post) return;
+    if (!post?.content) return;
 
-    // highlight Quill code blocks (<pre class="ql-syntax">)
-    const blocks = document.querySelectorAll("pre.ql-syntax, pre code");
+    const t = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll("pre.ql-syntax, pre code").forEach((el) => {
+          hljs.highlightElement(el as HTMLElement);
+        });
+      });
+    }, 0);
 
-    blocks.forEach((el) => {
-      hljs.highlightElement(el as HTMLElement);
-    });
-  }, [post]);
+    return () => window.clearTimeout(t);
+  }, [post?.content]);
 
   if (loading) return <Loader />;
 

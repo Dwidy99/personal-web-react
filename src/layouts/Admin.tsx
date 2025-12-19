@@ -1,3 +1,6 @@
+import "../src/assets/admin/css/style.css";
+import "../src/assets/admin/css/satoshi.css";
+
 import { useState } from "react";
 import Header from "@/components/admin/Header";
 import Sidebar from "@/components/admin/Sidebar";
