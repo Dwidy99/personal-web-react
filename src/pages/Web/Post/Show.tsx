@@ -39,7 +39,14 @@ export default function BlogShow() {
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       document.querySelectorAll("pre code, pre.ql-syntax").forEach((block) => {
-        hljs.highlightElement(block as HTMLElement);
+        const el = block as HTMLElement;
+
+        // ✅ reset marker so highlight.js can run again without warning
+        if ((el as any).dataset?.highlighted) {
+          delete (el as any).dataset.highlighted;
+        }
+
+        hljs.highlightElement(el);
       });
     });
 

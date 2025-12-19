@@ -1,15 +1,6 @@
-import "@/lib/hljs"; // ✅ MUST be first (before react-quill / quill)
-
 import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-
-import Quill from "quill";
-import Syntax from "quill/modules/syntax";
-Quill.register("modules/syntax", Syntax, true);
-
-// ✅ ONE highlight.js theme (keep)
-import "highlight.js/styles/github-dark.css";
 
 interface ReactQuillEditorProps {
   value: string;
@@ -34,7 +25,7 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
           ["link", "image", "video"],
           ["clean"],
         ],
-        syntax: true, // ✅ highlight enabled
+        syntax: true, // ✅ now safe because window.hljs is guaranteed
       }),
       []
     );
