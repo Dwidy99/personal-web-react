@@ -158,63 +158,59 @@ export default function AboutPage() {
         </div>
       ) : (
         <section className="mt-10 md:mt-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
             {/* Left column: profile card */}
-            <aside className="lg:col-span-4">
-              <div className="rounded-2xl border border-stroke dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-sm">
-                <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                  <img
-                    src={currentImage}
-                    alt={profile.name}
-                    className="h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover shadow-md"
-                  />
+            <aside className="lg:col-span-8">
+              <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+                <img
+                  src={currentImage}
+                  alt={profile.name}
+                  className="h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover shadow-md"
+                />
 
-                  <h2 className="mt-4 text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">
-                    {profile.name}
-                  </h2>
+                <h2 className="mt-4 text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">
+                  {profile.name}
+                </h2>
 
-                  {profile.title ? (
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {profile.title}
+                {profile.title ? (
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{profile.title}</p>
+                ) : null}
+
+                {/* Contacts */}
+                <div className="mt-5 w-full">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
+                    Connect
+                  </p>
+
+                  {loading.contacts ? (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
+                  ) : contacts.length ? (
+                    <ul className="flex flex-wrap justify-center lg:justify-start gap-3">
+                      {contacts.map((c) => (
+                        <li key={c.id}>
+                          <a
+                            href={c.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative inline-flex"
+                            aria-label={c.name}
+                            title={c.name}
+                          >
+                            <img
+                              src={c.image || "/no-image.png"}
+                              alt={c.name}
+                              className="w-10 h-10 rounded-full border border-stroke dark:border-strokedark object-cover group-hover:scale-105 transition"
+                            />
+                            <span className="absolute inset-0 rounded-full ring-0 group-hover:ring-2 ring-sky-400/50 transition" />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      No contact links yet.
                     </p>
-                  ) : null}
-
-                  {/* Contacts */}
-                  <div className="mt-5 w-full">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
-                      Connect
-                    </p>
-
-                    {loading.contacts ? (
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
-                    ) : contacts.length ? (
-                      <ul className="flex flex-wrap justify-center lg:justify-start gap-3">
-                        {contacts.map((c) => (
-                          <li key={c.id}>
-                            <a
-                              href={c.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group relative inline-flex"
-                              aria-label={c.name}
-                              title={c.name}
-                            >
-                              <img
-                                src={c.image || "/no-image.png"}
-                                alt={c.name}
-                                className="w-10 h-10 rounded-full border border-stroke dark:border-strokedark object-cover group-hover:scale-105 transition"
-                              />
-                              <span className="absolute inset-0 rounded-full ring-0 group-hover:ring-2 ring-sky-400/50 transition" />
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        No contact links yet.
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </aside>
