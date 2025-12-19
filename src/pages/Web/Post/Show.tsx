@@ -39,11 +39,9 @@ export default function BlogShow() {
   useEffect(() => {
     if (!contentRef.current) return;
 
-    const timer = setTimeout(() => {
+    requestAnimationFrame(() => {
       hljs.highlightAll();
-    }, 0);
-
-    return () => clearTimeout(timer);
+    });
   }, [post]);
 
   useEffect(() => {
