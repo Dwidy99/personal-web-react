@@ -1,5 +1,5 @@
-import "../src/assets/admin/css/style.css";
-import "../src/assets/admin/css/satoshi.css";
+import "../assets/admin/css/style.css";
+import "../assets/admin/css/satoshi.css";
 
 import { useState } from "react";
 import Header from "@/components/admin/Header";
