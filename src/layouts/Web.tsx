@@ -2,9 +2,6 @@
 import "@/assets/web/css/index.css";
 import "@/assets/web/css/tailwind.css";
 import "@/assets/web/js/script.js";
-import "react-quill/dist/quill.snow.css";
-import "react-quill/dist/quill.bubble.css";
-import "highlight.js/styles/github-dark.css";
 
 import Navbar from "@/components/web/Navbar";
 import Footer from "@/components/web/Footer";
