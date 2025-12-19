@@ -37,12 +37,14 @@ export default function BlogShow() {
   }, [slug]);
 
   useEffect(() => {
-    if (!contentRef.current) return;
-
-    requestAnimationFrame(() => {
-      hljs.highlightAll();
+    const raf = requestAnimationFrame(() => {
+      document.querySelectorAll("pre code, pre.ql-syntax").forEach((block) => {
+        hljs.highlightElement(block as HTMLElement);
+      });
     });
-  }, [post]);
+
+    return () => cancelAnimationFrame(raf);
+  }, [post?.content]);
 
   useEffect(() => {
     fetchData();

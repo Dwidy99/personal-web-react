@@ -9,13 +9,7 @@ import "react-quill/dist/quill.snow.css";
 import "react-quill/dist/quill.bubble.css";
 import "highlight.js/styles/github-dark.css";
 
-// ✅ IMPORTANT: preload highlight.js BEFORE React starts
-const hljsMod = await import("highlight.js");
-(window as any).hljs = hljsMod.default;
-
-const rootElement = document.getElementById("root") as HTMLElement;
-
-createRoot(rootElement).render(
+createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <BrowserRouter>
       <App />

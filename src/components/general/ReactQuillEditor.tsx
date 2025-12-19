@@ -1,11 +1,15 @@
-import { forwardRef, useEffect, useMemo, useState } from "react";
+import "@/lib/hljs"; // ✅ MUST be first (before react-quill / quill)
+
+import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 import Quill from "quill";
-
 import Syntax from "quill/modules/syntax";
 Quill.register("modules/syntax", Syntax, true);
+
+// ✅ ONE highlight.js theme (keep)
+import "highlight.js/styles/github-dark.css";
 
 interface ReactQuillEditorProps {
   value: string;
@@ -15,28 +19,6 @@ interface ReactQuillEditorProps {
 
 const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
   ({ value, onChange, placeholder = "Enter text..." }, ref) => {
-    const [hljsReady, setHljsReady] = useState(false);
-
-    // ✅ Ensure hljs exists BEFORE Quill mounts
-    useEffect(() => {
-      let mounted = true;
-
-      const init = async () => {
-        if (!(window as any).hljs) {
-          const mod = await import("highlight.js");
-          (window as any).hljs = mod.default;
-        }
-
-        if (mounted) setHljsReady(true);
-      };
-
-      init();
-
-      return () => {
-        mounted = false;
-      };
-    }, []);
-
     const modules = useMemo(
       () => ({
         toolbar: [
@@ -52,7 +34,7 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
           ["link", "image", "video"],
           ["clean"],
         ],
-        syntax: true, // ✅ safe now
+        syntax: true, // ✅ highlight enabled
       }),
       []
     );
@@ -81,11 +63,6 @@ const ReactQuillEditor = forwardRef<ReactQuill, ReactQuillEditorProps>(
       ],
       []
     );
-
-    // ✅ Don't mount ReactQuill until hljs exists
-    if (!hljsReady) {
-      return <div className="text-sm text-gray-500 dark:text-gray-400">Loading editor...</div>;
-    }
 
     return (
       <ReactQuill

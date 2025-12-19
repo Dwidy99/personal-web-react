@@ -1,5 +1,5 @@
-import { Suspense, lazy, useEffect, useState } from "react";
 import "@/lib/hljs";
+import { Suspense, lazy } from "react";
 import DOMPurify from "dompurify";
 
 // Lazy load ReactQuill
@@ -40,35 +40,17 @@ const SanitizedHTML = ({ html = "", className = "" }: SanitizedHTMLProps): JSX.E
 
 // ===== QuillViewer Component =====
 const QuillViewer = ({ content, className = "" }: { content: string; className?: string }) => {
-  const [hljsReady, setHljsReady] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const init = async () => {
-      if (!(window as any).hljs) {
-        const mod = await import("highlight.js");
-        (window as any).hljs = mod.default;
-      }
-      if (mounted) setHljsReady(true);
-    };
-
-    init();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (!hljsReady) return <div className="text-sm text-gray-500">Loading content...</div>;
-
   return (
-    <Suspense fallback={<div>Loading editor...</div>}>
+    <Suspense fallback={<div className="text-sm text-gray-500">Loading content...</div>}>
       <ReactQuill
         value={content}
         readOnly
-        modules={{ toolbar: false, syntax: false }} // ✅ safe now
         theme="bubble"
         className={`quill-viewer ${className}`}
+        modules={{
+          toolbar: false,
+          syntax: true, // ✅ IMPORTANT: turn ON to colorize code blocks
+        }}
       />
     </Suspense>
   );
