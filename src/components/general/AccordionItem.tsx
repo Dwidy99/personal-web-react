@@ -1,20 +1,21 @@
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-interface Experience {
-  image: string;
-  name: string;
-  start_date: string;
-  end_date: string;
+export type ExperienceItem = {
+  id?: number | string;
+  image?: string | null;
+  name?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
   description?: string;
   highlights?: string[];
-}
+};
 
 interface AccordionItemProps {
-  exp: Experience;
+  exp: ExperienceItem;
   isOpen: boolean;
   onClick: (index: number) => void;
   index: number;
-  formatDate: (date: string) => string;
+  formatDate: (date: string | null | undefined) => string;
 }
 
 export default function AccordionItem({
@@ -28,48 +29,49 @@ export default function AccordionItem({
   const [height, setHeight] = useState<number>(0);
 
   useEffect(() => {
-    if (isOpen && contentRef.current) {
-      setHeight(contentRef.current.scrollHeight);
-    } else {
-      setHeight(0);
-    }
+    if (isOpen && contentRef.current) setHeight(contentRef.current.scrollHeight);
+    else setHeight(0);
   }, [isOpen]);
 
+  const safeName = exp.name?.trim() || "Untitled Experience";
+  const safeImage = exp.image?.trim() || "/no-image.png";
+
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden transition-all">
+    <div className="overflow-hidden rounded-xl border border-stroke bg-white shadow-sm transition-all dark:border-strokedark dark:bg-boxdark">
       {/* Header */}
       <button
+        type="button"
         onClick={() => onClick(index)}
-        className="w-full flex justify-between items-center px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-left"
+        className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left hover:bg-slate-50 dark:hover:bg-white/5"
         aria-expanded={isOpen}
         aria-controls={`accordion-content-${index}`}
       >
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 min-w-[3rem] rounded-md bg-white dark:bg-gray-700 overflow-hidden flex items-center justify-center">
+          <div className="h-12 w-12 min-w-[3rem] overflow-hidden rounded-lg border border-stroke bg-white dark:border-strokedark dark:bg-boxdark-2">
             <img
-              src={exp.image}
-              alt={`${exp.name} logo`}
+              src={safeImage}
+              alt={`${safeName} logo`}
               width={48}
               height={48}
               loading="lazy"
               decoding="async"
-              className="object-contain h-10 w-10 p-1"
+              className="h-full w-full object-cover"
               onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.src = "/placeholder-image.svg";
+                e.currentTarget.src = "/no-image.png";
               }}
             />
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{exp.name}</h3>
-            <p className="text-sm text-gray-500">
-              {formatDate(exp.start_date)} - {formatDate(exp.end_date)}
+
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold text-slate-900 dark:text-white">{safeName}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {formatDate(exp.start_date)} — {formatDate(exp.end_date)}
             </p>
           </div>
         </div>
 
         <span
-          className="text-gray-500 ml-2 transition-transform duration-200"
+          className="select-none text-slate-500 transition-transform duration-200"
           aria-hidden="true"
           style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
         >
@@ -81,27 +83,27 @@ export default function AccordionItem({
       <div
         ref={contentRef}
         id={`accordion-content-${index}`}
-        className="px-4 overflow-hidden transition-all duration-300 bg-white dark:bg-gray-900"
+        className="overflow-hidden bg-white px-4 transition-all duration-300 dark:bg-boxdark"
         style={{ height: `${height}px` }}
         aria-hidden={!isOpen}
       >
-        <div className="py-3 text-sm text-gray-700 dark:text-gray-300">
-          {exp.description && (
+        <div className="py-4 text-sm text-slate-700 dark:text-slate-300">
+          {exp.description ? (
             <div
-              className="my-4 text-gray-600 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none"
+              className="prose prose-sm max-w-none dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: exp.description }}
             />
-          )}
+          ) : null}
 
-          {exp.highlights && exp.highlights.length > 0 && (
-            <ul className="list-disc ml-5 space-y-2 mt-4 text-gray-600 dark:text-gray-400 pb-3">
+          {exp.highlights?.length ? (
+            <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-600 dark:text-slate-400">
               {exp.highlights.map((item, i) => (
                 <li key={i} className="leading-relaxed">
                   {item}
                 </li>
               ))}
             </ul>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
