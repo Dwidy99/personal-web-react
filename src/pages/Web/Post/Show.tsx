@@ -6,7 +6,7 @@ import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML";
-import hljs from "highlight.js";
+import hljs from "../../../lib/hljs";
 
 import { publicService } from "../../../services";
 import Loader from "@/components/general/Loader";
