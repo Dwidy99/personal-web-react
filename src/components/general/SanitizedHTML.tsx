@@ -23,30 +23,26 @@ export default function ContentRenderer({ content = "", className = "" }: Props)
   }, [content]);
 
   useEffect(() => {
-    if (!ref.current) return;
+    const root = ref.current;
+    if (!root) return;
 
-    const blocks = ref.current.querySelectorAll("pre.ql-syntax, pre code");
+    // target: quill code blocks + normal code blocks
+    const blocks = root.querySelectorAll("pre.ql-syntax, pre code");
 
     blocks.forEach((el) => {
-      const node = el as HTMLElement;
+      // if it's <pre>, try to highlight <code> inside it; else highlight itself
+      const target =
+        el.tagName.toLowerCase() === "pre"
+          ? ((el.querySelector("code") as HTMLElement) ?? (el as HTMLElement))
+          : (el as HTMLElement);
 
-      /**
-       * ✅ Fix highlight.js warning:
-       * If the code block contains HTML nodes, convert it into plain text
-       * so highlight.js receives escaped content only.
-       */
-      if (node.children.length > 0) {
-        // Take what the user sees (text) and force it as the only content
-        const text = node.textContent ?? "";
-        node.textContent = text;
-      }
+      target.removeAttribute("data-highlighted");
+      target.classList.remove("hljs");
 
-      // allow re-run
-      if ((node as any).dataset?.highlighted) {
-        delete (node as any).dataset.highlighted;
-      }
+      const raw = target.textContent ?? "";
+      target.textContent = raw;
 
-      hljs.highlightElement(node);
+      hljs.highlightElement(target);
     });
   }, [safeHtml]);
 
