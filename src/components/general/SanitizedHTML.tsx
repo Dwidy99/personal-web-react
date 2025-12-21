@@ -26,8 +26,20 @@ export default function ContentRenderer({ content = "", className = "" }: Props)
     if (!ref.current) return;
 
     const blocks = ref.current.querySelectorAll("pre.ql-syntax, pre code");
+
     blocks.forEach((el) => {
       const node = el as HTMLElement;
+
+      /**
+       * ✅ Fix highlight.js warning:
+       * If the code block contains HTML nodes, convert it into plain text
+       * so highlight.js receives escaped content only.
+       */
+      if (node.children.length > 0) {
+        // Take what the user sees (text) and force it as the only content
+        const text = node.textContent ?? "";
+        node.textContent = text;
+      }
 
       // allow re-run
       if ((node as any).dataset?.highlighted) {

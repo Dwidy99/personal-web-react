@@ -38,16 +38,30 @@ export default function BlogShow() {
   }, [slug]);
 
   useEffect(() => {
+    if (!post?.content) return;
+
     const raf = requestAnimationFrame(() => {
-      document.querySelectorAll("pre code, pre.ql-syntax").forEach((block) => {
-        const el = block as HTMLElement;
+      const blocks = document.querySelectorAll("pre.ql-syntax, pre code");
 
-        // ✅ reset marker so highlight.js can run again without warning
-        if ((el as any).dataset?.highlighted) {
-          delete (el as any).dataset.highlighted;
-        }
+      blocks.forEach((block) => {
+        // pilih node yang akan di-highlight
+        const target =
+          block.tagName.toLowerCase() === "pre"
+            ? ((block.querySelector("code") as HTMLElement) ?? (block as HTMLElement))
+            : (block as HTMLElement);
 
-        hljs.highlightElement(el);
+        // 🔥 reset highlight.js marker (paling ampuh)
+        target.removeAttribute("data-highlighted");
+
+        // bersihin class hljs agar gak dobel
+        target.classList.remove("hljs");
+
+        // Optional: kalau ada hasil highlight sebelumnya yang nyisip <span> dll
+        // jadikan plain text lagi supaya aman & hilang warning unescaped HTML
+        const raw = target.textContent ?? "";
+        target.textContent = raw;
+
+        hljs.highlightElement(target);
       });
     });
 
@@ -108,7 +122,7 @@ export default function BlogShow() {
             )}
 
             <section ref={contentRef} className="mt-6">
-              <ContentRenderer content={post.description} className="prose dark:prose-invert" />
+              <ContentRenderer content={post.content} className="prose dark:prose-invert" />
             </section>
           </div>
         </article>

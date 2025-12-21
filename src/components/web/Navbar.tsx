@@ -24,7 +24,7 @@ export default function Navbar(): JSX.Element {
     <>
       {/* Navbar */}
       <header
-        className={`w-full my-4 fixed top-0 left-0 transition-all duration-300 shadow-md dark:shadow-slate-700/40 ${
+        className={`fixed top-0 left-0 z-999 w-full my-4 transition-all duration-300 shadow-md dark:shadow-slate-700/40 ${
           isFixed ? "bg-transparent navbar-fixed dark:bg-transparent" : ""
         }`}
       >

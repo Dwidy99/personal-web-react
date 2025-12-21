@@ -1,12 +1,12 @@
 import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
-import ensureHLJS from "@/lib/hljs";
+import { ensureHLJS } from "@/lib/hljs";
 
-// ✅ Import Quill editor theme once here (not in main.tsx)
 import "react-quill/dist/quill.snow.css";
-
-// ✅ Optional theme for highlight.js (pick ONE)
 import "highlight.js/styles/github-dark.css";
+
+// ✅ Run once when module is imported
+ensureHLJS();
 
 type Props = {
   value: string;
@@ -16,9 +16,6 @@ type Props = {
 
 const ReactQuillEditor = forwardRef<ReactQuill, Props>(
   ({ value, onChange, placeholder = "Write something..." }, ref) => {
-    // ✅ Guarantee window.hljs exists before Quill uses syntax module
-    ensureHLJS();
-
     const modules = useMemo(
       () => ({
         toolbar: [
