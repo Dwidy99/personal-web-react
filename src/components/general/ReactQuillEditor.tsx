@@ -1,25 +1,28 @@
 import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
+import { ensureHLJS } from "@/lib/hljs";
+
+// ✅ Import Quill editor theme once here (not in main.tsx)
 import "react-quill/dist/quill.snow.css";
 
-import { setupQuillSyntax } from "@/lib/quillSyntax";
-
-// ✅ extra safety: ensure window.hljs exists even if main.tsx missed it
-setupQuillSyntax();
+// ✅ Optional theme for highlight.js (pick ONE)
+import "highlight.js/styles/github-dark.css";
 
 type Props = {
   value: string;
   onChange: (content: string) => void;
   placeholder?: string;
-  className?: string;
 };
 
 const ReactQuillEditor = forwardRef<ReactQuill, Props>(
-  ({ value, onChange, placeholder = "Write something...", className = "" }, ref) => {
+  ({ value, onChange, placeholder = "Write something..." }, ref) => {
+    // ✅ Guarantee window.hljs exists before Quill uses syntax module
+    ensureHLJS();
+
     const modules = useMemo(
       () => ({
         toolbar: [
-          [{ header: [1, 2, 3, 4, false] }],
+          [{ header: [1, 2, 3, false] }],
           ["bold", "italic", "underline", "strike"],
           [{ list: "ordered" }, { list: "bullet" }],
           ["blockquote", "code-block"],
@@ -49,17 +52,15 @@ const ReactQuillEditor = forwardRef<ReactQuill, Props>(
     );
 
     return (
-      <div className={className}>
-        <ReactQuill
-          ref={ref}
-          theme="snow"
-          value={value}
-          onChange={onChange}
-          modules={modules}
-          formats={formats}
-          placeholder={placeholder}
-        />
-      </div>
+      <ReactQuill
+        ref={ref}
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+      />
     );
   }
 );

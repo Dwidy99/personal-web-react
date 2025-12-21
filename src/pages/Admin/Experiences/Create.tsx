@@ -5,7 +5,7 @@ import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import SelectGroupTwo from "../../../components/general/SelectGroupTwo";
-// import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
+import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 
 // service
 import { Api } from "@/services";
@@ -174,12 +174,12 @@ export default function ExperiencesCreate() {
           {/* Description */}
           <div className="mb-6">
             <label className="block text-sm font-bold">Description</label>
-            {/* <ReactQuillEditor
+            <ReactQuillEditor
               // ref={quillRef}
               value={description}
               onChange={setDescription}
               placeholder="Enter Description..."
-            /> */}
+            />
             {errors.description && (
               <p className="text-red-500 text-xs mt-1">{errors.description[0]}</p>
             )}

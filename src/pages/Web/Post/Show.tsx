@@ -6,8 +6,8 @@ import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
 import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
-import ContentRenderer from "../../../components/general/SanitizedHTML";
-import hljs from "../../../lib/quillSyntax";
+import ContentRenderer from "@/components/general/SanitizedHTML";
+import hljs from "../../../lib/hljs";
 
 import { publicService } from "../../../services";
 import Loader from "@/components/general/Loader";
@@ -108,11 +108,7 @@ export default function BlogShow() {
             )}
 
             <section ref={contentRef} className="mt-6">
-              <ContentRenderer
-                content={post.content}
-                isQuillContent
-                className="prose dark:prose-invert max-w-none"
-              />
+              <ContentRenderer content={post.description} className="prose dark:prose-invert" />
             </section>
           </div>
         </article>

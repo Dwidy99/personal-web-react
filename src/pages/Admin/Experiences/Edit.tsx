@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
-// import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
+import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 import { Experience } from "@/types/experience";
 
 // Service
@@ -194,12 +194,12 @@ export default function ExperiencesEdit() {
             {/* Description */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700">Description</label>
-              {/* <ReactQuillEditor
+              <ReactQuillEditor
                 // ref={quillRef}
                 value={description}
                 onChange={setDescription}
                 placeholder="Enter Description..."
-              /> */}
+              />
               {errors.description && (
                 <p className="text-red-500 text-xs mt-1">{errors.description[0]}</p>
               )}

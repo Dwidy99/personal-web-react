@@ -94,7 +94,7 @@ export default function ProjectShow() {
         </header>
 
         <section className="prose dark:prose-invert max-w-none">
-          <ContentRenderer content={project.description} isQuillContent />
+          <ContentRenderer content={project.description} className="prose dark:prose-invert" />
         </section>
 
         {project.image && (

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-// import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
+import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 
@@ -156,11 +156,11 @@ export default function ProfilesIndex() {
               <label className="block text-sm font-bold text-gray-700 capitalize">
                 {key.replace("_", " ")}
               </label>
-              {/* <ReactQuillEditor
-                ref={quillRef}
+              <ReactQuillEditor
+                // ref={quillRef}
                 value={(form as any)[key]}
                 onChange={(val) => setForm({ ...form, [key]: val })}
-              /> */}
+              />
               {errors[key] && <p className="text-red-500 text-xs mt-1">{errors[key][0]}</p>}
             </div>
           ))}
