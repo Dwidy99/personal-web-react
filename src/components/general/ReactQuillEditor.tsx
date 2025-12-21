@@ -1,12 +1,10 @@
+// src/components/general/ReactQuillEditor.tsx
 import { forwardRef, useMemo, Suspense, lazy } from "react";
+import type ReactQuillType from "react-quill";
+import { ensureHLJS } from "@/lib/hljs";
+
 import "react-quill/dist/quill.snow.css";
 import "highlight.js/styles/github-dark.css";
-
-// ✅ IMPORTANT: ensure hljs attaches BEFORE react-quill loads (especially in prod)
-const ReactQuill = lazy(async () => {
-  await import("@/lib/hljs");
-  return import("react-quill");
-});
 
 type Props = {
   value: string;
@@ -14,7 +12,14 @@ type Props = {
   placeholder?: string;
 };
 
-const ReactQuillEditor = forwardRef<any, Props>(
+// ✅ IMPORTANT: ensureHLJS runs BEFORE react-quill module is evaluated
+const ReactQuill = lazy(async () => {
+  ensureHLJS();
+  const mod = await import("react-quill");
+  return { default: mod.default };
+});
+
+const ReactQuillEditor = forwardRef<ReactQuillType, Props>(
   ({ value, onChange, placeholder = "Write something..." }, ref) => {
     const modules = useMemo(
       () => ({
@@ -26,7 +31,7 @@ const ReactQuillEditor = forwardRef<any, Props>(
           ["link", "image"],
           ["clean"],
         ],
-        syntax: true, // ✅ now guaranteed safe
+        syntax: true,
       }),
       []
     );
@@ -49,9 +54,15 @@ const ReactQuillEditor = forwardRef<any, Props>(
     );
 
     return (
-      <Suspense fallback={<div className="text-sm text-gray-500">Loading editor...</div>}>
+      <Suspense
+        fallback={
+          <div className="w-full rounded-lg border border-stroke p-3 text-sm text-gray-500">
+            Loading editor...
+          </div>
+        }
+      >
         <ReactQuill
-          ref={ref}
+          ref={ref as any}
           theme="snow"
           value={value}
           onChange={onChange}
