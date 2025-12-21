@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
+// import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
-import "react-quill/dist/quill.snow.css";
 
 // Service
 import { profileService } from "../../../services";
@@ -14,7 +13,7 @@ export default function ProfilesIndex() {
 
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
-  const quillRef = useRef(null);
+  // const quillRef = useRef(null);
 
   const user = Cookies.get("user") ? JSON.parse(Cookies.get("user") as string) : null;
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -157,11 +156,11 @@ export default function ProfilesIndex() {
               <label className="block text-sm font-bold text-gray-700 capitalize">
                 {key.replace("_", " ")}
               </label>
-              <ReactQuillEditor
+              {/* <ReactQuillEditor
                 ref={quillRef}
                 value={(form as any)[key]}
                 onChange={(val) => setForm({ ...form, [key]: val })}
-              />
+              /> */}
               {errors[key] && <p className="text-red-500 text-xs mt-1">{errors[key][0]}</p>}
             </div>
           ))}

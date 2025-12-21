@@ -1,3 +1,4 @@
+// show.tsx
 import { useEffect, useState, useCallback, useRef } from "react";
 import LayoutWeb from "../../../layouts/Web";
 import { Link, useParams } from "react-router-dom";
@@ -6,7 +7,7 @@ import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
 import SEO from "../../../components/general/SEO";
 import ContentRenderer from "../../../components/general/SanitizedHTML";
-import hljs from "../../../lib/hljs";
+import hljs from "../../../lib/quillSyntax";
 
 import { publicService } from "../../../services";
 import Loader from "@/components/general/Loader";

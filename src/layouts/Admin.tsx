@@ -1,3 +1,4 @@
+// src/layouts/Admin.tsx
 import { useState } from "react";
 import Header from "@/components/admin/Header";
 import Sidebar from "@/components/admin/Sidebar";

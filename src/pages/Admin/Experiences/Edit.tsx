@@ -3,9 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
-import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
+// import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 import { Experience } from "@/types/experience";
-import ReactQuill from "react-quill";
 
 // Service
 import { Api } from "../../../services";
@@ -21,7 +20,7 @@ export default function ExperiencesEdit() {
   const { id } = useParams<{ id: string }>();
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const quillRef = useRef<ReactQuill | null>(null);
+  // const quillRef = useRef<ReactQuill | null>(null);
 
   // ✅ State management
   const [image, setImage] = useState<File | null>(null);
@@ -195,12 +194,12 @@ export default function ExperiencesEdit() {
             {/* Description */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700">Description</label>
-              <ReactQuillEditor
-                ref={quillRef}
+              {/* <ReactQuillEditor
+                // ref={quillRef}
                 value={description}
                 onChange={setDescription}
                 placeholder="Enter Description..."
-              />
+              /> */}
               {errors.description && (
                 <p className="text-red-500 text-xs mt-1">{errors.description[0]}</p>
               )}

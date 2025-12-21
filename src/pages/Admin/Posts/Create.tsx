@@ -1,3 +1,4 @@
+// Posts/Create.tsx
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
