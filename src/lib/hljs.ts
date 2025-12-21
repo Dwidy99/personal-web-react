@@ -7,7 +7,6 @@ declare global {
     }
 }
 
-// Attach once, early.
 if (typeof window !== "undefined" && !window.hljs) {
     window.hljs = hljs;
 }
