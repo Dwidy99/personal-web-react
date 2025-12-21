@@ -1,6 +1,6 @@
 import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
-import { ensureHLJS } from "@/lib/hljs";
+import ensureHLJS from "@/lib/hljs";
 
 // ✅ Import Quill editor theme once here (not in main.tsx)
 import "react-quill/dist/quill.snow.css";
