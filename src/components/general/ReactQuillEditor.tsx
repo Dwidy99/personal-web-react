@@ -1,7 +1,7 @@
 // src/components/general/ReactQuillEditor.tsx
 import { forwardRef, useMemo, Suspense, lazy } from "react";
 import type ReactQuillType from "react-quill";
-import { ensureHLJS } from "@/lib/hljs";
+// import { ensureHLJS } from "@/lib/hljs";
 
 import "react-quill/dist/quill.snow.css";
 import "highlight.js/styles/github-dark.css";
@@ -14,7 +14,7 @@ type Props = {
 
 // ✅ IMPORTANT: ensureHLJS runs BEFORE react-quill module is evaluated
 const ReactQuill = lazy(async () => {
-  ensureHLJS();
+  // ensureHLJS();
   const mod = await import("react-quill");
   return { default: mod.default };
 });
