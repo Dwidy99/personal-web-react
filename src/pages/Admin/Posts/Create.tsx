@@ -177,7 +177,7 @@ export default function PostCreate() {
             <label className="block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-2">
               Content
             </label>
-            <ReactQuillEditor ref={quillRef} value={content} onChange={setContent} />
+            {/* <ReactQuillEditor ref={quillRef} value={content} onChange={setContent} /> */}
             {errors.content && <p className="text-red-500 text-xs mt-2">{errors.content[0]}</p>}
           </div>
 
