@@ -1,3 +1,6 @@
+// src/main.tsx
+import "@/lib/hljs"; // ✅ MUST be first (before any react-quill import happens anywhere)
+
 import App from "./App";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

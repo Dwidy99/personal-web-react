@@ -1,12 +1,11 @@
+// src/components/general/ReactQuillEditor.tsx
+import "@/lib/hljs"; // ✅ ensure window.hljs exists BEFORE Quill loads
+
 import { forwardRef, useMemo } from "react";
 import ReactQuill from "react-quill";
-import { ensureHLJS } from "@/lib/hljs";
 
 import "react-quill/dist/quill.snow.css";
 import "highlight.js/styles/github-dark.css";
-
-// ✅ Run once when module is imported
-ensureHLJS();
 
 type Props = {
   value: string;
@@ -26,7 +25,7 @@ const ReactQuillEditor = forwardRef<ReactQuill, Props>(
           ["link", "image"],
           ["clean"],
         ],
-        syntax: true,
+        syntax: true, // ✅ now safe
       }),
       []
     );
