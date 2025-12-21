@@ -89,57 +89,59 @@ export default function ProjectShow() {
     <LayoutWeb disableSnow>
       <SEO title={project.title} description={project.caption || project.description} />
 
-      <article className="pt-12">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10">
-          {/* Header */}
-          <header className="mb-6">
-            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-              <FaCalendarAlt />
-              <span>{formatDate(new Date(project.created_at))}</span>
-            </div>
+      <div className="lg:grid pt-12 lg:grid-cols-3 gap-8">
+        <article className="pt-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-10 overflow-hidden">
+            {/* Header */}
+            <header className="mb-6">
+              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                <FaCalendarAlt />
+                <span>{formatDate(new Date(project.created_at))}</span>
+              </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold mt-3 text-gray-900 dark:text-gray-100">
-              {project.title}
-            </h1>
+              <h1 className="text-3xl md:text-4xl font-bold mt-3 text-gray-900 dark:text-gray-100">
+                {project.title}
+              </h1>
 
-            {project.link && (
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 mt-3 text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Visit Project <FaExternalLinkAlt className="text-sm" />
-              </a>
+              {project.link && (
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-3 text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Visit Project <FaExternalLinkAlt className="text-sm" />
+                </a>
+              )}
+            </header>
+
+            {/* Content */}
+            <section className=" mt-6 prose dark:prose-invert max-w-none break-words [&_img]:max-w-full [&_img]:h-auto [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre [&_code]:break-words [&_table]:block [&_table]:max-w-full [&_table] :overflow-x-auto">
+              <ContentRenderer content={project.description} />
+            </section>
+
+            {/* Image */}
+            {project.image && (
+              <figure className="mt-10">
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full max-h-[480px] object-cover rounded-lg shadow-md"
+                />
+              </figure>
             )}
-          </header>
+          </div>
+        </article>
 
-          {/* Content */}
-          <section className="mt-6">
-            <ContentRenderer content={project.description} className="prose dark:prose-invert" />
-          </section>
-
-          {/* Image */}
-          {project.image && (
-            <figure className="mt-10">
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full max-h-[480px] object-cover rounded-lg shadow-md"
-              />
-            </figure>
-          )}
-        </div>
-      </article>
-
-      <nav className="text-center mt-10">
-        <Link
-          to="/projects"
-          className="text-blue-600 hover:underline text-sm md:text-base font-medium"
-        >
-          ← Back to Projects
-        </Link>
-      </nav>
+        <nav className="text-center mt-10">
+          <Link
+            to="/projects"
+            className="text-blue-600 hover:underline text-sm md:text-base font-medium"
+          >
+            ← Back to Projects
+          </Link>
+        </nav>
+      </div>
     </LayoutWeb>
   );
 }
