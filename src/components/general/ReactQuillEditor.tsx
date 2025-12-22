@@ -1,26 +1,16 @@
-// src/components/general/ReactQuillEditor.tsx
-import { forwardRef, useMemo, Suspense, lazy } from "react";
-import type ReactQuillType from "react-quill";
-import { ensureHLJS } from "@/lib/hljs";
-
+import ReactQuill from "react-quill";
+import { forwardRef, useMemo } from "react";
 import "react-quill/dist/quill.snow.css";
-import "highlight.js/styles/github-dark.css";
 
 type Props = {
   value: string;
-  onChange: (content: string) => void;
+  onChange: (value: string) => void;
   placeholder?: string;
 };
 
-// ✅ IMPORTANT: ensureHLJS runs BEFORE react-quill module is evaluated
-const ReactQuill = lazy(async () => {
-  ensureHLJS();
-  const mod = await import("react-quill");
-  return { default: mod.default };
-});
-
-const ReactQuillEditor = forwardRef<ReactQuillType, Props>(
+const ReactQuillEditor = forwardRef<ReactQuill, Props>(
   ({ value, onChange, placeholder = "Write something..." }, ref) => {
+    // Simple toolbar, no syntax highlight
     const modules = useMemo(
       () => ({
         toolbar: [
@@ -31,7 +21,6 @@ const ReactQuillEditor = forwardRef<ReactQuillType, Props>(
           ["link", "image"],
           ["clean"],
         ],
-        syntax: true,
       }),
       []
     );
@@ -54,23 +43,15 @@ const ReactQuillEditor = forwardRef<ReactQuillType, Props>(
     );
 
     return (
-      <Suspense
-        fallback={
-          <div className="w-full rounded-lg border border-stroke p-3 text-sm text-gray-500">
-            Loading editor...
-          </div>
-        }
-      >
-        <ReactQuill
-          ref={ref as any}
-          theme="snow"
-          value={value}
-          onChange={onChange}
-          modules={modules}
-          formats={formats}
-          placeholder={placeholder}
-        />
-      </Suspense>
+      <ReactQuill
+        ref={ref}
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+      />
     );
   }
 );

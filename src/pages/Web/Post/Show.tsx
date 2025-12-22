@@ -1,63 +1,81 @@
-// show.tsx
+// src/pages/Web/Post/Show.tsx
 import { useEffect, useState, useCallback, useRef } from "react";
-import LayoutWeb from "../../../layouts/Web";
 import { Link, useParams } from "react-router-dom";
 import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
-import formatDate from "../../../utils/Date";
 import toast from "react-hot-toast";
-import SEO from "../../../components/general/SEO";
-import ContentRenderer from "@/components/general/SanitizedHTML";
-import hljs from "../../../lib/hljs";
+import hljs from "highlight.js";
 
-import { publicService } from "../../../services";
+import LayoutWeb from "@/layouts/Web";
+import SEO from "@/components/general/SEO";
 import Loader from "@/components/general/Loader";
+import ContentRenderer from "@/components/general/ContentRenderer";
+import formatDate from "@/utils/Date";
+import { publicService } from "@/services";
+
+type PostDetail = any; // kalau sudah punya type yang proper, ganti ini
+type PostItem = any;
 
 export default function BlogShow() {
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const [post, setPost] = useState<any>(null);
-  const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { slug } = useParams();
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  const [post, setPost] = useState<PostDetail | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<PostItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   document.title = "Show | Portfolio";
 
   const fetchData = useCallback(async () => {
+    if (!slug) return;
+
     try {
       setLoading(true);
+
       const [detail, allPosts] = await Promise.all([
-        publicService.getPostBySlug?.(slug),
+        publicService.getPostBySlug(slug),
         publicService.getPostsHome(),
       ]);
+
       setPost(detail);
-      setRelatedPosts(allPosts.filter((p: any) => p.slug !== slug));
+      setRelatedPosts((allPosts || []).filter((p: any) => p.slug !== slug));
     } catch (err: any) {
-      toast.error("Failed to load post: " + err.message);
+      setPost(null);
+      toast.error(err?.response?.data?.message || "Failed to load post");
     } finally {
       setLoading(false);
     }
   }, [slug]);
 
   useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  /**
+   * ✅ Highlight code blocks (scoped to article content)
+   * Works for:
+   * - Quill blocks: <pre class="ql-syntax">...</pre>
+   * - Generic: <pre><code>...</code></pre>
+   */
+  useEffect(() => {
     if (!post?.content) return;
 
+    const container = contentRef.current;
+    if (!container) return;
+
     const raf = requestAnimationFrame(() => {
-      const blocks = document.querySelectorAll("pre.ql-syntax, pre code");
+      const blocks = container.querySelectorAll("pre.ql-syntax, pre code");
 
       blocks.forEach((block) => {
-        // pilih node yang akan di-highlight
         const target =
           block.tagName.toLowerCase() === "pre"
             ? ((block.querySelector("code") as HTMLElement) ?? (block as HTMLElement))
             : (block as HTMLElement);
 
-        // 🔥 reset highlight.js marker (paling ampuh)
+        // reset highlight state to avoid duplicate highlighting
         target.removeAttribute("data-highlighted");
-
-        // bersihin class hljs agar gak dobel
         target.classList.remove("hljs");
 
-        // Optional: kalau ada hasil highlight sebelumnya yang nyisip <span> dll
-        // jadikan plain text lagi supaya aman & hilang warning unescaped HTML
+        // make sure it stays safe/plain before re-highlight
         const raw = target.textContent ?? "";
         target.textContent = raw;
 
@@ -68,21 +86,26 @@ export default function BlogShow() {
     return () => cancelAnimationFrame(raf);
   }, [post?.content]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  if (loading) return <Loader />;
+  // ✅ Loading state tetap pakai Layout biar Navbar/Footer konsisten
+  if (loading) {
+    return (
+      <LayoutWeb>
+        <div className="py-20 flex justify-center">
+          <Loader />
+        </div>
+      </LayoutWeb>
+    );
+  }
 
   if (!post) {
     return (
       <LayoutWeb>
-        <main className="container text-center py-20">
+        <div className="py-20 text-center">
           <h1 className="text-2xl font-bold text-red-500">Post not found</h1>
-          <a href="/blog" className="text-blue-600 hover:underline mt-4 inline-block">
+          <Link to="/blog" className="text-blue-600 hover:underline mt-4 inline-block">
             Back to Blog
-          </a>
-        </main>
+          </Link>
+        </div>
       </LayoutWeb>
     );
   }
@@ -91,66 +114,77 @@ export default function BlogShow() {
     <LayoutWeb disableSnow>
       <SEO title={post.title} description={post.excerpt} />
 
-      <div className="lg:grid pt-12 lg:grid-cols-3 gap-8">
+      {/* ✅ Responsive layout: mobile stack, desktop 2col + sidebar */}
+      <div className="pt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Article */}
         <article className="lg:col-span-2">
-          <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-6 text-gray-700 dark:text-gray-200">
-            <header className="flex flex-wrap gap-5 mb-4 text-sm text-gray-500 dark:text-gray-400">
-              {post.user && (
-                <span>
-                  <FaUserEdit className="inline mr-1" />
+          <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-5 sm:p-6 md:p-8 text-gray-700 dark:text-gray-200">
+            <header className="flex flex-wrap gap-4 mb-4 text-sm text-gray-500 dark:text-gray-400">
+              {post.user?.name && (
+                <span className="inline-flex items-center gap-2">
+                  <FaUserEdit />
                   {post.user.name}
                 </span>
               )}
-              <span>
-                <FaCalendarAlt className="inline mr-1" />
-                {formatDate(new Date(post.created_at))}
-              </span>
+              {post.created_at && (
+                <span className="inline-flex items-center gap-2">
+                  <FaCalendarAlt />
+                  {formatDate(new Date(post.created_at))}
+                </span>
+              )}
             </header>
 
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100 break-words">
               {post.title}
             </h1>
 
-            {post.category && (
+            {post.category?.slug && (
               <Link
                 to={`/blog/category/${post.category.slug}`}
-                className="inline-block bg-gray-700 text-white py-1 px-3 rounded-md hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 mb-4"
+                className="inline-flex items-center bg-gray-800 text-white py-1 px-3 rounded-md hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 mb-5 text-sm"
               >
                 #{post.category.name}
               </Link>
             )}
 
-            <section ref={contentRef} className="mt-6">
-              <ContentRenderer content={post.content} className="prose dark:prose-invert" />
+            {/* ✅ Content area: scoped highlight + readable prose + overflow safe */}
+            <section
+              ref={contentRef}
+              className="mt-6 prose dark:prose-invert max-w-none break-words
+                         [&_img]:max-w-full [&_img]:h-auto
+                         [&_pre]:max-w-full [&_pre]:overflow-x-auto
+                         [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
+            >
+              <ContentRenderer content={post.content} />
             </section>
           </div>
         </article>
 
         {/* Sidebar */}
-        <aside className="lg:col-span-1 mt-10 lg:mt-0">
-          <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        <aside className="lg:col-span-1">
+          <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Recent Articles
             </h2>
 
             <div className="space-y-4">
               {relatedPosts.length > 0 ? (
-                relatedPosts.map((p, i) => (
+                relatedPosts.slice(0, 6).map((p, i) => (
                   <article key={i} className="flex items-center gap-3">
                     <img
                       src={p.image}
                       alt={p.title}
-                      className="w-20 h-20 object-cover rounded-md"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md flex-shrink-0"
+                      loading="lazy"
                     />
-                    <div>
-                      <Link to={`/blog/${p.slug}`}>
-                        <h3 className="font-medium hover:underline text-gray-800 dark:text-gray-100">
-                          {p.title.length > 40 ? `${p.title.slice(0, 40)}...` : p.title}
+                    <div className="min-w-0">
+                      <Link to={`/blog/${p.slug}`} className="block">
+                        <h3 className="font-medium hover:underline text-gray-800 dark:text-gray-100 truncate">
+                          {p.title}
                         </h3>
                       </Link>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {p.created_at && formatDate(new Date(p.created_at))}
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        {p.created_at ? formatDate(new Date(p.created_at)) : ""}
                       </p>
                     </div>
                   </article>
