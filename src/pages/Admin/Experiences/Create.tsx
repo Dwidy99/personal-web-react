@@ -1,22 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
-
 import toast from "react-hot-toast";
-import Cookies from "js-cookie";
-import SelectGroupTwo from "../../../components/general/SelectGroupTwo";
-import ReactQuillEditor from "../../../components/general/ReactQuillEditor";
 
-// service
-import { Api } from "@/services";
+import SunEditorField from "@/components/general/SunEditor";
+import { experienceService } from "@/services";
 
 interface ValidationErrors {
   [key: string]: string[] | undefined;
-}
-
-interface ProfileOption {
-  id: number;
-  title: string;
 }
 
 export default function ExperiencesCreate() {
@@ -24,58 +15,44 @@ export default function ExperiencesCreate() {
 
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
-  // const quillRef = useRef<ReactQuill | null>(null);
 
-  const [profileId, setProfileId] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const [profiles, setProfiles] = useState<ProfileOption[]>([]);
-  const [loadingProfiles, setLoadingProfiles] = useState<boolean>(true);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const token = Cookies.get("token");
-
-  const fetchProfiles = async () => {
-    try {
-      const { data } = await Api.get("/api/admin/profiles", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const list = Array.isArray(data.data) ? data.data : [data.data];
-      setProfiles(list);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to load profiles");
-    } finally {
-      setLoadingProfiles(false);
-    }
-  };
-
+  // ======================
+  // Submit
+  // ======================
   const storeExperience = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!token) return;
+    setErrors({});
+    setSubmitting(true);
 
     const formData = new FormData();
-    if (image) formData.append("image", image);
     formData.append("name", name);
     formData.append("description", description);
     formData.append("start_date", startDate);
     formData.append("end_date", endDate);
-    formData.append("profile_id", profileId);
+
+    if (image) {
+      formData.append("image", image);
+    }
 
     try {
-      const res = await Api.post("/api/admin/experiences", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      toast.success(res.data.message, { position: "top-center" });
+      const res = await experienceService.create(formData);
+      toast.success(res.message || "Experience created successfully");
       navigate("/admin/experiences");
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || {});
+      const data = err.response?.data;
+      setErrors(data?.errors || {});
+      toast.error(data?.message || "Failed to save experience");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -89,116 +66,97 @@ export default function ExperiencesCreate() {
     setErrors({});
   };
 
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
-
   return (
     <LayoutAdmin>
+      {/* Back */}
       <Link
-        to="/admin/experiences/"
-        className="inline-flex items-center justify-center rounded-md bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-lime-400"
+        to="/admin/experiences"
+        className="inline-flex items-center rounded-lg bg-meta-4 text-white py-2 px-6 text-sm font-medium hover:bg-opacity-90"
       >
-        <i className="fa-solid fa-arrow-left mr-2"></i> Back
+        ← Back
       </Link>
 
-      <div className="rounded-lg border bg-white shadow-md mt-8 p-6">
-        <h3 className="text-xl font-semibold mb-4">Create Experience</h3>
+      <div className="mt-8 rounded-lg border bg-white shadow-md p-6">
+        <h3 className="text-xl font-semibold mb-6">Create Experience</h3>
 
-        <form ref={formRef} onSubmit={storeExperience}>
-          {/* Job Title & Profile */}
-          <div className="grid grid-cols-2 gap-2 my-4">
-            <div>
-              <label className="font-bold text-sm">Job Title</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 border rounded-md"
-                placeholder="Enter Job Title..."
-              />
-              {errors.name && <p className="text-red-500 text-xs">{errors.name[0]}</p>}
-            </div>
-
-            <div>
-              <label className="font-bold text-sm">Select Profile</label>
-              {loadingProfiles ? (
-                <p>Loading profiles...</p>
-              ) : (
-                <SelectGroupTwo
-                  value={profileId}
-                  onChange={setProfileId}
-                  options={profiles.map((p) => ({ value: p.id, label: p.title }))}
-                  placeholder="-- Select Profile --"
-                />
-              )}
-            </div>
+        <form ref={formRef} onSubmit={storeExperience} className="space-y-6">
+          {/* Job Title */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">Job Title</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={submitting}
+              className="w-full rounded-lg border p-3 text-sm focus:ring-2 focus:ring-primary"
+            />
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name[0]}</p>}
           </div>
 
-          {/* Image Upload */}
-          <div className="my-3">
-            <label className="font-bold text-sm">Company Image (Optional)</label>
+          {/* Image */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">Image (optional)</label>
             <input
               type="file"
               accept="image/*"
+              disabled={submitting}
               onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              className="w-full border rounded-md p-2 cursor-pointer"
+              className="w-full rounded-lg border p-2 text-sm"
             />
-            {errors.image && <p className="text-red-500 text-xs">{errors.image[0]}</p>}
+            {errors.image && <p className="text-xs text-red-500 mt-1">{errors.image[0]}</p>}
           </div>
 
           {/* Dates */}
-          <div className="grid grid-cols-2 gap-2 my-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="font-bold text-sm">Start Date</label>
+              <label className="block text-sm font-semibold mb-1">Start Date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full p-3 border rounded-md"
+                disabled={submitting}
+                className="w-full rounded-lg border p-3 text-sm"
               />
-              {errors.start_date && <p className="text-red-500 text-xs">{errors.start_date[0]}</p>}
             </div>
+
             <div>
-              <label className="font-bold text-sm">End Date</label>
+              <label className="block text-sm font-semibold mb-1">End Date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full p-3 border rounded-md"
+                disabled={submitting}
+                className="w-full rounded-lg border p-3 text-sm"
               />
-              {errors.end_date && <p className="text-red-500 text-xs">{errors.end_date[0]}</p>}
             </div>
           </div>
 
           {/* Description */}
-          <div className="mb-6">
-            <label className="block text-sm font-bold">Description</label>
-            <ReactQuillEditor
-              // ref={quillRef}
-              value={description}
-              onChange={setDescription}
-              placeholder="Enter Description..."
-            />
+          <div>
+            <label className="block text-sm font-semibold mb-2">Description</label>
+            <SunEditorField value={description} onChange={setDescription} />
             {errors.description && (
-              <p className="text-red-500 text-xs mt-1">{errors.description[0]}</p>
+              <p className="text-xs text-red-500 mt-2">{errors.description[0]}</p>
             )}
           </div>
 
           {/* Buttons */}
-          <div className="flex mt-5 items-center space-x-4">
+          <div className="flex gap-3">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500"
+              disabled={submitting}
+              className="inline-flex items-center rounded-lg bg-primary px-6 py-2 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
             >
-              <i className="fa-solid fa-save mr-2"></i> Save
+              {submitting ? "Saving..." : "Save"}
             </button>
+
             <button
-              type="reset"
+              type="button"
               onClick={handleReset}
-              className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400"
+              disabled={submitting}
+              className="inline-flex items-center rounded-lg bg-gray-500 px-6 py-2 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
             >
-              <i className="fa-solid fa-redo mr-2"></i> Reset
+              Reset
             </button>
           </div>
         </form>

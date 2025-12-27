@@ -1,63 +1,73 @@
 // src/services/projectService.ts
 import Api from "./Api";
-import Cookies from "js-cookie";
-import type { PaginatedResponse, ApiResponse } from "@/types/common";
+import type { ApiResponse } from "@/types/common";
 import type { Project } from "@/types/project";
 
-const token = Cookies.get("token");
+type Paginator<T> = {
+    current_page?: number;
+    per_page?: number;
+    total?: number;
+    data?: T[];  // Laravel paginate default
+    items?: T[]; // fallback
+};
 
-const projectService = {
-    async getAll(page = 1, search = "") {
-        const res = await Api.get<PaginatedResponse<Project>>("/api/admin/projects", {
+export type ProjectListResult = {
+    items: Project[];
+    pagination: {
+        current_page: number;
+        per_page: number;
+        total: number;
+    };
+};
+
+export const projectService = {
+    /**
+     * Get all projects (search + pagination)
+     * Backend bisa return paginator Laravel -> data.data (array)
+     * atau custom -> data.items
+     */
+    async getAll(page = 1, search = ""): Promise<ProjectListResult> {
+        const res = await Api.get<ApiResponse<Paginator<Project>>>("/api/admin/projects", {
             params: { page, search },
         });
 
-        // handle dua kemungkinan struktur: data.items atau data.data
-        const dataList = res.data.data.items || res.data.data.data || [];
+        const payload = res.data.data;
+
+        const items = payload?.data ?? payload?.items ?? [];
 
         return {
-            items: dataList,
+            items,
             pagination: {
-                current_page: res.data.data.current_page || 1,
-                per_page: res.data.data.per_page || 10,
-                total: res.data.data.total || dataList.length,
+                current_page: payload?.current_page ?? page,
+                per_page: payload?.per_page ?? 10,
+                total: payload?.total ?? items.length,
             },
         };
     },
 
-
     async getById(id: number | string): Promise<Project> {
-        const res = await Api.get<ApiResponse<Project>>(`/api/admin/projects/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await Api.get<ApiResponse<Project>>(`/api/admin/projects/${id}`);
         return res.data.data;
     },
 
     async create(formData: FormData): Promise<ApiResponse<Project>> {
         const res = await Api.post<ApiResponse<Project>>("/api/admin/projects", formData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
+            headers: { "Content-Type": "multipart/form-data" },
         });
         return res.data;
     },
 
     async update(id: number | string, formData: FormData): Promise<ApiResponse<Project>> {
-        formData.append("_method", "PUT");
+        if (!formData.has("_method")) formData.append("_method", "PUT");
+
         const res = await Api.post<ApiResponse<Project>>(`/api/admin/projects/${id}`, formData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
+            headers: { "Content-Type": "multipart/form-data" },
         });
         return res.data;
     },
 
     async delete(id: number | string): Promise<ApiResponse<null>> {
-        const res = await Api.delete<ApiResponse<null>>(`/api/admin/projects/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await Api.delete<ApiResponse<null>>(`/api/admin/projects/${id}`);
         return res.data;
     },
 };

@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
 import toast from "react-hot-toast";
-import hljs from "highlight.js";
 
 import LayoutWeb from "@/layouts/Web";
 import SEO from "@/components/general/SEO";

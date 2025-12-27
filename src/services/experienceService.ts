@@ -1,85 +1,63 @@
+// src/services/experienceService.ts
 import Api from "./Api";
-import Cookies from "js-cookie";
-import { Experience, ExperienceResponse } from "@/types/experience";
-import { ApiResponse } from "../types/common";
+import type { Experience, ExperienceResponse } from "@/types/experience";
+import type { ApiResponse } from "@/types/common";
 
-const token = Cookies.get("token");
+/**
+ * Laravel paginator shape:
+ * { current_page, per_page, total, data: [...] }
+ * Kadang backend lain pakai "items" bukan "data"
+ */
+type Paginator<T> = {
+    current_page?: number;
+    per_page?: number;
+    total?: number;
+    data?: T[];
+    items?: T[];
+};
 
 export const experienceService = {
     /**
-     * Ambil daftar Experience dengan pagination dan search
+     * Get experiences (supports Laravel paginator response)
      */
     async getAll(page = 1, search = ""): Promise<ExperienceResponse> {
-        const res = await Api.get<ApiResponse<ExperienceResponse>>(
-            "/api/admin/experiences",
-            {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { page, search },
-            }
-        );
-        return res.data.data;
+        const res = await Api.get<ApiResponse<Paginator<Experience>>>("/api/admin/experiences", {
+            params: { page, search },
+        });
+
+        const payload = res.data.data;
+
+        const list: Experience[] = payload?.data ?? payload?.items ?? [];
+
+        return {
+            data: list,
+            current_page: payload?.current_page ?? 1,
+            per_page: payload?.per_page ?? 10,
+            total: payload?.total ?? list.length,
+        };
     },
 
-    /**
-     * Ambil detail 1 Experience berdasarkan ID
-     */
     async getById(id: number | string): Promise<Experience> {
-        const res = await Api.get<ApiResponse<Experience>>(
-            `/api/admin/experiences/${id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await Api.get<ApiResponse<Experience>>(`/api/admin/experiences/${id}`);
         return res.data.data;
     },
 
-    /**
-     * Tambah Experience baru
-     */
     async create(formData: FormData): Promise<ApiResponse<Experience>> {
-        const res = await Api.post<ApiResponse<Experience>>(
-            "/api/admin/experiences",
-            formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
-            }
-        );
+        const res = await Api.post<ApiResponse<Experience>>("/api/admin/experiences", formData);
         return res.data;
     },
 
-    /**
-     * Update Experience (Edit)
-     */
-    async update(
-        id: number | string,
-        formData: FormData
-    ): Promise<ApiResponse<Experience>> {
-        formData.append("_method", "PUT");
-        const res = await Api.post<ApiResponse<Experience>>(
-            `/api/admin/experiences/${id}`,
-            formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
-            }
-        );
+    async update(id: number | string, formData: FormData): Promise<ApiResponse<Experience>> {
+        if (!formData.has("_method")) formData.append("_method", "PUT");
+
+        const res = await Api.post<ApiResponse<Experience>>(`/api/admin/experiences/${id}`, formData);
         return res.data;
     },
 
-    /**
-     * Hapus Experience berdasarkan ID
-     */
     async delete(id: number | string): Promise<ApiResponse<null>> {
-        const res = await Api.delete<ApiResponse<null>>(
-            `/api/admin/experiences/${id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await Api.delete<ApiResponse<null>>(`/api/admin/experiences/${id}`);
         return res.data;
     },
 };
 
-// ✅ default export agar bisa dipanggil dari services/index.ts
 export default experienceService;

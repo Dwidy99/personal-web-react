@@ -9,7 +9,12 @@ const Api = axios.create({
 
 Api.interceptors.request.use((config) => {
   const token = Cookies.get("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
 
@@ -17,14 +22,22 @@ Api.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status;
+
+    // Avoid redirect loops
+    const path = window.location.pathname;
+
     if (status === 401) {
       Cookies.remove("token");
       Cookies.remove("user");
       Cookies.remove("permissions");
-      window.location.href = "/";
-    } else if (status === 403) {
-      window.location.href = "/forbidden";
+
+      if (path !== "/login") window.location.href = "/login";
     }
+
+    // if (status === 403) {
+    //   if (path !== "/forbidden") window.location.href = "/forbidden";
+    // }
+
     return Promise.reject(err);
   }
 );

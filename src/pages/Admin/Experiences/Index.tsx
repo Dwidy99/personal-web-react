@@ -1,239 +1,291 @@
-import { useEffect, useState, ChangeEvent } from "react";
-import { Link } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
-import Cookies from "js-cookie";
-import hasAnyPermissions from "../../../utils/Permissions";
-import Pagination from "../../../components/general/Pagination";
-import { confirmAlert } from "react-confirm-alert";
+import { useEffect, useRef, useState, ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import { confirmAlert } from "react-confirm-alert";
+import hasAnyPermission from "@/utils/Permissions";
+import Pagination from "@/components/general/Pagination";
 
-// Service
-import { Api } from "../../../services";
+import { MdPersonSearch } from "react-icons/md";
+import { FaCirclePlus, FaTrash } from "react-icons/fa6";
+import { FaEdit } from "react-icons/fa";
 
-// Icons
-import { FaUserEdit } from "react-icons/fa";
-import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
-import { FaCirclePlus } from "react-icons/fa6";
+import experienceService from "@/services/experienceService";
+import type { Experience } from "@/types/experience";
+import formatDateTime from "@/utils/Date";
 
-// Types
-import { Experience } from "../../../types/experience";
-
-interface PaginationMeta {
-  currentPage: number;
-  perPage: number;
+type PaginationState = {
+  current_page: number;
+  per_page: number;
   total: number;
-}
+};
 
 export default function ExperiencesIndex() {
-  document.title = "Experience Page - My Portfolio";
+  document.title = "Experiences - Admin";
 
-  // ✅ State
+  const navigate = useNavigate();
+
+  // permission guard (frontend)
+  const canView = hasAnyPermission(["experiences.index"]);
+  const canCreate = hasAnyPermission(["experiences.create"]);
+  const canEdit = hasAnyPermission(["experiences.edit"]);
+  const canDelete = hasAnyPermission(["experiences.delete"]);
+
+  // StrictMode guard: prevent double fetch on DEV
+  const didFetchRef = useRef(false);
+
+  const [loading, setLoading] = useState(true);
+  const [keywords, setKeywords] = useState("");
   const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    currentPage: 1,
-    perPage: 10,
+  const [pagination, setPagination] = useState<PaginationState>({
+    current_page: 1,
+    per_page: 10,
     total: 0,
   });
-  const [keywords, setKeywords] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
 
-  const token = Cookies.get("token");
-
-  // ✅ Fetch data
-  const fetchData = async (pageNumber = 1, searchKeyword = "") => {
+  const fetchData = async (pageNumber = 1, searchKeyword = ""): Promise<void> => {
     setLoading(true);
-    try {
-      const response = await Api.get(`/api/admin/experiences`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { search: searchKeyword, page: pageNumber },
-      });
 
-      const { data } = response.data;
+    try {
+      const data = await experienceService.getAll(pageNumber, searchKeyword);
+
       setExperiences(data.data);
       setPagination({
-        currentPage: data.current_page,
-        perPage: data.per_page,
+        current_page: data.current_page,
+        per_page: data.per_page,
         total: data.total,
       });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to fetch data");
+    } catch (err: unknown) {
+      const error = err as any;
+      const status: number | undefined = error?.response?.status;
+
+      if (status === 403) {
+        toast.error("You are not allowed to access Experiences.");
+        navigate("/forbidden");
+        return;
+      }
+
+      toast.error(error?.response?.data?.message || "Failed to fetch experiences");
     } finally {
       setLoading(false);
     }
   };
 
+  // Guard route
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!canView) navigate("/forbidden");
+  }, [canView, navigate]);
 
-  // ✅ Search handler
-  const searchData = (e: ChangeEvent<HTMLInputElement>) => {
+  // Initial fetch
+  useEffect(() => {
+    if (!canView) return;
+    if (didFetchRef.current) return;
+    didFetchRef.current = true;
+
+    void fetchData(1, "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView]);
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setKeywords(value);
-    fetchData(1, value);
+    void fetchData(1, value);
   };
 
-  //  Delete handler
-  const deleteExperience = (id: number) => {
+  const handleDelete = (id: number | string) => {
     confirmAlert({
-      title: "Are you sure?",
-      message: "Do you really want to delete this data?",
+      title: "Delete Experience?",
+      message: "Are you sure you want to delete this experience?",
       buttons: [
         {
-          label: "YES",
+          label: "Yes",
           onClick: async () => {
-            // 1️⃣ UI langsung hilang
-            setExperiences((prev) => prev.filter((item) => item.id !== id));
+            // optimistic UI
+            setExperiences((prev) => prev.filter((x) => x.id !== id));
 
             try {
-              // 2️⃣ Delete API
-              await Api.delete(`/api/admin/experiences/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              await experienceService.delete(id);
+              toast.success("Experience deleted");
+              void fetchData(pagination.current_page, keywords);
+            } catch (err: unknown) {
+              const error = err as any;
+              const status: number | undefined = error?.response?.status;
 
-              toast.success("Deleted successfully!");
+              if (status === 403) {
+                toast.error("You are not allowed to delete experiences.");
+              } else {
+                toast.error(error?.response?.data?.message || "Failed to delete experience");
+              }
 
-              // 3️⃣ Sync data ulang dengan state terbaru
-              setTimeout(() => {
-                fetchData(((prev) => prev)(pagination.currentPage) ?? 1, keywords);
-              }, 0);
-            } catch (err: any) {
-              toast.error(err.response?.data?.message || "Failed to delete");
-
-              // ❗ 4️⃣ Optional: restore data kalau gagal
-              fetchData(pagination.currentPage ?? 1, keywords);
+              // rollback -> re-fetch
+              void fetchData(pagination.current_page, keywords);
             }
           },
         },
-        { label: "NO", onClick: () => {} },
+        { label: "No" },
       ],
     });
   };
 
-  // ✅ Page change handler
-  const handlePageChange = (pageNumber: number) => {
-    fetchData(pageNumber, keywords);
+  const handlePageChange = (page: number) => {
+    void fetchData(page, keywords);
   };
 
   return (
     <LayoutAdmin>
-      <div className="rounded-md border border-stroke bg-white p-6 shadow-md dark:border-strokedark dark:bg-boxdark">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">Experience Lists</h4>
+      <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        {/* Header */}
+        <div className="border-b border-stroke px-4 py-4 sm:px-6 dark:border-strokedark">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-12 sm:items-center">
+            {/* Title */}
+            <h4 className="sm:col-span-4 text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
+              Experiences List
+            </h4>
 
-        {/* Top Controls */}
-        <div className="flex flex-col md:flex-row justify-between mb-4 gap-3">
-          {/* Add Button */}
-          {hasAnyPermissions(["experiences.create"]) && (
-            <Link
-              to="/admin/experiences/create"
-              className="inline-flex items-center justify-center rounded-md bg-meta-5 py-2 px-4 text-sm font-medium text-white hover:bg-opacity-90"
-            >
-              <FaCirclePlus className="text-white mr-2" /> Add New
-            </Link>
-          )}
+            <div className="grid grid-cols-3 gap-4 sm:col-span-5 items-center">
+              {/* Button */}
+              <div className="flex justify-start">
+                {canCreate && (
+                  <Link
+                    to="/admin/experiences/create"
+                    className="inline-flex h-11 items-center justify-center rounded-lg bg-meta-5 px-4 text-sm font-medium text-white hover:bg-opacity-90"
+                  >
+                    <FaCirclePlus className="mr-2 h-4 w-4" />
+                    Add
+                  </Link>
+                )}
+              </div>
 
-          {/* Search Box */}
-          <div className="relative w-full md:w-1/3">
-            <input
-              type="text"
-              onChange={searchData}
-              value={keywords}
-              placeholder="Search here..."
-              className="w-full border border-stroke rounded-lg p-2 pl-10 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <MdPersonSearch className="absolute left-3 top-2.5 text-gray-400" />
+              {/* Input */}
+              <div className="col-span-2 relative w-full">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <MdPersonSearch className="h-5 w-5 text-gray-500" />
+                </span>
+                <input
+                  type="text"
+                  value={keywords}
+                  onChange={handleSearch}
+                  placeholder="Search experience..."
+                  className="h-11 w-full rounded-lg border border-stroke bg-transparent pl-10 pr-3 text-sm
+        text-slate-800 dark:text-white dark:border-strokedark
+        focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto border-collapse border border-stroke dark:border-strokedark">
-            <thead>
-              <tr className="bg-gray-200 dark:bg-meta-4 text-sm text-black dark:text-white">
-                <th className="py-3 px-4 border border-stroke w-[5%]">No</th>
-                <th className="py-3 px-4 border border-stroke w-[20%]">Job Title</th>
-                <th className="py-3 px-4 border border-stroke w-[10%]">Company Icon</th>
-                <th className="py-3 px-4 border border-stroke w-[15%]">Start Date</th>
-                <th className="py-3 px-4 border border-stroke w-[15%]">End Date</th>
-                <th className="py-3 px-4 border border-stroke w-[10%]">Actions</th>
-              </tr>
-            </thead>
+        {/* Body */}
+        <div className="p-4 sm:p-6">
+          {loading ? (
+            <div className="py-14 text-center text-sm text-gray-500 dark:text-gray-400">
+              Loading experiences...
+            </div>
+          ) : (
+            <>
+              <div className="w-full overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
+                <table className="min-w-[900px] w-full border-collapse">
+                  <thead className="bg-gray-100 dark:bg-meta-4">
+                    <tr className="text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      <th className="w-[80px] border-b border-stroke px-4 py-3 text-center dark:border-strokedark">
+                        No.
+                      </th>
+                      <th className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                        Name
+                      </th>
+                      <th className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                        Start
+                      </th>
+                      <th className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                        End
+                      </th>
+                      <th className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                        Image
+                      </th>
+                      <th className="w-[140px] border-b border-stroke px-4 py-3 text-center dark:border-strokedark">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
 
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-300">
-                    Loading data...
-                  </td>
-                </tr>
-              ) : experiences.length > 0 ? (
-                experiences.map((exp, index) => (
-                  <tr key={exp.id} className="text-center text-sm border-t dark:border-strokedark">
-                    <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">{exp.name}</td>
-                    <td className="py-3 px-4">
-                      {exp.image ? (
-                        <img
-                          src={exp.image}
-                          alt={exp.name}
-                          className="w-10 h-10 mx-auto rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-400">No Image</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {new Date(exp.start_date).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="py-3 px-4">
-                      {new Date(exp.end_date).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="py-3 px-4 flex justify-center gap-2">
-                      <Link
-                        to={`/admin/experiences/edit/${exp.id}`}
-                        className="inline-flex items-center justify-center font-medium text-primary"
-                      >
-                        <FaUserEdit className="text-lg" />
-                      </Link>
+                  <tbody className="text-sm text-slate-700 dark:text-slate-200">
+                    {experiences.length > 0 ? (
+                      experiences.map((item, index) => (
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                          <td className="border-b border-stroke px-4 py-3 text-center dark:border-strokedark">
+                            {index + 1 + (pagination.current_page - 1) * pagination.per_page}
+                          </td>
 
-                      {hasAnyPermissions(["experiences.delete"]) && (
-                        <button
-                          onClick={() => deleteExperience(exp.id)}
-                          className="inline-flex items-center justify-center font-medium text-danger"
-                        >
-                          <MdDeleteForever className="text-xl" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-[#9D5425] dark:text-gray-300">
-                    No Data Found!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                          <td className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                            {item.name}
+                          </td>
+
+                          <td className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                            {formatDateTime(item.start_date)}
+                          </td>
+
+                          <td className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                            {formatDateTime(item.end_date)}
+                          </td>
+
+                          <td className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="h-10 w-10 rounded-md object-cover"
+                              />
+                            ) : (
+                              <span className="text-xs text-gray-500">No image</span>
+                            )}
+                          </td>
+
+                          <td className="border-b border-stroke px-4 py-3 dark:border-strokedark">
+                            <div className="flex items-center justify-center gap-3">
+                              {canEdit && (
+                                <Link
+                                  to={`/admin/experiences/edit/${item.id}`}
+                                  className="inline-flex items-center justify-center rounded-md p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-white/10"
+                                  title="Edit"
+                                >
+                                  <FaEdit />
+                                </Link>
+                              )}
+
+                              {canDelete && (
+                                <button
+                                  onClick={() => handleDelete(item.id)}
+                                  className="inline-flex items-center justify-center rounded-md p-2 text-red-600 hover:bg-red-50 dark:hover:bg-white/10"
+                                  title="Delete"
+                                >
+                                  <FaTrash />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-10 text-center text-red-500 font-medium">
+                          No Data Found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pagination
+                className="mt-4 flex justify-end"
+                currentPage={pagination.current_page}
+                totalCount={pagination.total}
+                pageSize={pagination.per_page}
+                onPageChange={handlePageChange}
+              />
+            </>
+          )}
         </div>
-
-        {/* Pagination */}
-        <Pagination
-          className="flex justify-end my-4"
-          currentPage={pagination.currentPage}
-          totalCount={pagination.total}
-          pageSize={pagination.perPage}
-          onPageChange={handlePageChange}
-        />
       </div>
     </LayoutAdmin>
   );
