@@ -70,7 +70,7 @@ export default function PostEdit() {
     if (imagePreview) return imagePreview;
 
     if (post?.image) {
-      return `${import.meta.env.VITE_API_BASE_URL}/storage/posts/${post.image}`;
+      return `${post.image}`;
     }
 
     return "";
