@@ -67,7 +67,13 @@ export default function PostEdit() {
   );
 
   const currentImage = useMemo(() => {
-    return imagePreview || post?.image || "";
+    if (imagePreview) return imagePreview;
+
+    if (post?.image) {
+      return `${import.meta.env.VITE_API_BASE_URL}/storage/posts/${post.image}`;
+    }
+
+    return "";
   }, [imagePreview, post?.image]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
