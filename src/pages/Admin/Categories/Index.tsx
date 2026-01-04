@@ -16,13 +16,11 @@ export default function CategoriesIndex() {
 
   const navigate = useNavigate();
 
-  // ✅ Permission (frontend guard)
   const canView = hasAnyPermissions(["categories.index"]);
   const canCreate = hasAnyPermissions(["categories.create"]);
   const canDelete = hasAnyPermissions(["categories.delete"]);
-  const canEdit = hasAnyPermissions(["categories.edit"]); // kalau ada, opsional
+  const canEdit = hasAnyPermissions(["categories.edit"]);
 
-  // ✅ StrictMode guard (DEV): cegah double fetch
   const didFetchRef = useRef(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -35,7 +33,6 @@ export default function CategoriesIndex() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchData = async (page = 1, search = ""): Promise<void> => {
-    // ✅ jangan fetch kalau tidak punya akses
     if (!canView) return;
 
     setLoading(true);
@@ -54,7 +51,7 @@ export default function CategoriesIndex() {
 
       if (status === 403) {
         toast.error("You are not allowed to access Categories.");
-        navigate("/forbidden"); // atau "/admin/dashboard"
+        navigate("/forbidden");
         return;
       }
 
@@ -64,21 +61,16 @@ export default function CategoriesIndex() {
     }
   };
 
-  // ✅ Guard route: kalau user buka URL langsung
   useEffect(() => {
-    if (!canView) {
-      navigate("/forbidden"); // atau "/admin/dashboard"
-    }
+    if (!canView) navigate("/forbidden");
   }, [canView, navigate]);
 
-  // ✅ Initial fetch sekali saja
   useEffect(() => {
     if (!canView) return;
     if (didFetchRef.current) return;
     didFetchRef.current = true;
 
     void fetchData(1, "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView]);
 
   const searchData = (e: ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +87,6 @@ export default function CategoriesIndex() {
         {
           label: "YES",
           onClick: async () => {
-            // optimistic
             setCategories((prev) => prev.filter((c) => c.id !== id));
 
             try {
@@ -124,30 +115,28 @@ export default function CategoriesIndex() {
 
   return (
     <LayoutAdmin>
-      <div className="border-b border-stroke px-4 py-4 sm:px-6 dark:border-strokedark">
-        <div className="grid grid-cols-1 gap-3 pb-4 sm:grid-cols-12 sm:items-center">
-          {/* Title */}
-          <h4 className="sm:col-span-4 text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
+      <div className="border border-stroke px-4 py-4 sm:px-6 dark:border-strokedark">
+        <div>
+          <h4 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
             Categories List
           </h4>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Manage categories, icons, and actions.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            {canCreate && (
+              <Link
+                to="/admin/categories/create"
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-meta-5 px-4 text-sm font-medium text-white hover:bg-opacity-90 transition"
+              >
+                <FaCirclePlus className="mr-2 h-4 w-4" />
+                Add
+              </Link>
+            )}
 
-          {/* Right side controls */}
-          <div className="grid grid-cols-3 gap-4 sm:col-span-5 items-center">
-            {/* Button */}
-            <div className="flex justify-start">
-              {canCreate && (
-                <Link
-                  to="/admin/categories/create"
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-meta-5 px-4 text-sm font-medium text-white hover:bg-opacity-90"
-                >
-                  <FaCirclePlus className="mr-2 h-4 w-4" />
-                  Add
-                </Link>
-              )}
-            </div>
-
-            {/* Input */}
-            <div className="col-span-2 relative w-full">
+            <div className="relative w-full sm:w-[320px]">
               <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <MdPersonSearch className="h-5 w-5 text-gray-500" />
               </span>
@@ -155,25 +144,24 @@ export default function CategoriesIndex() {
               <input
                 type="text"
                 value={keywords}
-                onChange={searchData} // atau handleSearch kalau nama fungsinya itu
+                onChange={searchData}
                 placeholder="Search category..."
                 className="h-11 w-full rounded-lg border border-stroke bg-transparent pl-10 pr-3 text-sm
-            text-slate-800 dark:text-white dark:border-strokedark
-            focus:outline-none focus:ring-2 focus:ring-primary"
+                  text-slate-800 dark:text-white dark:border-strokedark
+                  focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
         </div>
 
-        {/* Loading */}
         {loading ? (
-          <div className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="py-10 flex items-center justify-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400/60 border-t-transparent" />
             Loading categories...
           </div>
         ) : (
           <>
-            {/* Desktop/Tablet Table */}
-            <div className="hidden sm:block overflow-x-auto rounded-md border border-stroke dark:border-strokedark">
+            <div className="mt-4 hidden sm:block overflow-x-auto rounded-md border border-stroke dark:border-strokedark">
               <table className="w-full min-w-[600px] text-sm">
                 <thead className="bg-gray-100 dark:bg-meta-4">
                   <tr>
@@ -221,10 +209,10 @@ export default function CategoriesIndex() {
 
                         <td className="p-3">
                           <div className="flex items-center justify-center gap-2">
-                            {(canEdit || true) && (
+                            {canEdit && (
                               <Link
                                 to={`/admin/categories/edit/${cat.id}`}
-                                className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                                className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90 transition"
                                 title="Edit"
                               >
                                 <FaUserEdit />
@@ -234,7 +222,7 @@ export default function CategoriesIndex() {
                             {canDelete && (
                               <button
                                 onClick={() => handleDelete(cat.id)}
-                                className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
+                                className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90 transition"
                                 title="Delete"
                               >
                                 <MdDeleteForever />
@@ -255,8 +243,7 @@ export default function CategoriesIndex() {
               </table>
             </div>
 
-            {/* Mobile Cards */}
-            <div className="grid sm:hidden gap-3">
+            <div className="mt-4 grid sm:hidden gap-3">
               {categories.length > 0 ? (
                 categories.map((cat, i) => (
                   <div
@@ -283,12 +270,14 @@ export default function CategoriesIndex() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Link
-                        to={`/admin/categories/edit/${cat.id}`}
-                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white"
-                      >
-                        <FaUserEdit />
-                      </Link>
+                      {canEdit && (
+                        <Link
+                          to={`/admin/categories/edit/${cat.id}`}
+                          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white"
+                        >
+                          <FaUserEdit />
+                        </Link>
+                      )}
 
                       {canDelete && (
                         <button
@@ -306,7 +295,6 @@ export default function CategoriesIndex() {
               )}
             </div>
 
-            {/* Pagination */}
             <div className="flex justify-center sm:justify-end mt-6">
               <Pagination
                 currentPage={pagination.current_page}
