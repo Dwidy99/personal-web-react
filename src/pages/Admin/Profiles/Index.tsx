@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState, FormEvent, useCallback } from "react";
+import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
-import Cookies from "js-cookie";
 import toast from "react-hot-toast";
-import { profileService } from "../../../services";
+import profileService from "@/services/profileService";
 import SunEditorField from "@/components/general/SunEditor";
 
 type FieldErrors = Record<string, string[]>;
@@ -40,10 +39,7 @@ function parseFieldErrors(payload: any): FieldErrors {
 export default function ProfilesIndex() {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const user = Cookies.get("user") ? JSON.parse(Cookies.get("user") as string) : null;
-
   const [profileId, setProfileId] = useState<number | null>(null);
-
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -58,63 +54,72 @@ export default function ProfilesIndex() {
     document.title = "Edit Profile - My Portfolio";
   }, []);
 
-  const fetchProfile = useCallback(async () => {
-    if (!user?.id) {
-      toast.error("User not authenticated");
-      setLoading(false);
-      return;
-    }
+  useEffect(() => {
+    let alive = true;
 
-    setLoading(true);
-    try {
-      const data = await profileService.getByUserId(user.id);
+    const run = async () => {
+      setLoading(true);
+      try {
+        const data = await profileService.getMe();
 
-      if (!data) {
-        setProfileId(null);
-        setForm(EMPTY_FORM);
-        setInitialForm(EMPTY_FORM);
-        setPreviewImage("");
-        setInitialImageUrl("");
+        if (!alive) return;
+
+        if (!data) {
+          setProfileId(null);
+          setForm(EMPTY_FORM);
+          setInitialForm(EMPTY_FORM);
+          setPreviewImage("");
+          setInitialImageUrl("");
+          setErrors({});
+          toast.error("Profile not found");
+          return;
+        }
+
+        setProfileId(Number(data.id));
+
+        const mapped: ProfileForm = {
+          name: data.name ?? "",
+          title: data.title ?? "",
+          image: null,
+          about: data.about ?? "",
+          caption: data.caption ?? "",
+          description: data.description ?? "",
+          content: data.content ?? "",
+          tech_description: data.tech_description ?? "",
+        };
+
+        setForm(mapped);
+        setInitialForm(mapped);
+
+        const imgUrl = data.image ?? "";
+        setPreviewImage(imgUrl);
+        setInitialImageUrl(imgUrl);
+
         setErrors({});
-        toast.error("Profile not found");
-        return;
+      } catch (error: any) {
+        if (!alive) return;
+        toast.error(error?.response?.data?.message || "Failed to load profile");
+      } finally {
+        if (alive) setLoading(false);
       }
+    };
 
-      setProfileId(Number(data.id));
+    run();
 
-      const mapped: ProfileForm = {
-        name: data.name ?? "",
-        title: data.title ?? "",
-        image: null,
-        about: data.about ?? "",
-        caption: data.caption ?? "",
-        description: data.description ?? "",
-        content: data.content ?? "",
-        tech_description: data.tech_description ?? "",
-      };
-
-      setForm(mapped);
-      setInitialForm(mapped);
-
-      const imgUrl = data.image ?? "";
-      setPreviewImage(imgUrl);
-      setInitialImageUrl(imgUrl);
-
-      setErrors({});
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id]);
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (!form.image) return;
+    const url = URL.createObjectURL(form.image);
+    setPreviewImage(url);
+    return () => URL.revokeObjectURL(url);
+  }, [form.image]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user?.id) return;
 
     if (!profileId) {
       toast.error("Profile ID not found");
@@ -129,17 +134,39 @@ export default function ProfilesIndex() {
       formData.append("name", form.name);
       formData.append("title", form.title);
       formData.append("about", form.about);
+      formData.append("caption", form.caption);
       formData.append("description", form.description);
       formData.append("content", form.content);
-      formData.append("caption", form.caption);
       formData.append("tech_description", form.tech_description);
       if (form.image) formData.append("image", form.image);
 
       const res = await profileService.update(profileId, formData);
-
       toast.success(res.message || "Profile updated");
 
-      await fetchProfile();
+      const refreshed = await profileService.getMe();
+      if (refreshed) {
+        setProfileId(Number(refreshed.id));
+
+        const mapped: ProfileForm = {
+          name: refreshed.name ?? "",
+          title: refreshed.title ?? "",
+          image: null,
+          about: refreshed.about ?? "",
+          caption: refreshed.caption ?? "",
+          description: refreshed.description ?? "",
+          content: refreshed.content ?? "",
+          tech_description: refreshed.tech_description ?? "",
+        };
+
+        setForm(mapped);
+        setInitialForm(mapped);
+
+        const imgUrl = refreshed.image ?? "";
+        setPreviewImage(imgUrl);
+        setInitialImageUrl(imgUrl);
+
+        setErrors({});
+      }
 
       setForm((prev) => ({ ...prev, image: null }));
       if (fileRef.current) fileRef.current.value = "";
@@ -152,13 +179,6 @@ export default function ProfilesIndex() {
     }
   };
 
-  useEffect(() => {
-    if (!form.image) return;
-    const url = URL.createObjectURL(form.image);
-    setPreviewImage(url);
-    return () => URL.revokeObjectURL(url);
-  }, [form.image]);
-
   const handleReset = () => {
     setErrors({});
     setForm({ ...initialForm, image: null });
@@ -169,17 +189,9 @@ export default function ProfilesIndex() {
   if (loading) {
     return (
       <LayoutAdmin>
-        <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
-          <div className="border-b border-stroke px-4 py-4 sm:px-6 dark:border-strokedark">
-            <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100">
-              Edit Profile
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Loading profile...</p>
-          </div>
-          <div className="p-6">
-            <div className="py-16 text-center text-sm text-gray-500 dark:text-gray-400">
-              Loading...
-            </div>
+        <div className="p-6">
+          <div className="py-16 text-center text-sm text-gray-500 dark:text-gray-400">
+            Loading...
           </div>
         </div>
       </LayoutAdmin>
@@ -188,27 +200,49 @@ export default function ProfilesIndex() {
 
   return (
     <LayoutAdmin>
-      <div className="mb-4">
-        <Link
-          to="/admin/dashboard"
-          className="inline-flex items-center justify-center rounded-lg bg-meta-4 text-white py-2 px-5 text-sm font-medium hover:bg-opacity-90"
-        >
-          Back
-        </Link>
-      </div>
+      <Link
+        to="/admin/dashboard"
+        className="inline-flex h-11 items-center justify-center rounded-lg bg-meta-4 px-5 my-2 text-sm font-medium text-white hover:bg-opacity-90"
+      >
+        Back
+      </Link>
 
       <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="border-b border-stroke px-4 py-4 sm:px-6 dark:border-strokedark">
-          <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100">
-            Edit Profile
-          </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Update your profile details and content.
-          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:px-2">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100">
+                Edit Profile
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Update your profile details and content.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                type="submit"
+                form="profile-form"
+                disabled={submitting}
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-blue-800 px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
+              >
+                {submitting ? "Saving..." : "Save"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={submitting}
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-gray-500 px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="p-4 sm:p-6 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="profile-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
@@ -245,7 +279,7 @@ export default function ProfilesIndex() {
               </label>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-[120px_1fr]">
-                <div className="w-28 h-28">
+                <div className="h-28 w-28">
                   {previewImage ? (
                     <img
                       src={previewImage}
@@ -273,45 +307,52 @@ export default function ProfilesIndex() {
               </div>
             </div>
 
-            {[
-              { key: "about", label: "About" },
-              { key: "description", label: "Description" },
-              { key: "content", label: "Content" },
-              { key: "tech_description", label: "Tech Description" },
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                  {label}
-                </label>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                About
+              </label>
+              <SunEditorField
+                value={form.about}
+                onChange={(val) => setForm((p) => ({ ...p, about: val }))}
+              />
+              {errors.about && <p className="mt-2 text-xs text-red-500">{errors.about[0]}</p>}
+            </div>
 
-                <SunEditorField
-                  value={(form as any)[key]}
-                  onChange={(val) => setForm((prev) => ({ ...prev, [key]: val }))}
-                />
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Description
+              </label>
+              <SunEditorField
+                value={form.description}
+                onChange={(val) => setForm((p) => ({ ...p, description: val }))}
+              />
+              {errors.description && (
+                <p className="mt-2 text-xs text-red-500">{errors.description[0]}</p>
+              )}
+            </div>
 
-                {(errors as any)[key] && (
-                  <p className="mt-2 text-xs text-red-500">{(errors as any)[key][0]}</p>
-                )}
-              </div>
-            ))}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Content
+              </label>
+              <SunEditorField
+                value={form.content}
+                onChange={(val) => setForm((p) => ({ ...p, content: val }))}
+              />
+              {errors.content && <p className="mt-2 text-xs text-red-500">{errors.content[0]}</p>}
+            </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
-              >
-                {submitting ? "Saving..." : "Save"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={submitting}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-gray-500 px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
-              >
-                Reset
-              </button>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Tech Description
+              </label>
+              <SunEditorField
+                value={form.tech_description}
+                onChange={(val) => setForm((p) => ({ ...p, tech_description: val }))}
+              />
+              {errors.tech_description && (
+                <p className="mt-2 text-xs text-red-500">{errors.tech_description[0]}</p>
+              )}
             </div>
           </form>
         </div>
