@@ -1,6 +1,7 @@
-import { forwardRef } from "react";
+import { forwardRef, type ComponentProps } from "react";
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
+import Api from "@/services/Api";
 
 type Props = {
   value: string;
@@ -9,19 +10,63 @@ type Props = {
   height?: string;
 };
 
+type SunEditorOnImageUploadBefore = NonNullable<
+  ComponentProps<typeof SunEditor>["onImageUploadBefore"]
+>;
+
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
   ({ value, onChange, placeholder = "Write something...", height = "280px" }, _ref) => {
+    const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files, info, uploadHandler) => {
+      const file = files?.[0];
+
+      if (!file) {
+        return false;
+      }
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      Api.post<{ url: string }>("/api/admin/projects/editor-upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+        .then((res) => {
+          const imageUrl = res.data?.url;
+
+          if (!imageUrl) {
+            throw new Error("Image URL not returned from server");
+          }
+
+          uploadHandler({
+            result: [
+              {
+                url: imageUrl,
+                name: file.name,
+                size: file.size,
+              },
+            ],
+          });
+        })
+        .catch((error) => {
+          console.error("Editor image upload failed:", error, info);
+          alert("Upload gambar gagal");
+        });
+
+      return undefined;
+    };
+
     return (
       <div className="w-full">
         <SunEditor
-          // ref tidak terlalu dibutuhkan untuk basic usage
           setContents={value}
           onChange={onChange}
+          onImageUploadBefore={handleImageUploadBefore}
           setOptions={{
             height,
             placeholder,
+            imageUploadSizeLimit: 1024 * 1024 * 5,
             buttonList: [
-              // default
               ["undo", "redo"],
               ["font", "fontSize", "formatBlock"],
               ["paragraphStyle", "blockquote"],
@@ -34,7 +79,6 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
               ["fullScreen", "showBlocks", "codeView"],
               ["preview"],
               ["save"],
-              // responsive
               [
                 "%1161",
                 [
