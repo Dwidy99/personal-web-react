@@ -37,6 +37,9 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
 
   const userCookie = Cookies.get("user");
   const user = userCookie ? JSON.parse(userCookie) : { email: "guest@local" };
+  const contentRoutes = ["profiles", "experiences", "categories", "posts"];
+  const mediaRoutes = ["projects", "contacts", "configurations"];
+  const userRoutes = ["roles", "permissions", "users"];
 
   const trigger = useRef<HTMLButtonElement>(null);
   const sidebar = useRef<HTMLDivElement>(null);
@@ -161,7 +164,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <FaWandMagicSparkles className="mr-2" /> CONTENT MANAGEMENT
               </h3>
               <ul className="flex flex-col gap-1">
-                <SidebarLinkGroup activeCondition={activeRoute[2] === "dashboard"}>
+                <SidebarLinkGroup activeCondition={contentRoutes.includes(activeRoute[2])}>
                   {(handleClick, open) => (
                     <>
                       <button
@@ -226,7 +229,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <FaBarsProgress className="mr-2" /> MEDIA MANAGEMENT
               </h3>
               <ul className="flex flex-col gap-1">
-                <SidebarLinkGroup activeCondition={activeRoute[2] === "dashboard"}>
+                <SidebarLinkGroup activeCondition={mediaRoutes.includes(activeRoute[2])}>
                   {(handleClick, open) => (
                     <>
                       <button
@@ -279,7 +282,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               hasAnyPermission(["permissions.index"]) ||
               hasAnyPermission(["users.index"])) && (
               <ul className="flex flex-col gap-1">
-                <SidebarLinkGroup activeCondition={activeRoute[2] === "users"}>
+                <SidebarLinkGroup activeCondition={userRoutes.includes(activeRoute[2])}>
                   {(handleClick, open) => (
                     <>
                       <button

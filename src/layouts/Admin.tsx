@@ -1,5 +1,5 @@
 // src/layouts/Admin.tsx
-import "@/assets/web/css/tailwind.css";
+import "@/assets/admin/css/tailwind.css";
 import "@/assets/admin/css/satoshi.css";
 import "@/assets/admin/css/style.css";
 import { useState } from "react";
@@ -28,7 +28,7 @@ export default function AdminLayout({ children, className }: AdminLayoutProps) {
           <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
           {/* Main Content */}
-          <main className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">{children}</main>
+          <main className="mx-auto w-full max-w-screen-2xl p-4 md:p-6 2xl:p-10">{children}</main>
         </div>
       </div>
     </div>
