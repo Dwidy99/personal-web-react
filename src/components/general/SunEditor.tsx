@@ -30,7 +30,7 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
       placeholder = "Write something...",
       height = "280px",
       minHeight = "220px",
-      maxHeight = "720px",
+      maxHeight,
     },
     ref
   ) => {
