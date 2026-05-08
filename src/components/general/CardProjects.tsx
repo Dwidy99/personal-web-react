@@ -11,14 +11,17 @@ interface CardProjectsProps {
   children?: ReactNode;
 }
 
-/**
- * Helper untuk cek apakah link eksternal
- */
 const isExternalLink = (url: string): boolean => /^https?:\/\//i.test(url);
 
-/**
- * CardProjects Component
- */
+function toPlainText(value?: string): string {
+  return DOMPurify.sanitize(value || "", {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  })
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default function CardProjects({
   title,
   description,
@@ -27,62 +30,63 @@ export default function CardProjects({
   link,
   children,
 }: CardProjectsProps): JSX.Element {
-  /**
-   * Sub-komponen wrapper untuk gambar
-   */
+  const cleanCaption = toPlainText(caption);
+  const cleanDescription = toPlainText(description);
+
   const ImageWrapper = ({ children }: PropsWithChildren): JSX.Element => {
     if (!link) return <>{children}</>;
 
     if (isExternalLink(link)) {
       return (
-        <a href={link} target="_blank" rel="noopener noreferrer">
+        <a href={link} target="_blank" rel="noopener noreferrer" aria-label={title}>
           {children}
         </a>
       );
     }
 
-    // internal link (react-router-dom)
-    return <Link to={link}>{children}</Link>;
+    return (
+      <Link to={link} aria-label={title}>
+        {children}
+      </Link>
+    );
   };
 
   return (
-    <div className="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
-      {/* 🔹 Gambar (klik = link) */}
+    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-sky-500/40">
       {image && (
         <ImageWrapper>
-          <img
-            src={image}
-            alt={title || "Project image"}
-            className="w-full h-60 object-cover hover:opacity-90 transition-opacity duration-300"
-            loading="lazy"
-          />
+          <div className="aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-gray-900">
+            <img
+              src={image}
+              alt={title || "Project image"}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+          </div>
         </ImageWrapper>
       )}
 
-      {/* 🔹 Isi Card */}
-      <div className="p-6 flex flex-col flex-grow">
-        {caption && (
-          <div className="flex items-start gap-x-2 text-sm text-gray-700 mb-4">
-            <span className="font-semibold whitespace-nowrap">Built with:</span>
-            <span
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(caption),
-              }}
-            />
-          </div>
+      <div className="flex flex-1 flex-col p-5">
+        {cleanCaption && (
+          <p className="mb-3 line-clamp-1 text-xs font-semibold uppercase text-sky-600 dark:text-sky-400">
+            {cleanCaption}
+          </p>
         )}
 
-        {description && (
-          <p
-            className="text-gray-600 text-base mb-4 leading-relaxed"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(description),
-            }}
-          ></p>
+        {title && (
+          <h2 className="text-xl font-bold leading-tight text-slate-900 transition group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
+            {title}
+          </h2>
         )}
 
-        <div className="mt-auto text-right">{children}</div>
+        {cleanDescription && (
+          <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+            {cleanDescription}
+          </p>
+        )}
+
+        <div className="mt-auto pt-5">{children}</div>
       </div>
-    </div>
+    </article>
   );
 }

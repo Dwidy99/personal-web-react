@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FaArrowLeft, FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
+import DOMPurify from "dompurify";
 import LayoutWeb from "@/layouts/Web";
 import { publicService } from "@/services/publicService";
-import { FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
 import formatDate from "@/utils/Date";
 import SEO from "@/components/general/SEO";
 import ContentRenderer from "@/components/general/ContentRenderer";
@@ -14,15 +15,24 @@ type Project = {
   caption?: string;
   image?: string;
   link?: string;
-  created_at: string;
+  created_at?: string;
 };
+
+function toPlainText(value?: string): string {
+  return DOMPurify.sanitize(value || "", {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  })
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export default function ProjectShow() {
   const { slug } = useParams();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
-  document.title = "Project | Portfolio";
+  document.title = project?.title ? `${project.title} | Portfolio` : "Project | Portfolio";
 
   const fetchProject = useCallback(async () => {
     if (!slug) {
@@ -48,7 +58,7 @@ export default function ProjectShow() {
 
   if (loading) {
     return (
-      <LayoutWeb>
+      <LayoutWeb disableSnow>
         <div className="flex justify-center py-20">
           <Loader />
         </div>
@@ -58,10 +68,13 @@ export default function ProjectShow() {
 
   if (!project) {
     return (
-      <LayoutWeb>
-        <div className="text-center py-20">
+      <LayoutWeb disableSnow>
+        <div className="mx-auto max-w-xl rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h1 className="text-2xl font-bold text-red-500">Project not found</h1>
-          <Link to="/projects" className="text-blue-600 hover:underline mt-4 inline-block">
+          <Link
+            to="/projects"
+            className="mt-4 inline-flex items-center justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+          >
             Back to Projects
           </Link>
         </div>
@@ -69,99 +82,110 @@ export default function ProjectShow() {
     );
   }
 
+  const captionText = toPlainText(project.caption);
+  const seoDescription = captionText || toPlainText(project.description);
+
   return (
     <LayoutWeb disableSnow>
-      <SEO title={project.title} description={project.caption || project.description} />
+      <SEO title={project.title} description={seoDescription} />
 
-      <div className="pt-6 md:pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Main Article */}
-          <article className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-              <div className="p-5 sm:p-6 md:p-10">
-                {/* Header */}
-                <header className="mb-6">
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="inline-flex items-center gap-2">
-                      <FaCalendarAlt />
-                      {formatDate(new Date(project.created_at))}
-                    </span>
+      <article className="mx-auto max-w-5xl">
+        <Link
+          to="/projects"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-sky-600 transition hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+        >
+          <FaArrowLeft className="text-xs" />
+          Back to projects
+        </Link>
 
-                    {project.link && (
-                      <a
-                        href={project.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        Visit Project <FaExternalLinkAlt className="text-xs" />
-                      </a>
-                    )}
-                  </div>
+        <header className="max-w-3xl">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+            <span className="rounded-full border border-sky-200 px-3 py-1 text-xs font-semibold uppercase text-sky-600 dark:border-sky-500/40 dark:text-sky-400">
+              Project Detail
+            </span>
+            {project.created_at && (
+              <span className="inline-flex items-center gap-2">
+                <FaCalendarAlt className="text-xs" />
+                {formatDate(project.created_at)}
+              </span>
+            )}
+          </div>
 
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 text-gray-900 dark:text-gray-100">
-                    {project.title}
-                  </h1>
-                </header>
+          <h1 className="mt-5 text-3xl font-bold leading-tight text-slate-900 dark:text-white md:text-5xl">
+            {project.title}
+          </h1>
 
-                {/* Content */}
-                <section
-                  className="
-                    mt-6 prose dark:prose-invert max-w-none break-words
-                    [&_img]:max-w-full [&_img]:h-auto
-                    [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre
-                    [&_code]:break-words
-                    [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto
-                  "
-                >
-                  <ContentRenderer content={project.description || ""} />
-                </section>
+          {captionText && (
+            <p className="mt-5 text-base leading-8 text-gray-600 dark:text-gray-300 md:text-lg">
+              {captionText}
+            </p>
+          )}
 
-                {/* Image */}
-                {project.image && (
-                  <figure className="mt-8">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full max-h-[520px] object-cover rounded-xl shadow-sm"
-                      loading="lazy"
-                    />
-                  </figure>
-                )}
-              </div>
-            </div>
-          </article>
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-md bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700"
+            >
+              Visit live project
+              <FaExternalLinkAlt className="text-xs" />
+            </a>
+          )}
+        </header>
 
-          {/* Sidebar / Navigation */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-24">
-              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-5">
-                <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                  Navigation
-                </h2>
+        {project.image && (
+          <figure className="mt-10 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <img
+              src={project.image}
+              alt={project.title}
+              className="max-h-[620px] w-full object-cover"
+              loading="eager"
+            />
+          </figure>
+        )}
 
-                <Link
-                  to="/projects"
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 text-white py-2.5 text-sm font-medium hover:bg-blue-700 transition"
-                >
-                  ← Back to Projects
-                </Link>
+        {project.description && (
+          <section
+            className="mt-10 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-7 md:p-9"
+            aria-label="Project description"
+          >
+            <ContentRenderer
+              content={project.description}
+              className="
+                text-gray-700 dark:text-gray-200
+                prose-headings:text-slate-900 dark:prose-headings:text-white
+                prose-p:leading-8
+                [&_img]:rounded-lg [&_img]:border [&_img]:border-gray-200 dark:[&_img]:border-gray-700
+                [&_pre]:max-w-full [&_pre]:overflow-x-auto
+                [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto
+              "
+            />
+          </section>
+        )}
 
-                {project.link && (
-                  <a
-                    href={project.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-blue-600 text-blue-600 dark:text-blue-400 py-2.5 text-sm font-medium hover:bg-blue-50 dark:hover:bg-gray-700 transition"
-                  >
-                    Open Live Project <FaExternalLinkAlt className="ml-2 text-xs" />
-                  </a>
-                )}
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
+        <footer className="mt-8 flex flex-col gap-3 border-t border-gray-200 pt-6 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            to="/projects"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-sky-500 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-400"
+          >
+            <FaArrowLeft className="text-xs" />
+            Back to projects
+          </Link>
+
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-sky-600 dark:hover:bg-sky-700"
+            >
+              Open live project
+              <FaExternalLinkAlt className="text-xs" />
+            </a>
+          )}
+        </footer>
+      </article>
     </LayoutWeb>
   );
 }
