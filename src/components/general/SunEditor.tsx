@@ -9,6 +9,8 @@ type Props = {
   height?: string;
   minHeight?: string;
   maxHeight?: string;
+  maxImageCount?: number;
+  maxInlineImagesTotalSize?: number;
 };
 
 type SunEditorOnImageUploadBefore = NonNullable<
@@ -21,6 +23,35 @@ type SunEditorOnImageUploadError = NonNullable<
 
 const MAX_INLINE_IMAGE_SIZE = 500 * 1024;
 const MAX_INLINE_IMAGE_SIZE_LABEL = "500KB";
+const DEFAULT_MAX_INLINE_IMAGE_COUNT = 8;
+const DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE = 4 * 1024 * 1024;
+
+function formatBytes(bytes: number) {
+  if (bytes >= 1024 * 1024) {
+    return `${Math.round((bytes / (1024 * 1024)) * 10) / 10}MB`;
+  }
+
+  return `${Math.round(bytes / 1024)}KB`;
+}
+
+function getEditorImages(content: string) {
+  if (!content || typeof DOMParser === "undefined") {
+    return [];
+  }
+
+  const doc = new DOMParser().parseFromString(content, "text/html");
+  return Array.from(doc.querySelectorAll("img"));
+}
+
+function estimateBase64ImageSize(src: string) {
+  if (!src.startsWith("data:image/")) {
+    return 0;
+  }
+
+  const base64 = src.split(",")[1] || "";
+  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
+}
 
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
   (
@@ -31,6 +62,8 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
       height = "280px",
       minHeight = "220px",
       maxHeight,
+      maxImageCount = DEFAULT_MAX_INLINE_IMAGE_COUNT,
+      maxInlineImagesTotalSize = DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE,
     },
     ref
   ) => {
@@ -92,10 +125,41 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
         return false;
       }
 
+      const nonImageFile = fileList.find((file) => !file.type.startsWith("image/"));
+
+      if (nonImageFile) {
+        toast.error("File harus berupa gambar.");
+        return false;
+      }
+
       const invalidFile = fileList.find((file) => file.size > MAX_INLINE_IMAGE_SIZE);
 
       if (invalidFile) {
-        toast.error(`Ukuran gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}.`);
+        toast.error(
+          `Ukuran tiap gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}. ${invalidFile.name} berukuran ${formatBytes(invalidFile.size)}.`
+        );
+        return false;
+      }
+
+      const existingImages = getEditorImages(value);
+      const nextImageCount = existingImages.length + fileList.length;
+
+      if (nextImageCount > maxImageCount) {
+        toast.error(`Maksimal ${maxImageCount} gambar dalam satu editor.`);
+        return false;
+      }
+
+      const existingInlineSize = existingImages.reduce(
+        (total, image) => total + estimateBase64ImageSize(image.getAttribute("src") || ""),
+        0
+      );
+      const nextInlineSize =
+        existingInlineSize + fileList.reduce((total, file) => total + file.size, 0);
+
+      if (nextInlineSize > maxInlineImagesTotalSize) {
+        toast.error(
+          `Total gambar inline maksimal ${formatBytes(maxInlineImagesTotalSize)}. Saat ini akan menjadi ${formatBytes(nextInlineSize)}.`
+        );
         return false;
       }
 
@@ -125,6 +189,7 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
             resizingBar: true,
             resizeEnable: true,
             showPathLabel: false,
+            imageMultipleFile: true,
             imageUploadSizeLimit: MAX_INLINE_IMAGE_SIZE,
             buttonList: [
               ["undo", "redo"],
