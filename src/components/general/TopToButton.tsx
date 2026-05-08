@@ -22,7 +22,7 @@ export default function TopToButton(): JSX.Element | null {
     <button
       ref={toTopRef}
       id="to-top"
-      className="fixed bottom-6 right-6 p-3 bg-primary text-white rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-primary/80 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+      className="fixed bottom-6 right-6 rounded-full bg-black p-3 text-white shadow-lg transition-all duration-300 ease-in-out hover:bg-gray-800 focus:ring-2 focus:ring-black focus:ring-offset-2 dark:bg-white dark:text-black dark:hover:bg-gray-200"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Scroll to top"
     >

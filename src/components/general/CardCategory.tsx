@@ -21,7 +21,7 @@ export default function CardCategory({
     <div className="flex justify-evenly items-center my-2">
       <Link
         to={`/blog/category/${slug}`}
-        className={`${colorClass} drop-shadow-xl text-white rounded px-3 py-2 transition duration-200`}
+        className={`${colorClass} rounded px-3 py-2 text-white drop-shadow-xl transition duration-200 dark:bg-white dark:text-black dark:hover:bg-gray-200`}
         style={{ cursor: "pointer" }}
         onMouseEnter={(e) => {
           e.currentTarget.classList.add(`${baseColor}-600`);

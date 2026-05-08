@@ -44,16 +44,16 @@ export default function CardPost({
   return (
     <div
       key={index}
-      className="flex flex-col md:flex-row justify-between gap-6 border-t border-gray-200 dark:border-gray-800 py-8 transition-all duration-300 hover:bg-gray-50 dark:hover:bg-boxdark/40 rounded-lg px-4"
+      className="flex flex-col justify-between gap-6 rounded-lg border-t border-gray-200 px-4 py-8 transition-all duration-300 hover:bg-gray-50 dark:border-gray-900 dark:hover:bg-gray-950 md:flex-row"
     >
       {/* ====== Konten utama ====== */}
       <div className="flex-2 space-y-2 order-2">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-sky-600 transition-colors">
+        <h2 className="text-lg font-semibold text-gray-900 transition-colors hover:text-black dark:text-white dark:hover:text-white">
           <Link to={`/blog/${slug}`}>{title}</Link>
         </h2>
 
         {category?.name && (
-          <p className="text-xs uppercase tracking-wide text-sky-600 font-medium">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
             {category.name}
           </p>
         )}
@@ -68,7 +68,7 @@ export default function CardPost({
         <div>
           <Link
             to={`/blog/${slug}`}
-            className="inline-flex items-center text-sm font-semibold text-sky-600 hover:text-sky-700 transition-colors"
+            className="inline-flex items-center text-sm font-semibold text-gray-900 transition-colors hover:text-black dark:text-white dark:hover:text-gray-200"
           >
             Read more
             <GoArrowRight className="ml-1 text-base" />

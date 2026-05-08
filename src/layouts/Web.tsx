@@ -56,7 +56,11 @@ export default function WebLayout({
         <meta property="og:description" content={defaultDesc} />
       </Helmet>
 
-      <div className="site-wrapper select-none" itemScope itemType="https://schema.org/WebPage">
+      <div
+        className="site-wrapper min-h-screen bg-white text-slate-900 dark:bg-black dark:text-white"
+        itemScope
+        itemType="https://schema.org/WebPage"
+      >
         <header
           role="banner"
           aria-label="Main Header"

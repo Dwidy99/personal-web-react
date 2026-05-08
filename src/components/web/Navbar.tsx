@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { BsMoonStarsFill } from "react-icons/bs";
 import { IoSunnySharp } from "react-icons/io5";
 import useColorMode from "@/hooks/useColorMode";
@@ -6,12 +6,6 @@ import ClickOutside from "@/components/general/ClickOutside";
 import TopToButton from "@/components/general/TopToButton";
 import HandleScroll from "@/components/general/HandleScroll";
 import { Link } from "react-router-dom";
-
-const DotLottieReact = lazy(() =>
-  import("@lottiefiles/dotlottie-react").then((module) => ({
-    default: module.DotLottieReact,
-  }))
-);
 
 export default function Navbar(): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -29,8 +23,8 @@ export default function Navbar(): JSX.Element {
     <>
       {/* Navbar */}
       <header
-        className={`fixed top-0 left-0 z-999 w-full my-4 transition-all duration-300 shadow-md dark:shadow-slate-700/40 ${
-          isFixed ? "bg-transparent navbar-fixed dark:bg-transparent" : ""
+        className={`fixed top-0 left-0 z-999 w-full my-4 transition-all duration-300 shadow-md dark:shadow-black ${
+          isFixed ? "bg-transparent navbar-fixed dark:bg-black/80" : ""
         }`}
       >
         <div className="container">
@@ -38,20 +32,11 @@ export default function Navbar(): JSX.Element {
             <div className="my-6">
               <Link
                 to="/"
-                className="text-lg text-meta-12 flex items-center hover:text-primary dark:text-slate-300"
+                className="flex items-center gap-2 text-lg text-meta-12 hover:text-black dark:text-white dark:hover:text-white"
               >
-                <Suspense
-                  fallback={
-                    <span className="mr-2 inline-block h-6 w-6 rounded-full bg-primary/10" />
-                  }
-                >
-                  <DotLottieReact
-                    src="https://lottie.host/2e6f2bd3-568d-48c9-ac85-2f837e3a35c5/DRkd0qtHGo.lottie"
-                    loop
-                    autoplay
-                    style={{ width: "20%", height: "20%", lineHeight: "0" }}
-                  />
-                </Suspense>
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-black text-xs font-black text-white dark:bg-white dark:text-black">
+                  DY
+                </span>
                 DwiYulianto
               </Link>
             </div>
@@ -75,9 +60,9 @@ export default function Navbar(): JSX.Element {
               {/* Navigation Menu */}
               <ClickOutside onClickOutside={() => setIsOpen(false)} excludeRef={buttonRef}>
                 <nav
-                  className={`absolute rounded-lg py-4 dark:text-slate-800 lg:static lg:block lg:max-w-full lg:rounded-none lg:bg-transparent lg:shadow-none lg:dark:bg-transparent ${
+                  className={`absolute rounded-lg py-4 dark:text-white lg:static lg:block lg:max-w-full lg:rounded-none lg:bg-transparent lg:shadow-none lg:dark:bg-transparent ${
                     isOpen
-                      ? "block bg-slate-100 drop-shadow-xl border-spacing-1 right-4 top-full w-full max-w-[250px]"
+                      ? "right-4 top-full block w-full max-w-[250px] border border-gray-200 bg-white drop-shadow-xl dark:border-gray-800 dark:bg-black"
                       : "hidden"
                   }`}
                 >
@@ -85,7 +70,7 @@ export default function Navbar(): JSX.Element {
                     <li className="group my-2">
                       <Link
                         to="/blog"
-                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
+                        className="mx-8 py-2 text-base text-slate-700 group-hover:text-black dark:text-gray-300 dark:group-hover:text-white"
                       >
                         Blog
                       </Link>
@@ -93,7 +78,7 @@ export default function Navbar(): JSX.Element {
                     <li className="group my-2">
                       <Link
                         to="/projects"
-                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
+                        className="mx-8 py-2 text-base text-slate-700 group-hover:text-black dark:text-gray-300 dark:group-hover:text-white"
                       >
                         Projects
                       </Link>
@@ -101,7 +86,7 @@ export default function Navbar(): JSX.Element {
                     <li className="group my-2">
                       <Link
                         to="/about"
-                        className="text-base text-slate-700 py-2 mx-8 group-hover:text-primary dark:text-slate-500"
+                        className="mx-8 py-2 text-base text-slate-700 group-hover:text-black dark:text-gray-300 dark:group-hover:text-white"
                       >
                         About
                       </Link>
@@ -110,7 +95,7 @@ export default function Navbar(): JSX.Element {
                     {/* Dark Mode Toggle */}
                     <li className="my-4 items-center pl-8 lg:mt-3">
                       <div className="flex items-center">
-                        <span className="mr-2 text-sm text-slate-500 dark:text-slate-500">
+                        <span className="mr-2 text-sm text-slate-500 dark:text-gray-300">
                           <IoSunnySharp />
                         </span>
 
@@ -124,12 +109,12 @@ export default function Navbar(): JSX.Element {
                         />
 
                         <label htmlFor="dark-toggle">
-                          <div className="flex h-5 w-9 cursor-pointer items-center rounded-full bg-slate-500 p-1">
-                            <div className="toggle-circle h-4 w-4 rounded-full bg-white transition duration-300 ease-in-out"></div>
+                          <div className="flex h-5 w-9 cursor-pointer items-center rounded-full bg-slate-900 p-1 dark:bg-white">
+                            <div className="toggle-circle h-4 w-4 rounded-full bg-white transition duration-300 ease-in-out dark:bg-black"></div>
                           </div>
                         </label>
 
-                        <span className="ml-2 text-sm text-slate-500 dark:text-slate-500">
+                        <span className="ml-2 text-sm text-slate-500 dark:text-gray-300">
                           <BsMoonStarsFill />
                         </span>
                       </div>
