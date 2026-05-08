@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, type ComponentProps } from "react";
 import SunEditor from "suneditor-react";
 import Api from "@/services/Api";
+import toast from "react-hot-toast";
 
 type Props = {
   value: string;
@@ -12,6 +13,40 @@ type Props = {
 type SunEditorOnImageUploadBefore = NonNullable<
   ComponentProps<typeof SunEditor>["onImageUploadBefore"]
 >;
+
+type EditorUploadResponse = {
+  url?: string;
+  path?: string;
+  image?: string;
+  data?: {
+    url?: string;
+    path?: string;
+    image?: string;
+  };
+};
+
+function normalizeImageUrl(url: string) {
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  const baseUrl = Api.defaults.baseURL?.replace(/\/$/, "") || window.location.origin;
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+
+  return `${baseUrl}${cleanPath}`;
+}
+
+function getUploadedImageUrl(response: EditorUploadResponse) {
+  const url =
+    response.url ||
+    response.path ||
+    response.image ||
+    response.data?.url ||
+    response.data?.path ||
+    response.data?.image;
+
+  return url ? normalizeImageUrl(url) : "";
+}
 
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
   ({ value, onChange, placeholder = "Write something...", height = "280px" }, ref) => {
@@ -34,7 +69,12 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
       });
     }, []);
 
-    const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files, info, uploadHandler) => {
+    const handleImageUploadBefore: SunEditorOnImageUploadBefore = (
+      files,
+      info,
+      _core,
+      uploadHandler
+    ) => {
       const file = files?.[0];
 
       if (!file) {
@@ -44,13 +84,9 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
       const formData = new FormData();
       formData.append("image", file);
 
-      Api.post<{ url: string }>("/api/admin/projects/editor-upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      Api.post<EditorUploadResponse>("/api/admin/projects/editor-upload", formData)
         .then((res) => {
-          const imageUrl = res.data?.url;
+          const imageUrl = getUploadedImageUrl(res.data);
 
           if (!imageUrl) {
             throw new Error("Image URL not returned from server");
@@ -67,8 +103,18 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
           });
         })
         .catch((error) => {
-          console.error("Editor image upload failed:", error, info);
-          alert("Upload gambar gagal");
+          const message =
+            error?.response?.data?.message ||
+            error?.message ||
+            "Upload gambar gagal. Periksa format dan ukuran gambar.";
+
+          console.error("Editor image upload failed:", {
+            error,
+            info,
+            response: error?.response?.data,
+          });
+          toast.error(message);
+          uploadHandler(message);
         });
 
       return undefined;
