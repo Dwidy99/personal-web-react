@@ -130,6 +130,9 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
           setOptions={{
             height,
             placeholder,
+            resizingBar: true,
+            resizeEnable: true,
+            showPathLabel: false,
             imageUploadSizeLimit: 1024 * 1024 * 5,
             buttonList: [
               ["undo", "redo"],

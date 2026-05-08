@@ -110,7 +110,7 @@ export default function ProjectEdit() {
       </div>
 
       {/* Card */}
-      <div className="rounded-xl border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-5xl rounded-xl border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-6 lg:p-8">
         {loading ? (
           <div className="py-16 text-center text-gray-500 dark:text-gray-400">Loading...</div>
         ) : !project ? (
@@ -119,88 +119,82 @@ export default function ProjectEdit() {
           </div>
         ) : (
           <form ref={formRef} onSubmit={handleUpdate} className="space-y-6">
-            {/* Top: Inputs + Image */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {/* Left */}
-              <div className="lg:col-span-2 space-y-5">
-                {/* Title */}
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={project.title ?? ""}
-                    onChange={(e) => handleChange("title")(e.target.value)}
-                    placeholder="Enter project title..."
-                    className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title[0]}</p>}
-                </div>
+            {/* Title */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Title
+              </label>
+              <input
+                type="text"
+                value={project.title ?? ""}
+                onChange={(e) => handleChange("title")(e.target.value)}
+                placeholder="Enter project title..."
+                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary dark:border-strokedark dark:text-white"
+              />
+              {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title[0]}</p>}
+            </div>
 
-                {/* Link */}
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                    Project Link
-                  </label>
-                  <input
-                    type="text"
-                    value={project.link ?? ""}
-                    onChange={(e) => handleChange("link")(e.target.value)}
-                    placeholder="https://your-project-link.com"
-                    className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+            {/* Project Image */}
+            <div className="rounded-xl border border-stroke p-4 dark:border-strokedark">
+              <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Project Image
+              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Gunakan gambar yang jelas, disarankan rasio persegi atau landscape.
+              </p>
+
+              <div className="mt-4">
+                {currentImage ? (
+                  <img
+                    src={currentImage}
+                    alt={project.title ?? "Project image"}
+                    className="h-56 w-full rounded-xl border border-stroke object-cover dark:border-strokedark sm:h-72"
                   />
-                  {errors.link && <p className="mt-1 text-xs text-red-600">{errors.link[0]}</p>}
-                </div>
+                ) : (
+                  <div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-stroke text-xs text-gray-500 dark:border-strokedark dark:text-gray-400 sm:h-72">
+                    No image
+                  </div>
+                )}
               </div>
 
-              {/* Right: Image */}
-              <div className="rounded-xl border border-stroke p-4 dark:border-strokedark">
-                <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
-                  Project Image
-                </p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Recommended: square image.
-                </p>
-
-                <div className="mt-4 flex items-center justify-center">
-                  {currentImage ? (
-                    <img
-                      src={currentImage}
-                      alt={project.title ?? "Project image"}
-                      className="h-44 w-44 rounded-xl border border-stroke object-cover dark:border-strokedark"
-                    />
-                  ) : (
-                    <div className="flex h-44 w-44 items-center justify-center rounded-xl border border-dashed border-stroke text-xs text-gray-500 dark:border-strokedark dark:text-gray-400">
-                      No image
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImage(e.target.files?.[0] || null)}
-                    className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark"
-                  />
-                  {errors.image && <p className="mt-1 text-xs text-red-600">{errors.image[0]}</p>}
-                </div>
+              <div className="mt-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files?.[0] || null)}
+                  className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark"
+                />
+                {errors.image && <p className="mt-1 text-xs text-red-600">{errors.image[0]}</p>}
               </div>
             </div>
 
+            {/* Link */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Project Link
+              </label>
+              <input
+                type="text"
+                value={project.link ?? ""}
+                onChange={(e) => handleChange("link")(e.target.value)}
+                placeholder="https://your-project-link.com"
+                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary dark:border-strokedark dark:text-white"
+              />
+              {errors.link && <p className="mt-1 text-xs text-red-600">{errors.link[0]}</p>}
+            </div>
+
             {/* Editors */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Description */}
-              <div className="rounded-xl border border-stroke p-4 dark:border-strokedark">
-                <label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+            <div className="space-y-6">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Description
                 </label>
-                <div className="overflow-hidden rounded-lg border border-stroke dark:border-strokedark">
+                <div className="rounded-lg border border-stroke dark:border-strokedark">
                   <SunEditorField
                     value={project.description ?? ""}
                     onChange={handleChange("description")}
                     placeholder="Write description..."
+                    height="320px"
                   />
                 </div>
                 {errors.description && (
@@ -208,16 +202,16 @@ export default function ProjectEdit() {
                 )}
               </div>
 
-              {/* Caption */}
-              <div className="rounded-xl border border-stroke p-4 dark:border-strokedark">
-                <label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Caption
                 </label>
-                <div className="overflow-hidden rounded-lg border border-stroke dark:border-strokedark">
+                <div className="rounded-lg border border-stroke dark:border-strokedark">
                   <SunEditorField
                     value={project.caption ?? ""}
                     onChange={handleChange("caption")}
                     placeholder="Write caption..."
+                    height="240px"
                   />
                 </div>
                 {errors.caption && <p className="mt-2 text-xs text-red-600">{errors.caption[0]}</p>}

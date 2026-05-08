@@ -66,7 +66,7 @@ export default function ProjectsCreatePage() {
         </Link>
       </div>
 
-      <div className="rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="mx-auto max-w-5xl rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="border-b border-stroke px-4 py-3 sm:px-6 sm:py-4 dark:border-strokedark">
           <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100">
             Add New Project
@@ -97,45 +97,45 @@ export default function ProjectsCreatePage() {
               {errors.title?.[0] && <p className="mt-1 text-sm text-red-500">{errors.title[0]}</p>}
             </div>
 
-            {/* Image & Link */}
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={submitting}
-                  onChange={onFileChange}
-                  className="w-full cursor-pointer rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800
-                             file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2
-                             hover:file:bg-gray-200 focus:border-primary focus:ring-1 focus:ring-primary
-                             dark:border-strokedark dark:text-white dark:file:bg-boxdark-2 dark:hover:file:bg-boxdark
-                             disabled:opacity-60"
-                />
-                {errors.image?.[0] && (
-                  <p className="mt-1 text-sm text-red-500">{errors.image[0]}</p>
-                )}
-              </div>
+            {/* Image */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                disabled={submitting}
+                onChange={onFileChange}
+                className="w-full cursor-pointer rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800
+                           file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2
+                           hover:file:bg-gray-200 focus:border-primary focus:ring-1 focus:ring-primary
+                           dark:border-strokedark dark:text-white dark:file:bg-boxdark-2 dark:hover:file:bg-boxdark
+                           disabled:opacity-60"
+              />
+              <p className="mt-1 text-xs text-bodydark2">
+                Gunakan gambar yang jelas, disarankan rasio persegi atau landscape.
+              </p>
+              {errors.image?.[0] && <p className="mt-1 text-sm text-red-500">{errors.image[0]}</p>}
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Link
-                </label>
-                <input
-                  type="url"
-                  value={link}
-                  disabled={submitting}
-                  onChange={(e) => setLink(e.target.value)}
-                  placeholder="https://example.com"
-                  className="w-full rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 placeholder-gray-400
-                             focus:border-primary focus:ring-1 focus:ring-primary
-                             dark:border-strokedark dark:text-white dark:placeholder-gray-500
-                             disabled:opacity-60"
-                />
-                {errors.link?.[0] && <p className="mt-1 text-sm text-red-500">{errors.link[0]}</p>}
-              </div>
+            {/* Link */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Link
+              </label>
+              <input
+                type="url"
+                value={link}
+                disabled={submitting}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="https://example.com"
+                className="w-full rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 placeholder-gray-400
+                           focus:border-primary focus:ring-1 focus:ring-primary
+                           dark:border-strokedark dark:text-white dark:placeholder-gray-500
+                           disabled:opacity-60"
+              />
+              {errors.link?.[0] && <p className="mt-1 text-sm text-red-500">{errors.link[0]}</p>}
             </div>
 
             {/* Description */}
@@ -143,11 +143,12 @@ export default function ProjectsCreatePage() {
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Description
               </label>
-              <div className="min-h-[220px]">
+              <div className="rounded-lg border border-stroke dark:border-strokedark">
                 <SunEditorField
                   value={description}
                   onChange={setDescription}
                   placeholder="Write project description..."
+                  height="320px"
                 />
               </div>
               {errors.description?.[0] && (
@@ -160,11 +161,12 @@ export default function ProjectsCreatePage() {
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Caption
               </label>
-              <div className="min-h-[180px]">
+              <div className="rounded-lg border border-stroke dark:border-strokedark">
                 <SunEditorField
                   value={caption}
                   onChange={setCaption}
                   placeholder="Write short caption..."
+                  height="240px"
                 />
               </div>
               {errors.caption?.[0] && (
