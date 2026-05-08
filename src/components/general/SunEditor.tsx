@@ -8,6 +8,8 @@ type Props = {
   onChange: (content: string) => void;
   placeholder?: string;
   height?: string;
+  minHeight?: string;
+  maxHeight?: string;
 };
 
 type SunEditorOnImageUploadBefore = NonNullable<
@@ -49,13 +51,55 @@ function getUploadedImageUrl(response: EditorUploadResponse) {
 }
 
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
-  ({ value, onChange, placeholder = "Write something...", height = "280px" }, ref) => {
+  (
+    {
+      value,
+      onChange,
+      placeholder = "Write something...",
+      height = "280px",
+      minHeight = "220px",
+      maxHeight = "720px",
+    },
+    ref
+  ) => {
     useEffect(() => {
       const styleId = "suneditor-runtime-styles";
+      const resizeStyleId = "suneditor-resize-styles";
 
-      if (document.getElementById(styleId)) {
-        return;
+      if (!document.getElementById(resizeStyleId)) {
+        const resizeStyle = document.createElement("style");
+        resizeStyle.id = resizeStyleId;
+        resizeStyle.textContent = `
+          .sun-editor-resize-frame {
+            resize: vertical;
+            overflow: auto;
+            width: 100%;
+          }
+
+          .sun-editor-resize-frame > .sun-editor {
+            height: 100% !important;
+            min-height: 100% !important;
+          }
+
+          .sun-editor-resize-frame .se-container {
+            display: flex !important;
+            min-height: 100% !important;
+            flex-direction: column !important;
+          }
+
+          .sun-editor-resize-frame .se-wrapper {
+            flex: 1 1 auto !important;
+            min-height: 120px !important;
+          }
+
+          .sun-editor-resize-frame .se-wrapper-inner {
+            min-height: 100% !important;
+          }
+        `;
+        document.head.appendChild(resizeStyle);
       }
+
+      if (document.getElementById(styleId)) return;
 
       import("suneditor/dist/css/suneditor.min.css?inline").then((module) => {
         if (document.getElementById(styleId)) {
@@ -121,7 +165,7 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
     };
 
     return (
-      <div className="w-full">
+      <div className="sun-editor-resize-frame" style={{ height, minHeight, maxHeight }}>
         <SunEditor
           ref={ref}
           setContents={value}
@@ -129,6 +173,8 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
           onImageUploadBefore={handleImageUploadBefore}
           setOptions={{
             height,
+            minHeight,
+            maxHeight,
             placeholder,
             resizingBar: true,
             resizeEnable: true,
