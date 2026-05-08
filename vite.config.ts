@@ -14,12 +14,29 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    modulePreload: false,
     chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            return id.toString().split("node_modules/")[1].split("/")[0].toString();
+            if (id.includes("suneditor")) {
+              return "admin-editor";
+            }
+
+            if (id.includes("@lottiefiles")) {
+              return "web-animation";
+            }
+
+            if (
+              id.includes("react") ||
+              id.includes("scheduler") ||
+              id.includes("@remix-run")
+            ) {
+              return "react-vendor";
+            }
+
+            return "vendor";
           }
         },
       },

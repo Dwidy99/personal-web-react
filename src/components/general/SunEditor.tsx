@@ -1,6 +1,5 @@
-import { forwardRef, type ComponentProps } from "react";
+import { forwardRef, useEffect, type ComponentProps } from "react";
 import SunEditor from "suneditor-react";
-import "suneditor/dist/css/suneditor.min.css";
 import Api from "@/services/Api";
 
 type Props = {
@@ -16,6 +15,25 @@ type SunEditorOnImageUploadBefore = NonNullable<
 
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
   ({ value, onChange, placeholder = "Write something...", height = "280px" }, ref) => {
+    useEffect(() => {
+      const styleId = "suneditor-runtime-styles";
+
+      if (document.getElementById(styleId)) {
+        return;
+      }
+
+      import("suneditor/dist/css/suneditor.min.css?inline").then((module) => {
+        if (document.getElementById(styleId)) {
+          return;
+        }
+
+        const style = document.createElement("style");
+        style.id = styleId;
+        style.textContent = module.default;
+        document.head.appendChild(style);
+      });
+    }, []);
+
     const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files, info, uploadHandler) => {
       const file = files?.[0];
 

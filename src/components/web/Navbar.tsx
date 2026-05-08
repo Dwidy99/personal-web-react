@@ -1,5 +1,4 @@
-import React, { useState, useRef } from "react";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { lazy, Suspense, useState, useRef } from "react";
 import { BsMoonStarsFill } from "react-icons/bs";
 import { IoSunnySharp } from "react-icons/io5";
 import useColorMode from "@/hooks/useColorMode";
@@ -7,6 +6,12 @@ import ClickOutside from "@/components/general/ClickOutside";
 import TopToButton from "@/components/general/TopToButton";
 import HandleScroll from "@/components/general/HandleScroll";
 import { Link } from "react-router-dom";
+
+const DotLottieReact = lazy(() =>
+  import("@lottiefiles/dotlottie-react").then((module) => ({
+    default: module.DotLottieReact,
+  }))
+);
 
 export default function Navbar(): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -35,12 +40,18 @@ export default function Navbar(): JSX.Element {
                 to="/"
                 className="text-lg text-meta-12 flex items-center hover:text-primary dark:text-slate-300"
               >
-                <DotLottieReact
-                  src="https://lottie.host/2e6f2bd3-568d-48c9-ac85-2f837e3a35c5/DRkd0qtHGo.lottie"
-                  loop
-                  autoplay
-                  style={{ width: "20%", height: "20%", lineHeight: "0" }}
-                />
+                <Suspense
+                  fallback={
+                    <span className="mr-2 inline-block h-6 w-6 rounded-full bg-primary/10" />
+                  }
+                >
+                  <DotLottieReact
+                    src="https://lottie.host/2e6f2bd3-568d-48c9-ac85-2f837e3a35c5/DRkd0qtHGo.lottie"
+                    loop
+                    autoplay
+                    style={{ width: "20%", height: "20%", lineHeight: "0" }}
+                  />
+                </Suspense>
                 DwiYulianto
               </Link>
             </div>

@@ -1,3 +1,7 @@
+import "@/assets/web/css/tailwind.css";
+import "@/assets/admin/css/satoshi.css";
+import "@/assets/admin/css/style.css";
+
 interface AuthLayoutProps {
   children: React.ReactNode;
   backgroundUrl?: string;

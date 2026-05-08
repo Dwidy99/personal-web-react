@@ -1,4 +1,7 @@
 // src/layouts/Admin.tsx
+import "@/assets/web/css/tailwind.css";
+import "@/assets/admin/css/satoshi.css";
+import "@/assets/admin/css/style.css";
 import { useState } from "react";
 import Header from "@/components/admin/Header";
 import Sidebar from "@/components/admin/Sidebar";
