@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, type LazyExoticComponent } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
-import Loader from "../components/general/Loader";
+import AdminLoading from "@/components/admin/Loading";
+import Loading from "@/components/web/Loading";
 import PrivateRoutes from "./PrivateRoutes";
 
 type PageComponent = LazyExoticComponent<() => JSX.Element>;
@@ -47,14 +48,20 @@ const ProjectShow = lazy(() => import("../pages/Web/Project/Show"));
 
 function withLoader(Component: PageComponent) {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<Loading />}>
       <Component />
     </Suspense>
   );
 }
 
 function withPrivateLoader(Component: PageComponent) {
-  return <PrivateRoutes>{withLoader(Component)}</PrivateRoutes>;
+  return (
+    <PrivateRoutes>
+      <Suspense fallback={<AdminLoading message="Loading admin page..." variant="page" />}>
+        <Component />
+      </Suspense>
+    </PrivateRoutes>
+  );
 }
 
 export default function RoutesIndex() {

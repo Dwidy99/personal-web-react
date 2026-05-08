@@ -3,7 +3,7 @@ import LayoutWeb from "@/layouts/Web";
 import SEO from "@/components/general/SEO";
 import CardBlog from "@/components/general/CardBlog";
 import Pagination from "@/components/general/Pagination";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/web/Loading";
 import { useFetchPostsByCategory } from "@/hooks/useFetchPostsByCategory";
 
 export default function CategoryPostsIndex(): JSX.Element {
@@ -16,6 +16,15 @@ export default function CategoryPostsIndex(): JSX.Element {
   const handlePageChange = (pageNumber: number): void => {
     fetchPostsByCategory(pageNumber);
   };
+
+  if (loading) {
+    return (
+      <LayoutWeb>
+        <SEO />
+        <Loading message="Loading posts..." variant="section" className="mt-24 min-h-[18rem]" />
+      </LayoutWeb>
+    );
+  }
 
   if (!category && !loading) {
     return (
@@ -41,7 +50,7 @@ export default function CategoryPostsIndex(): JSX.Element {
       </header>
 
       {loading ? (
-        <Loader />
+        <Loading message="Loading posts..." variant="section" className="mt-8" />
       ) : (
         <>
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">

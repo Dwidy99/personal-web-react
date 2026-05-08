@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 
 import LayoutWeb from "@/layouts/Web";
 import SEO from "@/components/general/SEO";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/web/Loading";
 import ContentRenderer from "@/components/general/ContentRenderer";
 import formatDate from "@/utils/Date";
 import { publicService } from "@/services";
@@ -89,9 +89,7 @@ export default function BlogShow() {
   if (loading) {
     return (
       <LayoutWeb>
-        <div className="py-20 flex justify-center">
-          <Loader />
-        </div>
+        <Loading message="Loading post..." variant="section" className="my-20" />
       </LayoutWeb>
     );
   }

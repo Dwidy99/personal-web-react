@@ -1,10 +1,10 @@
 // src/pages/Web/About/Index.tsx
-import { useCallback, useEffect, useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { FaLink, FaUser } from "react-icons/fa";
 
 import LayoutWeb from "../../../layouts/Web";
 import SEO from "../../../components/general/SEO";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/web/Loading";
 import AccordionItem from "../../../components/general/AccordionItem";
 import { publicService } from "../../../services/publicService";
 
@@ -39,11 +39,47 @@ type Contact = {
   image?: string;
 };
 
+type SafeImageProps = {
+  src?: string;
+  alt: string;
+  className: string;
+  fallbackClassName: string;
+  children: ReactNode;
+};
+
 function formatMonthYear(date: string | null | undefined) {
   if (!date) return "Present";
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "Present";
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+function SafeImage({ src, alt, className, fallbackClassName, children }: SafeImageProps) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const imageSrc = src?.trim();
+
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+  }, [imageSrc]);
+
+  return (
+    <span className={`relative overflow-hidden ${fallbackClassName}`}>
+      {imageSrc && !failed ? (
+        <img
+          src={imageSrc}
+          alt={alt}
+          className={`${className} ${loaded ? "opacity-100" : "opacity-0"}`}
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+        />
+      ) : null}
+      {(!loaded || failed || !imageSrc) && (
+        <span className="absolute inset-0 flex items-center justify-center">{children}</span>
+      )}
+    </span>
+  );
 }
 
 export default function AboutPage() {
@@ -61,11 +97,6 @@ export default function AboutPage() {
     contacts: true,
   });
 
-  const isBusy = useMemo(
-    () => loading.profile || loading.experiences || loading.contacts,
-    [loading]
-  );
-
   const toggle = useCallback((index: number) => {
     setOpenIndex((prev) => (prev === index ? null : index));
   }, []);
@@ -77,7 +108,7 @@ export default function AboutPage() {
       const profiles = await publicService.getProfiles();
       setProfile((profiles?.[0] as Profile) ?? null);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to load profile");
+      console.error("Failed to load public profile:", err);
       setProfile(null);
     } finally {
       setLoading((p) => ({ ...p, profile: false }));
@@ -101,7 +132,7 @@ export default function AboutPage() {
 
       setExperiences(sorted);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to load experiences");
+      console.error("Failed to load public experiences:", err);
       setExperiences([]);
     } finally {
       setLoading((p) => ({ ...p, experiences: false }));
@@ -114,7 +145,7 @@ export default function AboutPage() {
       const list = await publicService.getContacts();
       setContacts((list as Contact[]) ?? []);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to load contacts");
+      console.error("Failed to load public contacts:", err);
       setContacts([]);
     } finally {
       setLoading((p) => ({ ...p, contacts: false }));
@@ -128,7 +159,21 @@ export default function AboutPage() {
     fetchContacts();
   }, [fetchProfile, fetchExperiences, fetchContacts]);
 
-  const currentImage = profile?.image || "/no-image.png";
+  const currentImage = profile?.image;
+  const isBusy = loading.profile || loading.experiences || loading.contacts;
+
+  if (isBusy) {
+    return (
+      <LayoutWeb>
+        <SEO />
+        <Loading
+          message="Loading about page..."
+          variant="section"
+          className="mt-24 min-h-[20rem]"
+        />
+      </LayoutWeb>
+    );
+  }
 
   return (
     <LayoutWeb>
@@ -136,7 +181,7 @@ export default function AboutPage() {
 
       {/* Header */}
       <header className="text-center">
-        <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
+        <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-white">
           About Me
         </h1>
         <p className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400">
@@ -144,12 +189,7 @@ export default function AboutPage() {
         </p>
       </header>
 
-      {/* Global loading (first load) */}
-      {loading.profile && !profile ? (
-        <div className="mt-12 flex justify-center">
-          <Loader />
-        </div>
-      ) : !profile ? (
+      {!profile ? (
         <div className="mt-12 rounded-xl border border-stroke dark:border-strokedark p-6 text-center">
           <p className="text-slate-600 dark:text-slate-300">Profile not found.</p>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -162,11 +202,14 @@ export default function AboutPage() {
             {/* Left column: profile card */}
             <aside className="lg:col-span-8">
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                <img
+                <SafeImage
                   src={currentImage}
                   alt={profile.name}
-                  className="h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover shadow-md"
-                />
+                  className="h-full w-full rounded-full object-cover shadow-md transition-opacity"
+                  fallbackClassName="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-slate-100 text-slate-500 shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                >
+                  <FaUser className="text-4xl" />
+                </SafeImage>
 
                 <h2 className="mt-4 text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">
                   {profile.name}
@@ -182,9 +225,7 @@ export default function AboutPage() {
                     Connect
                   </p>
 
-                  {loading.contacts ? (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
-                  ) : contacts.length ? (
+                  {contacts.length ? (
                     <ul className="flex flex-wrap justify-center lg:justify-start gap-3">
                       {contacts.map((c) => (
                         <li key={c.id}>
@@ -192,15 +233,18 @@ export default function AboutPage() {
                             href={c.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group relative inline-flex"
+                            className="group relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-400 dark:border-gray-700 dark:bg-white"
                             aria-label={c.name}
                             title={c.name}
                           >
-                            <img
+                            <SafeImage
                               src={c.image || "/no-image.png"}
                               alt={c.name}
-                              className="w-10 h-10 rounded-full border border-stroke dark:border-strokedark object-cover group-hover:scale-105 transition"
-                            />
+                              className="h-7 w-7 object-contain transition-opacity group-hover:scale-105"
+                              fallbackClassName="h-7 w-7 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-100 dark:text-slate-700"
+                            >
+                              <FaLink className="text-sm" />
+                            </SafeImage>
                             <span className="absolute inset-0 rounded-full ring-0 group-hover:ring-2 ring-sky-400/50 transition" />
                           </a>
                         </li>
@@ -251,9 +295,7 @@ export default function AboutPage() {
                   </div>
 
                   <div className="mt-4">
-                    {loading.experiences ? (
-                      <p className="text-slate-500 dark:text-slate-400">Loading experiences...</p>
-                    ) : experiences.length ? (
+                    {experiences.length ? (
                       <div className="space-y-3">
                         {experiences.map((exp, i) => (
                           <AccordionItem

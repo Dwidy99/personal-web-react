@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BsMoonStarsFill } from "react-icons/bs";
 import { IoSunnySharp } from "react-icons/io5";
 import useColorMode from "@/hooks/useColorMode";
@@ -6,6 +6,23 @@ import ClickOutside from "@/components/general/ClickOutside";
 import TopToButton from "@/components/general/TopToButton";
 import HandleScroll from "@/components/general/HandleScroll";
 import { Link } from "react-router-dom";
+import Api from "@/services/Api";
+
+type NavbarConfig = {
+  icon?: string | null;
+};
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+function getAssetUrl(path?: string | null) {
+  if (!path) return "";
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+
+  const cleanBase = apiBaseUrl.replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+
+  return `${cleanBase}/${cleanPath}`;
+}
 
 export default function Navbar(): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -13,6 +30,36 @@ export default function Navbar(): JSX.Element {
   const toTopRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [colorMode, setColorMode] = useColorMode();
+  const defaultIconUrl = `${apiBaseUrl}/storage/configurations/default-icon.png`;
+  const [iconUrl, setIconUrl] = useState<string>(defaultIconUrl);
+  const [iconLoaded, setIconLoaded] = useState(false);
+  const [iconFailed, setIconFailed] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchConfig = async () => {
+      try {
+        const res = await Api.get<{ data: NavbarConfig }>("/api/public/configurations");
+        if (isMounted) {
+          setIconUrl(getAssetUrl(res.data.data?.icon) || defaultIconUrl);
+        }
+      } catch {
+        if (isMounted) setIconUrl(defaultIconUrl);
+      }
+    };
+
+    fetchConfig();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [defaultIconUrl]);
+
+  useEffect(() => {
+    setIconLoaded(false);
+    setIconFailed(false);
+  }, [iconUrl]);
 
   /** Toggle menu (mobile) */
   const toggleMenu = (): void => {
@@ -34,8 +81,19 @@ export default function Navbar(): JSX.Element {
                 to="/"
                 className="flex items-center gap-2 text-lg text-meta-12 hover:text-black dark:text-white dark:hover:text-white"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-black text-xs font-black text-white dark:bg-white dark:text-black">
-                  DY
+                <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-white text-xs font-black text-slate-900 ring-1 ring-slate-200 dark:bg-white dark:text-slate-900 dark:ring-white/30">
+                  {!iconFailed ? (
+                    <img
+                      src={iconUrl}
+                      alt="DwiYulianto"
+                      className={`h-full w-full object-cover transition-opacity ${
+                        iconLoaded ? "opacity-100" : "opacity-0"
+                      }`}
+                      onLoad={() => setIconLoaded(true)}
+                      onError={() => setIconFailed(true)}
+                    />
+                  ) : null}
+                  {(!iconLoaded || iconFailed) && <span>DY</span>}
                 </span>
                 DwiYulianto
               </Link>
@@ -95,7 +153,7 @@ export default function Navbar(): JSX.Element {
                     {/* Dark Mode Toggle */}
                     <li className="my-4 items-center pl-8 lg:mt-3">
                       <div className="flex items-center">
-                        <span className="mr-2 text-sm text-slate-500 dark:text-gray-300">
+                        <span className="mr-2 text-sm text-slate-700 dark:text-white">
                           <IoSunnySharp />
                         </span>
 
@@ -114,7 +172,7 @@ export default function Navbar(): JSX.Element {
                           </div>
                         </label>
 
-                        <span className="ml-2 text-sm text-slate-500 dark:text-gray-300">
+                        <span className="ml-2 text-sm text-slate-700 dark:text-white">
                           <BsMoonStarsFill />
                         </span>
                       </div>

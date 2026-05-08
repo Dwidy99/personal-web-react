@@ -7,7 +7,7 @@ import { publicService } from "@/services/publicService";
 import formatDate from "@/utils/Date";
 import SEO from "@/components/general/SEO";
 import ContentRenderer from "@/components/general/ContentRenderer";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/web/Loading";
 
 type Project = {
   title: string;
@@ -59,9 +59,7 @@ export default function ProjectShow() {
   if (loading) {
     return (
       <LayoutWeb disableSnow>
-        <div className="flex justify-center py-20">
-          <Loader />
-        </div>
+        <Loading message="Loading project..." variant="section" className="my-20" />
       </LayoutWeb>
     );
   }

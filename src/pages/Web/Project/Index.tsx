@@ -6,7 +6,7 @@ import LayoutWeb from "../../../layouts/Web";
 import CardProjects from "../../../components/general/CardProjects";
 import SEO from "../../../components/general/SEO";
 import { publicService } from "../../../services";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/web/Loading";
 
 type ProjectItem = {
   id?: number | string;
@@ -57,6 +57,18 @@ export default function ProjectsIndex() {
     fetchProjects();
   }, []);
 
+  if (loading) {
+    return (
+      <LayoutWeb disableSnow>
+        <SEO
+          title="Projects | Portfolio"
+          description="Selected projects, prototypes, and portfolio work."
+        />
+        <Loading message="Loading projects..." variant="section" className="mt-24 min-h-[18rem]" />
+      </LayoutWeb>
+    );
+  }
+
   return (
     <LayoutWeb disableSnow>
       <SEO
@@ -78,11 +90,7 @@ export default function ProjectsIndex() {
       </header>
 
       <section className="mt-12">
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader />
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-center text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {error}
           </div>

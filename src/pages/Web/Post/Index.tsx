@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import LayoutWeb from "@/layouts/Web";
 import SEO from "@/components/general/SEO";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/web/Loading";
 import Pagination from "@/components/general/Pagination";
 
 import CardCategory from "@/components/general/CardCategory";
@@ -116,12 +116,23 @@ export default function BlogIndex() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const isLoading = loadingCats || loadingPosts;
+
+  if (isLoading) {
+    return (
+      <LayoutWeb>
+        <SEO />
+        <Loading message="Loading blog..." variant="section" className="mt-24 min-h-[18rem]" />
+      </LayoutWeb>
+    );
+  }
+
   return (
     <LayoutWeb>
       <SEO />
 
       <header className="text-center">
-        <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
+        <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-white">
           Latest Posts & Topics
         </h1>
       </header>
@@ -131,9 +142,7 @@ export default function BlogIndex() {
         <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">Popular Tags</h2>
         <p className="text-gray-500 mb-4">Browse by category and explore diverse ideas.</p>
 
-        {loadingCats ? (
-          <Loader />
-        ) : categories.length > 0 ? (
+        {categories.length > 0 ? (
           <div className="flex flex-wrap gap-4">
             {categories.map((cat) => (
               <CardCategory
@@ -155,43 +164,35 @@ export default function BlogIndex() {
         <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">Recent Posts</h2>
         <p className="text-gray-500 mb-6">Discover the newest articles and insights.</p>
 
-        {loadingPosts ? (
-          <Loader />
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {posts.map((post) => (
+              <CardProjects
+                key={post.id}
+                image={post.image || "/no-image.png"}
+                title={post.title}
+                caption={post.category?.name ? post.category.name : "Blog Post"}
+                description={truncate(post.content, 160)}
+                link={`/blog/${post.slug}`}
+              >
+                <p className="text-sm font-medium text-right text-blue-600 hover:underline mt-2">
+                  <Link to={`/blog/${post.slug}`}>Read more →</Link>
+                </p>
+              </CardProjects>
+            ))}
+          </div>
         ) : (
-          <>
-            {posts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {posts.map((post) => (
-                  <CardProjects
-                    key={post.id}
-                    image={post.image || "/no-image.png"}
-                    title={post.title}
-                    caption={post.category?.name ? post.category.name : "Blog Post"}
-                    description={truncate(post.content, 160)}
-                    link={`/blog/${post.slug}`}
-                  >
-                    <p className="text-sm font-medium text-right text-blue-600 hover:underline mt-2">
-                      <Link to={`/blog/${post.slug}`}>Read more →</Link>
-                    </p>
-                  </CardProjects>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500 dark:text-gray-400 mt-10">
-                No posts available.
-              </p>
-            )}
-
-            {/* ✅ Pagination rendered regardless of posts length */}
-            <Pagination
-              className="mt-10"
-              currentPage={pagination.current_page}
-              totalCount={pagination.total}
-              pageSize={pagination.per_page}
-              onPageChange={handlePageChange}
-            />
-          </>
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-10">No posts available.</p>
         )}
+
+        {/* ✅ Pagination rendered regardless of posts length */}
+        <Pagination
+          className="mt-10"
+          currentPage={pagination.current_page}
+          totalCount={pagination.total}
+          pageSize={pagination.per_page}
+          onPageChange={handlePageChange}
+        />
       </section>
     </LayoutWeb>
   );
