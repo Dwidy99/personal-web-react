@@ -4,6 +4,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { projectService } from "@/services";
 import type { Project } from "@/types/project";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 
 import SunEditorField from "@/components/general/SunEditor";
@@ -117,7 +118,7 @@ export default function ProjectEdit() {
       {/* Card */}
       <div className="mx-auto max-w-5xl rounded-xl border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-6 lg:p-8">
         {loading ? (
-          <div className="py-16 text-center text-gray-500 dark:text-gray-400">Loading...</div>
+          <Loading message="Loading project data..." variant="page" className="py-16" />
         ) : !project ? (
           <div className="py-16 text-center text-gray-500 dark:text-gray-400">
             Project not found.

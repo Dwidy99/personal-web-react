@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { confirmAlert } from "react-confirm-alert";
 import hasAnyPermission from "@/utils/Permissions";
 import Pagination from "@/components/general/Pagination";
+import Loading from "@/components/admin/Loading";
 
 import { MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus, FaTrash } from "react-icons/fa6";
@@ -178,9 +179,7 @@ export default function ExperiencesIndex() {
         {/* Body */}
         <div className="p-4 sm:p-6">
           {loading ? (
-            <div className="py-14 text-center text-sm text-gray-500 dark:text-gray-400">
-              Loading experiences...
-            </div>
+            <Loading message="Loading experiences..." variant="page" className="py-14" />
           ) : (
             <>
               <div className="w-full overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">

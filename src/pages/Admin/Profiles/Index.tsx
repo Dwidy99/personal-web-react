@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import profileService from "@/services/profileService";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import SunEditorField from "@/components/general/SunEditor";
 
@@ -191,9 +192,7 @@ export default function ProfilesIndex() {
     return (
       <LayoutAdmin>
         <div className="p-6">
-          <div className="py-16 text-center text-sm text-gray-500 dark:text-gray-400">
-            Loading...
-          </div>
+          <Loading message="Loading profile..." variant="page" className="py-16" />
         </div>
       </LayoutAdmin>
     );

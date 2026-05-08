@@ -2,6 +2,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import type { Permission } from "@/types/permission";
 import type { RoleForm } from "@/types/role";
@@ -107,9 +108,7 @@ export default function RolesCreate() {
             </div>
 
             {loading ? (
-              <div className="mt-3 rounded-lg border border-stroke dark:border-strokedark p-4 text-sm text-gray-500">
-                Loading permissions...
-              </div>
+              <Loading message="Loading permissions..." variant="inline" className="mt-3" />
             ) : (
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {permissions.map((permission) => (

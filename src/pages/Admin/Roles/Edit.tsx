@@ -2,6 +2,7 @@ import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import type { RoleForm } from "@/types/role";
 import type { Permission } from "@/types/permission";
@@ -98,9 +99,7 @@ export default function RolesEdit() {
         </h3>
 
         {loading ? (
-          <div className="rounded-lg border border-stroke dark:border-strokedark p-6 text-center text-sm text-gray-500">
-            Loading role data...
-          </div>
+          <Loading message="Loading role data..." className="p-6" />
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name */}

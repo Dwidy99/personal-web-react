@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import type { ValidationErrors, Contact } from "../../../types/contact";
 import { contactService } from "../../../services";
@@ -92,9 +93,7 @@ export default function ContactsEdit() {
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-stroke bg-white p-10 text-center text-gray-500 shadow-sm dark:border-strokedark dark:bg-boxdark">
-          Loading contact data...
-        </div>
+        <Loading message="Loading contact data..." className="rounded-xl p-10" />
       ) : (
         <div className="rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-4 sm:p-6 lg:p-8">
           <h3 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100 mb-6">

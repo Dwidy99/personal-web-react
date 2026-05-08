@@ -5,6 +5,7 @@ import type { Category, PaginationMeta } from "../../../types/category";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
 import Pagination from "../../../components/general/Pagination";
+import Loading from "@/components/admin/Loading";
 import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
@@ -155,10 +156,7 @@ export default function CategoriesIndex() {
         </div>
 
         {loading ? (
-          <div className="py-10 flex items-center justify-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400/60 border-t-transparent" />
-            Loading categories...
-          </div>
+          <Loading message="Loading categories..." variant="page" className="py-10" />
         ) : (
           <>
             <div className="mt-4 hidden sm:block overflow-x-auto rounded-md border border-stroke dark:border-strokedark">

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { userService, roleService } from "@/services";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import type { UserForm } from "@/types/user";
 import type { Role } from "@/types/role";
@@ -108,9 +109,7 @@ export default function UsersEdit() {
         </h3>
 
         {loading ? (
-          <div className="rounded-lg border border-stroke dark:border-strokedark p-6 text-center text-sm text-gray-500">
-            Loading user data...
-          </div>
+          <Loading message="Loading user data..." className="p-6" />
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name + Email */}

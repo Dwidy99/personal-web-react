@@ -6,7 +6,8 @@ import { TbCategory2 } from "react-icons/tb";
 import { LuSignpostBig } from "react-icons/lu";
 import { MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { SlPicture } from "react-icons/sl";
-import { FiArrowUpRight, FiGrid, FiRefreshCw } from "react-icons/fi";
+import { FiArrowUpRight, FiGrid } from "react-icons/fi";
+import Loading from "@/components/admin/Loading";
 import { Api } from "../../../services";
 
 interface DashboardData {
@@ -147,10 +148,7 @@ export default function DashboardIndex() {
         </section>
 
         {loading ? (
-          <div className="rounded-lg border border-stroke bg-white p-8 text-center shadow-sm dark:border-strokedark dark:bg-boxdark">
-            <FiRefreshCw className="mx-auto mb-3 animate-spin text-2xl text-primary" />
-            <p className="font-medium text-body dark:text-bodydark">Loading dashboard data...</p>
-          </div>
+          <Loading message="Loading dashboard data..." />
         ) : error ? (
           <div className="rounded-lg border border-danger/30 bg-danger/5 p-6 text-danger">
             <p className="font-semibold">{error}</p>

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import SunEditorField from "@/components/general/SunEditor";
 import experienceService from "@/services/experienceService";
@@ -100,7 +101,7 @@ export default function ExperiencesEdit() {
   if (loading) {
     return (
       <LayoutAdmin>
-        <div className="py-20 text-center text-gray-500">Loading...</div>
+        <Loading message="Loading experience data..." variant="page" className="py-20" />
       </LayoutAdmin>
     );
   }

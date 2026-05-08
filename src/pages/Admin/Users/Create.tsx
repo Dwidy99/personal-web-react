@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { userService, roleService } from "@/services";
+import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import type { UserForm } from "@/types/user";
 import type { Role } from "@/types/role";
@@ -179,9 +180,7 @@ export default function UsersCreate() {
             </div>
 
             {loadingRoles ? (
-              <div className="mt-3 rounded-lg border border-stroke dark:border-strokedark p-4 text-sm text-gray-500">
-                Loading roles...
-              </div>
+              <Loading message="Loading roles..." variant="inline" className="mt-3" />
             ) : (
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {roles.map((role) => (

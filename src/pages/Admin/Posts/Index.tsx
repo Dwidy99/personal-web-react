@@ -11,7 +11,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
 import { confirmAlert } from "react-confirm-alert";
-import Loader from "@/components/general/Loader";
+import Loading from "@/components/admin/Loading";
 
 export default function PostsIndex() {
   document.title = "Posts - Admin Panel";
@@ -114,9 +114,7 @@ export default function PostsIndex() {
 
       {/* ===== Content ===== */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader />
-        </div>
+        <Loading message="Loading posts..." variant="page" className="py-20" />
       ) : (
         <div className="rounded-lg border border-stroke bg-white p-4 sm:p-6 dark:border-strokedark dark:bg-boxdark">
           {/* ===== Desktop Table ===== */}

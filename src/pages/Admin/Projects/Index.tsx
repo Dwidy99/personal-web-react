@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import Pagination from "@/components/general/Pagination";
+import Loading from "@/components/admin/Loading";
 import type { Project } from "@/types/project";
 import hasAnyPermissions from "@/utils/Permissions";
 import { confirmAlert } from "react-confirm-alert";
@@ -172,9 +173,7 @@ export default function ProjectsIndex() {
 
         {/* Body */}
         {loading ? (
-          <div className="py-14 text-center text-sm text-gray-500 dark:text-gray-400">
-            Loading projects...
-          </div>
+          <Loading message="Loading projects..." variant="page" className="py-14" />
         ) : (
           <>
             {/* Table (sm+) */}
