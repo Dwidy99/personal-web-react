@@ -3,14 +3,18 @@ import globals from "globals";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import prettier from "eslint-config-prettier";
 
 export default [
-  { ignores: ["dist"] },
+  { ignores: ["dist", "src/assets/**/*.js"] },
   {
-    files: ["**/*.{js,tsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parser: tsParser,
       parserOptions: {
         ecmaVersion: "latest",
         ecmaFeatures: { tsx: true },
@@ -20,14 +24,20 @@ export default [
     settings: { react: { version: "18.3" } },
     plugins: {
       react,
+      "@typescript-eslint": tsPlugin,
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
     rules: {
       ...js.configs.recommended.rules,
+      ...tsPlugin.configs.recommended.rules,
       ...react.configs.recommended.rules,
-      ...react.configs["tsx-runtime"].rules,
+      ...react.configs["jsx-runtime"].rules,
       ...reactHooks.configs.recommended.rules,
+      ...prettier.rules,
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-undef": "off",
+      "react/no-unescaped-entities": "off",
       "react/tsx-no-target-blank": "off",
       "react-refresh/only-export-components": [
         "warn",

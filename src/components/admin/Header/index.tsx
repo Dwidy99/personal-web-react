@@ -1,6 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DropdownUser from "./DropdownUser";
-import LogoIcon from "@/assets/admin/images/logo/logo.svg";
 import { useState, useCallback, useEffect } from "react";
 import Api from "@/services/Api";
 import Cookies from "js-cookie";
@@ -28,7 +27,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
       Cookies.remove("permissions");
       toast.success("Logout Successfully!");
       navigate("/login");
-    } catch (error) {
+    } catch {
       toast.error("Logout failed, please try again.");
     }
   }, [navigate]);

@@ -26,5 +26,5 @@ export interface UserPagination {
     data: User[];
 }
 
-export interface UserResponse extends UserPagination { }
+export type UserResponse = UserPagination;
 

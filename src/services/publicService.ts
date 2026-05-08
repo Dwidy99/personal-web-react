@@ -2,13 +2,6 @@
 import Api from "./Api";
 import { ApiResponse } from "../types/common";
 
-type PublicPostsResponse<T> = {
-    current_page: number;
-    per_page: number;
-    total: number;
-    data: T[];
-};
-
 // All public-facing API endpoints for the web pages
 export const publicService = {
     getProfiles: async () => {

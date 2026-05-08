@@ -62,7 +62,6 @@ export default function ProjectsIndex() {
       }
 
       toast.error(error?.response?.data?.message || "Failed to load projects");
-      // eslint-disable-next-line no-console
       console.error(error);
     } finally {
       setLoading(false);

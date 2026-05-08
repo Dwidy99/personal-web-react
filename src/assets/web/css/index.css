@@ -2,32 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Font Face untuk Inter */
 @font-face {
   font-family: 'Satoshi';
-  src: url('../../admin/fonts/Satoshi-Black.ttf') format('truetype');
-  font-weight: 400;
+  src: url('../../admin/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
   font-display: swap;
+  font-style: normal;
 }
 
 @font-face {
-  font-family: 'Satoshi Black Italic';
-  src: url('../../admin/fonts/Satoshi-BlackItalic.ttf') format('truetype');
-  font-weight: 500;
+  font-family: 'Satoshi';
+  src: url('../../admin/fonts/Satoshi-VariableItalic.woff2') format('woff2');
+  font-weight: 300 900;
   font-display: swap;
-}
-
-@font-face {
-  font-family: 'Satoshi Bold';
-  src: url('../../admin/fonts/Satoshi-Bold.ttf') format('truetype');
-  font-weight: 600;
-  font-display: swap;
+  font-style: italic;
 }
 
 
-/* Base Styles */
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: 'Satoshi', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-kerning: normal;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
-  font-family: "Satoshi Black Italic", sans-serif;
+  font-weight: 450;
+  line-height: 1.65;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+nav,
+button,
+label {
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.12;
+}
+
+p,
+li {
+  line-height: 1.72;
 }
 
 .navbar-fixed {
@@ -70,12 +101,16 @@ body {
   font-weight: 800;
 }
 
-/* Tambahkan styling lainnya sesuai kebutuhan */
+.ql-syntax,
+pre {
+  padding: 14px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
 
-/* Add to your global CSS */
 footer {
-  contain: content;  /* 👈 Limits browser recalculations */
+  contain: content;
 }
 footer * {
-  will-change: auto; /* 👈 Opts out of LCP consideration */
+  will-change: auto;
 }

@@ -5,7 +5,6 @@ import CardBlog from "@/components/general/CardBlog";
 import Pagination from "@/components/general/Pagination";
 import Loader from "@/components/general/Loader";
 import { useFetchPostsByCategory } from "@/hooks/useFetchPostsByCategory";
-import type { Post } from "@/types/post";
 
 export default function CategoryPostsIndex(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();

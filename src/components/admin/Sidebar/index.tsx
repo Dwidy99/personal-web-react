@@ -167,7 +167,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                          if (sidebarExpanded) {
+                            handleClick();
+                          } else {
+                            setSidebarExpanded(true);
+                          }
                         }}
                         className="group flex w-full items-center gap-2 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-gray-800"
                       >
@@ -228,7 +232,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                          if (sidebarExpanded) {
+                            handleClick();
+                          } else {
+                            setSidebarExpanded(true);
+                          }
                         }}
                         className="group flex w-full items-center gap-2 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-gray-800"
                       >
@@ -277,7 +285,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                          if (sidebarExpanded) {
+                            handleClick();
+                          } else {
+                            setSidebarExpanded(true);
+                          }
                         }}
                         className="group flex w-full items-center gap-2 rounded-sm px-4 py-2 font-medium text-bodydark1 hover:bg-gray-800"
                       >

@@ -15,7 +15,7 @@ type SunEditorOnImageUploadBefore = NonNullable<
 >;
 
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
-  ({ value, onChange, placeholder = "Write something...", height = "280px" }, _ref) => {
+  ({ value, onChange, placeholder = "Write something...", height = "280px" }, ref) => {
     const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files, info, uploadHandler) => {
       const file = files?.[0];
 
@@ -59,6 +59,7 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
     return (
       <div className="w-full">
         <SunEditor
+          ref={ref}
           setContents={value}
           onChange={onChange}
           onImageUploadBefore={handleImageUploadBefore}

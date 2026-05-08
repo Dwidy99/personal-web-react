@@ -20,7 +20,6 @@ export default function PostCreate() {
   const [content, setContent] = useState("");
 
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState("");
 
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -33,14 +32,6 @@ export default function PostCreate() {
       .then(setCategories)
       .catch(() => toast.error("Failed to load categories"));
   }, []);
-
-  /* ================= IMAGE PREVIEW ================= */
-  useEffect(() => {
-    if (!image) return setImagePreview("");
-    const url = URL.createObjectURL(image);
-    setImagePreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [image]);
 
   const categoryOptions = useMemo(
     () => categories.map((c) => ({ value: String(c.id), label: c.name })),

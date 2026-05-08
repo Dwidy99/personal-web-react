@@ -26,10 +26,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
     readonly env: ImportMetaEnv;
 }
-
-.ql - syntax,
-    pre {
-    padding: 14px;
-    border - radius: 12px;
-    overflow - x: auto;
-}

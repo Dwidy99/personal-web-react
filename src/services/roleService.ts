@@ -1,6 +1,6 @@
 import Api from "./Api";
 import Cookies from "js-cookie";
-import type { Role, RoleResponse, RoleForm } from "@/types/role";
+import type { Role, RoleForm } from "@/types/role";
 import type { ApiResponse, ID } from "@/types/common";
 
 const roleService = {
