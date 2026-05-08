@@ -1,6 +1,5 @@
 import { forwardRef, useEffect, type ComponentProps } from "react";
 import SunEditor from "suneditor-react";
-import Api from "@/services/Api";
 import toast from "react-hot-toast";
 
 type Props = {
@@ -16,39 +15,12 @@ type SunEditorOnImageUploadBefore = NonNullable<
   ComponentProps<typeof SunEditor>["onImageUploadBefore"]
 >;
 
-type EditorUploadResponse = {
-  url?: string;
-  path?: string;
-  image?: string;
-  data?: {
-    url?: string;
-    path?: string;
-    image?: string;
-  };
-};
+type SunEditorOnImageUploadError = NonNullable<
+  ComponentProps<typeof SunEditor>["onImageUploadError"]
+>;
 
-function normalizeImageUrl(url: string) {
-  if (/^https?:\/\//i.test(url)) {
-    return url;
-  }
-
-  const baseUrl = Api.defaults.baseURL?.replace(/\/$/, "") || window.location.origin;
-  const cleanPath = url.startsWith("/") ? url : `/${url}`;
-
-  return `${baseUrl}${cleanPath}`;
-}
-
-function getUploadedImageUrl(response: EditorUploadResponse) {
-  const url =
-    response.url ||
-    response.path ||
-    response.image ||
-    response.data?.url ||
-    response.data?.path ||
-    response.data?.image;
-
-  return url ? normalizeImageUrl(url) : "";
-}
+const MAX_INLINE_IMAGE_SIZE = 500 * 1024;
+const MAX_INLINE_IMAGE_SIZE_LABEL = "500KB";
 
 const SunEditorField = forwardRef<typeof SunEditor, Props>(
   (
@@ -113,55 +85,28 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
       });
     }, []);
 
-    const handleImageUploadBefore: SunEditorOnImageUploadBefore = (
-      files,
-      info,
-      _core,
-      uploadHandler
-    ) => {
-      const file = files?.[0];
+    const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files) => {
+      const fileList = Array.from(files || []);
 
-      if (!file) {
+      if (fileList.length === 0) {
         return false;
       }
 
-      const formData = new FormData();
-      formData.append("image", file);
+      const invalidFile = fileList.find((file) => file.size > MAX_INLINE_IMAGE_SIZE);
 
-      Api.post<EditorUploadResponse>("/api/admin/projects/editor-upload", formData)
-        .then((res) => {
-          const imageUrl = getUploadedImageUrl(res.data);
+      if (invalidFile) {
+        toast.error(`Ukuran gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}.`);
+        return false;
+      }
 
-          if (!imageUrl) {
-            throw new Error("Image URL not returned from server");
-          }
+      return true;
+    };
 
-          uploadHandler({
-            result: [
-              {
-                url: imageUrl,
-                name: file.name,
-                size: file.size,
-              },
-            ],
-          });
-        })
-        .catch((error) => {
-          const message =
-            error?.response?.data?.message ||
-            error?.message ||
-            "Upload gambar gagal. Periksa format dan ukuran gambar.";
-
-          console.error("Editor image upload failed:", {
-            error,
-            info,
-            response: error?.response?.data,
-          });
-          toast.error(message);
-          uploadHandler(message);
-        });
-
-      return undefined;
+    const handleImageUploadError: SunEditorOnImageUploadError = (message) => {
+      toast.error(
+        message || `Upload gambar gagal. Ukuran gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}.`
+      );
+      return false;
     };
 
     return (
@@ -171,6 +116,7 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
           setContents={value}
           onChange={onChange}
           onImageUploadBefore={handleImageUploadBefore}
+          onImageUploadError={handleImageUploadError}
           setOptions={{
             height,
             minHeight,
@@ -179,7 +125,7 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
             resizingBar: true,
             resizeEnable: true,
             showPathLabel: false,
-            imageUploadSizeLimit: 1024 * 1024 * 5,
+            imageUploadSizeLimit: MAX_INLINE_IMAGE_SIZE,
             buttonList: [
               ["undo", "redo"],
               ["font", "fontSize", "formatBlock"],
