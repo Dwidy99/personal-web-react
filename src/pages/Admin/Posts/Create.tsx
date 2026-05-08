@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import SubmitButton from "@/components/admin/SubmitButton";
 import SelectGroupTwo from "@/components/general/SelectGroupTwo";
 import SunEditorField from "@/components/general/SunEditor";
 import type { ValidationErrors } from "@/types/post";
@@ -79,14 +80,13 @@ export default function PostCreate() {
           </div>
 
           <div className="flex gap-2">
-            <button
-              type="submit"
+            <SubmitButton
               form="post-create-form"
-              disabled={submitting}
-              className="rounded-lg bg-sky-600 px-4 py-2 text-sm text-white"
+              loading={submitting}
+              className="bg-sky-600 px-4 py-2"
             >
-              {submitting ? "Saving..." : "Create"}
-            </button>
+              Create
+            </SubmitButton>
 
             <button
               type="reset"

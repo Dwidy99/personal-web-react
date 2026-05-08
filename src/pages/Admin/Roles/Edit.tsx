@@ -2,6 +2,7 @@ import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import SubmitButton from "@/components/admin/SubmitButton";
 import type { RoleForm } from "@/types/role";
 import type { Permission } from "@/types/permission";
 import { permissionService, roleService } from "@/services";
@@ -18,6 +19,7 @@ export default function RolesEdit() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchRoleAndPermissions = async () => {
@@ -61,12 +63,15 @@ export default function RolesEdit() {
 
     setErrors({});
     try {
+      setSubmitting(true);
       const res = await roleService.update(id, formData);
       toast.success(res.message || "Role updated successfully");
       navigate("/admin/roles");
     } catch (err: any) {
       setErrors(err?.response?.data || {});
       toast.error(err?.response?.data?.message || "Failed to update role");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -154,17 +159,15 @@ export default function RolesEdit() {
               <button
                 type="button"
                 onClick={handleReset}
+                disabled={submitting}
                 className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
               >
                 <i className="fa-solid fa-redo mr-2"></i> Reset Errors
               </button>
 
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
-              >
-                <i className="fa-solid fa-save mr-2"></i> Save
-              </button>
+              <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>
+                Save
+              </SubmitButton>
             </div>
           </form>
         )}

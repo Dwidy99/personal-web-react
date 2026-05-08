@@ -2,6 +2,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import SubmitButton from "@/components/admin/SubmitButton";
 import type { Permission } from "@/types/permission";
 import type { RoleForm } from "@/types/role";
 import { permissionService, roleService } from "@/services";
@@ -16,6 +17,7 @@ export default function RolesCreate() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const loadPermissions = async () => {
@@ -46,12 +48,15 @@ export default function RolesCreate() {
     setErrors({});
 
     try {
+      setSubmitting(true);
       const res = await roleService.create(formData);
       toast.success(res.message || "Role created successfully");
       navigate("/admin/roles");
     } catch (err: any) {
       setErrors(err?.response?.data || {});
       toast.error(err?.response?.data?.message || "Failed to create role");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -137,16 +142,14 @@ export default function RolesCreate() {
             <button
               type="button"
               onClick={handleReset}
+              disabled={submitting}
               className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset
             </button>
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
-            >
-              <i className="fa-solid fa-save mr-2"></i> Save
-            </button>
+            <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>
+              Save
+            </SubmitButton>
           </div>
         </form>
       </div>

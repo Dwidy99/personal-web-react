@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { projectService } from "@/services";
+import SubmitButton from "@/components/admin/SubmitButton";
 import type { ApiResponse } from "@/types/common";
 import type { Project } from "@/types/project";
 import SunEditorField from "@/components/general/SunEditor";
@@ -176,14 +177,13 @@ export default function ProjectsCreatePage() {
 
             {/* Buttons */}
             <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
+              <SubmitButton
+                loading={submitting}
+                icon={<i className="fa-solid fa-plus" />}
+                className="h-11 rounded-md px-5"
               >
-                <i className="fa-solid fa-plus mr-2" />
-                {submitting ? "Saving..." : "Add"}
-              </button>
+                Add
+              </SubmitButton>
 
               <button
                 type="button"

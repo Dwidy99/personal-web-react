@@ -4,6 +4,7 @@ import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import { ValidationErrors } from "../../../types/category";
 import { categoryService } from "../../../services";
+import SubmitButton from "@/components/admin/SubmitButton";
 
 const FORM_ID = "category-create-form";
 
@@ -130,17 +131,13 @@ export default function CategoriesCreate() {
           </div>
 
           <div className="flex justify-end w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <button
-              type="submit"
+            <SubmitButton
               form={FORM_ID}
-              disabled={submitting}
-              className="inline-flex items-center justify-center h-11 px-5 rounded-lg bg-blue-800 text-white text-sm font-semibold hover:bg-opacity-90 transition disabled:opacity-60"
+              loading={submitting}
+              className="h-11 bg-blue-800 px-5 font-semibold"
             >
-              {submitting && (
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
-              )}
-              {submitting ? "Saving..." : "Save"}
-            </button>
+              Save
+            </SubmitButton>
 
             <button
               type="button"

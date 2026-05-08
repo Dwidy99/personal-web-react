@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import profileService from "@/services/profileService";
+import SubmitButton from "@/components/admin/SubmitButton";
 import SunEditorField from "@/components/general/SunEditor";
 
 type FieldErrors = Record<string, string[]>;
@@ -220,14 +221,13 @@ export default function ProfilesIndex() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
-                type="submit"
+              <SubmitButton
                 form="profile-form"
-                disabled={submitting}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-blue-800 px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
+                loading={submitting}
+                className="h-11 bg-blue-800 px-5"
               >
-                {submitting ? "Saving..." : "Save"}
-              </button>
+                Save
+              </SubmitButton>
 
               <button
                 type="button"

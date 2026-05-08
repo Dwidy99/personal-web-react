@@ -4,6 +4,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { projectService } from "@/services";
 import type { Project } from "@/types/project";
+import SubmitButton from "@/components/admin/SubmitButton";
 
 import SunEditorField from "@/components/general/SunEditor";
 
@@ -21,6 +22,7 @@ export default function ProjectEdit() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   // Preview for newly selected image
   useEffect(() => {
@@ -69,12 +71,15 @@ export default function ProjectEdit() {
     formData.append("_method", "PUT");
 
     try {
+      setSubmitting(true);
       const res = await projectService.update(id, formData);
       toast.success(res.message || "Project updated successfully!");
       navigate("/admin/projects");
     } catch (err: any) {
       setErrors(err?.response?.data || {});
       toast.error(err?.response?.data?.message || "Failed to update project");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -128,8 +133,9 @@ export default function ProjectEdit() {
                 type="text"
                 value={project.title ?? ""}
                 onChange={(e) => handleChange("title")(e.target.value)}
+                disabled={submitting}
                 placeholder="Enter project title..."
-                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary dark:border-strokedark dark:text-white"
+                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 dark:border-strokedark dark:text-white"
               />
               {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title[0]}</p>}
             </div>
@@ -161,8 +167,9 @@ export default function ProjectEdit() {
                 <input
                   type="file"
                   accept="image/*"
+                  disabled={submitting}
                   onChange={(e) => setImage(e.target.files?.[0] || null)}
-                  className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark"
+                  className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm disabled:opacity-60 dark:border-strokedark"
                 />
                 {errors.image && <p className="mt-1 text-xs text-red-600">{errors.image[0]}</p>}
               </div>
@@ -177,8 +184,9 @@ export default function ProjectEdit() {
                 type="text"
                 value={project.link ?? ""}
                 onChange={(e) => handleChange("link")(e.target.value)}
+                disabled={submitting}
                 placeholder="https://your-project-link.com"
-                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary dark:border-strokedark dark:text-white"
+                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 dark:border-strokedark dark:text-white"
               />
               {errors.link && <p className="mt-1 text-xs text-red-600">{errors.link[0]}</p>}
             </div>
@@ -223,17 +231,15 @@ export default function ProjectEdit() {
               <button
                 type="reset"
                 onClick={handleReset}
-                className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+                disabled={submitting}
+                className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
               >
                 <i className="fa-solid fa-redo mr-2" /> Reset
               </button>
 
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
-              >
-                <i className="fa-solid fa-save mr-2" /> Save Changes
-              </button>
+              <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>
+                Save Changes
+              </SubmitButton>
             </div>
           </form>
         )}

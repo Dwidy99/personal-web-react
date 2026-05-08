@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useRef, useState, FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
+import SubmitButton from "@/components/admin/SubmitButton";
 import type { ValidationErrors } from "../../../types/contact";
 import { contactService } from "../../../services";
 
@@ -15,6 +16,7 @@ export default function ContactsCreate() {
   const [link, setLink] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,12 +27,15 @@ export default function ContactsCreate() {
     if (image) formData.append("image", image);
 
     try {
+      setSubmitting(true);
       const res = await contactService.create(formData);
       toast.success(res.message || "Contact created successfully!");
       navigate("/admin/contacts");
     } catch (err: any) {
       setErrors(err.response?.data ?? {});
       toast.error(err?.response?.data?.message || "Failed to create contact");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -106,16 +111,14 @@ export default function ContactsCreate() {
             <button
               type="reset"
               onClick={handleReset}
+              disabled={submitting}
               className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset
             </button>
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
-            >
-              <i className="fa-solid fa-save mr-2"></i> Save
-            </button>
+            <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>
+              Save
+            </SubmitButton>
           </div>
         </form>
       </div>

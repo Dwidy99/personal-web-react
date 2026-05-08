@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { userService, roleService } from "@/services";
+import SubmitButton from "@/components/admin/SubmitButton";
 import type { UserForm } from "@/types/user";
 import type { Role } from "@/types/role";
 import { FaArrowLeft } from "react-icons/fa6";
@@ -16,6 +17,7 @@ export default function UsersCreate() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<UserForm>({
     name: "",
@@ -62,12 +64,15 @@ export default function UsersCreate() {
     }
 
     try {
+      setSubmitting(true);
       const res = await userService.create(formData);
       toast.success(res.message || "User created successfully");
       navigate("/admin/users");
     } catch (err: any) {
       setErrors(err?.response?.data || {});
       toast.error(err?.response?.data?.message || "Failed to create user");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -205,17 +210,15 @@ export default function UsersCreate() {
             <button
               type="button"
               onClick={handleReset}
+              disabled={submitting}
               className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset
             </button>
 
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
-            >
-              <i className="fa-solid fa-save mr-2"></i> Save
-            </button>
+            <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>
+              Save
+            </SubmitButton>
           </div>
         </form>
       </div>

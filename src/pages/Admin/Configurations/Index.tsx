@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
+import SubmitButton from "@/components/admin/SubmitButton";
 import { ConfigData, FileInputs, ValidationErrors } from "../../../types/configuration";
 
 // Service
@@ -67,6 +68,7 @@ export default function ConfigurationsIndex() {
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitting, setSubmitting] = useState(false);
 
   // 🧠 Fetch Config Data
   const fetchConfig = async () => {
@@ -108,6 +110,7 @@ export default function ConfigurationsIndex() {
     formData.append("_method", "PUT");
 
     try {
+      setSubmitting(true);
       const res = await configurationService.update(user.id, formData);
       toast.success(res.message || "Configuration updated successfully!", {
         position: "top-center",
@@ -116,6 +119,8 @@ export default function ConfigurationsIndex() {
     } catch (err: any) {
       console.error(err);
       setErrors(err.response?.data ?? {});
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -194,15 +199,17 @@ export default function ConfigurationsIndex() {
 
           {/* Buttons */}
           <div className="flex mt-5 space-x-4">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500"
+            <SubmitButton
+              loading={submitting}
+              icon={<i className="fa-solid fa-save" />}
+              className="rounded-md bg-blue-600 px-6 py-2 hover:bg-blue-500"
             >
-              <i className="fa-solid fa-save mr-2"></i> Save
-            </button>
+              Save
+            </SubmitButton>
             <button
               type="reset"
               onClick={handleReset}
+              disabled={submitting}
               className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-400"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset

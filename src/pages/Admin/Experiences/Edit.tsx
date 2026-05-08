@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import SubmitButton from "@/components/admin/SubmitButton";
 import SunEditorField from "@/components/general/SunEditor";
 import experienceService from "@/services/experienceService";
 import type { Experience } from "@/types/experience";
@@ -207,14 +208,9 @@ export default function ExperiencesEdit() {
             )}
           </div>
           <div className="flex w-full justify-end flex-col gap-2 sm:w-auto sm:flex-row">
-            <button
-              type="submit"
-              form={FORM_ID}
-              disabled={submitting}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
-            >
-              {submitting ? "Saving..." : "Update"}
-            </button>
+            <SubmitButton form={FORM_ID} loading={submitting} className="bg-blue-700 px-5 py-2">
+              Update
+            </SubmitButton>
 
             <button
               type="button"

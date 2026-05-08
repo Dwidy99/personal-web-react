@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import SubmitButton from "@/components/admin/SubmitButton";
 import SelectGroupTwo from "@/components/general/SelectGroupTwo";
 import SunEditorField from "@/components/general/SunEditor";
 import type { ValidationErrors, Post } from "@/types/post";
@@ -97,14 +98,13 @@ export default function PostEdit() {
           </div>
 
           <div className="flex gap-2">
-            <button
-              type="submit"
+            <SubmitButton
               form="post-edit-form"
-              disabled={submitting}
-              className="rounded-lg bg-sky-600 px-4 py-2 text-sm text-white disabled:opacity-60"
+              loading={submitting}
+              className="bg-sky-600 px-4 py-2"
             >
-              {submitting ? "Saving..." : "Save"}
-            </button>
+              Save
+            </SubmitButton>
 
             <Link to="/admin/posts" className="rounded-lg bg-gray-500 px-4 py-2 text-sm text-white">
               Cancel
