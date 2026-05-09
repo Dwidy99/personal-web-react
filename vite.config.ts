@@ -24,10 +24,6 @@ export default defineConfig({
               return "admin-editor";
             }
 
-            if (id.includes("@lottiefiles")) {
-              return "web-animation";
-            }
-
             if (
               id.includes("react") ||
               id.includes("scheduler") ||
