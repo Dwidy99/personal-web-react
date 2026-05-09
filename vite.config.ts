@@ -2,6 +2,20 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
+function getPackageName(id: string) {
+  const normalizedId = id.split(path.sep).join("/");
+  const nodeModulesIndex = normalizedId.lastIndexOf("/node_modules/");
+
+  if (nodeModulesIndex === -1) {
+    return "";
+  }
+
+  const packagePath = normalizedId.slice(nodeModulesIndex + "/node_modules/".length);
+  const parts = packagePath.split("/");
+
+  return parts[0]?.startsWith("@") ? `${parts[0]}/${parts[1]}` : parts[0];
+}
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -20,14 +34,17 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            if (id.includes("suneditor")) {
+            const packageName = getPackageName(id);
+
+            if (packageName === "suneditor") {
               return "admin-editor";
             }
 
             if (
-              id.includes("react") ||
-              id.includes("scheduler") ||
-              id.includes("@remix-run")
+              packageName === "react" ||
+              packageName === "react-dom" ||
+              packageName === "scheduler" ||
+              packageName.startsWith("@remix-run/")
             ) {
               return "react-vendor";
             }
