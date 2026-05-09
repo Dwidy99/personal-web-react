@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, type ComponentProps } from "react";
+import { useEffect, type ComponentProps } from "react";
 import SunEditor from "suneditor-react";
 import toast from "react-hot-toast";
 
@@ -53,28 +53,34 @@ function estimateBase64ImageSize(src: string) {
   return Math.floor((base64.length * 3) / 4) - padding;
 }
 
-const SunEditorField = forwardRef<typeof SunEditor, Props>(
-  (
-    {
-      value,
-      onChange,
-      placeholder = "Write something...",
-      height = "280px",
-      minHeight = "220px",
-      maxHeight,
-      maxImageCount = DEFAULT_MAX_INLINE_IMAGE_COUNT,
-      maxInlineImagesTotalSize = DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE,
-    },
-    ref
-  ) => {
-    useEffect(() => {
-      const styleId = "suneditor-runtime-styles";
-      const resizeStyleId = "suneditor-resize-styles";
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
 
-      if (!document.getElementById(resizeStyleId)) {
-        const resizeStyle = document.createElement("style");
-        resizeStyle.id = resizeStyleId;
-        resizeStyle.textContent = `
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+export default function SunEditorField({
+  value,
+  onChange,
+  placeholder = "Write something...",
+  height = "280px",
+  minHeight = "220px",
+  maxHeight,
+  maxImageCount = DEFAULT_MAX_INLINE_IMAGE_COUNT,
+  maxInlineImagesTotalSize = DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE,
+}: Props) {
+  useEffect(() => {
+    const styleId = "suneditor-runtime-styles";
+    const resizeStyleId = "suneditor-resize-styles";
+
+    if (!document.getElementById(resizeStyleId)) {
+      const resizeStyle = document.createElement("style");
+      resizeStyle.id = resizeStyleId;
+      resizeStyle.textContent = `
           .sun-editor-resize-frame {
             resize: vertical;
             overflow: auto;
@@ -101,311 +107,320 @@ const SunEditorField = forwardRef<typeof SunEditor, Props>(
             min-height: 100% !important;
           }
         `;
-        document.head.appendChild(resizeStyle);
+      document.head.appendChild(resizeStyle);
+    }
+
+    if (document.getElementById(styleId)) return;
+
+    import("suneditor/dist/css/suneditor.min.css?inline").then((module) => {
+      if (document.getElementById(styleId)) {
+        return;
       }
 
-      if (document.getElementById(styleId)) return;
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = module.default;
+      document.head.appendChild(style);
+    });
+  }, []);
 
-      import("suneditor/dist/css/suneditor.min.css?inline").then((module) => {
-        if (document.getElementById(styleId)) {
-          return;
-        }
+  const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files, _info, uploadHandler) => {
+    const fileList = Array.from(files || []);
 
-        const style = document.createElement("style");
-        style.id = styleId;
-        style.textContent = module.default;
-        document.head.appendChild(style);
-      });
-    }, []);
+    if (fileList.length === 0) {
+      return false;
+    }
 
-    const handleImageUploadBefore: SunEditorOnImageUploadBefore = (files) => {
-      const fileList = Array.from(files || []);
+    const nonImageFile = fileList.find((file) => !file.type.startsWith("image/"));
 
-      if (fileList.length === 0) {
-        return false;
-      }
+    if (nonImageFile) {
+      toast.error("File harus berupa gambar.");
+      return false;
+    }
 
-      const nonImageFile = fileList.find((file) => !file.type.startsWith("image/"));
+    const invalidFile = fileList.find((file) => file.size > MAX_INLINE_IMAGE_SIZE);
 
-      if (nonImageFile) {
-        toast.error("File harus berupa gambar.");
-        return false;
-      }
-
-      const invalidFile = fileList.find((file) => file.size > MAX_INLINE_IMAGE_SIZE);
-
-      if (invalidFile) {
-        toast.error(
-          `Ukuran tiap gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}. ${invalidFile.name} berukuran ${formatBytes(invalidFile.size)}.`
-        );
-        return false;
-      }
-
-      const existingImages = getEditorImages(value);
-      const nextImageCount = existingImages.length + fileList.length;
-
-      if (nextImageCount > maxImageCount) {
-        toast.error(`Maksimal ${maxImageCount} gambar dalam satu editor.`);
-        return false;
-      }
-
-      const existingInlineSize = existingImages.reduce(
-        (total, image) => total + estimateBase64ImageSize(image.getAttribute("src") || ""),
-        0
-      );
-      const nextInlineSize =
-        existingInlineSize + fileList.reduce((total, file) => total + file.size, 0);
-
-      if (nextInlineSize > maxInlineImagesTotalSize) {
-        toast.error(
-          `Total gambar inline maksimal ${formatBytes(maxInlineImagesTotalSize)}. Saat ini akan menjadi ${formatBytes(nextInlineSize)}.`
-        );
-        return false;
-      }
-
-      return true;
-    };
-
-    const handleImageUploadError: SunEditorOnImageUploadError = (message) => {
+    if (invalidFile) {
       toast.error(
-        message || `Upload gambar gagal. Ukuran gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}.`
+        `Ukuran tiap gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}. ${invalidFile.name} berukuran ${formatBytes(invalidFile.size)}.`
       );
       return false;
-    };
+    }
 
-    return (
-      <div className="sun-editor-resize-frame" style={{ height, minHeight, maxHeight }}>
-        <SunEditor
-          ref={ref}
-          setContents={value}
-          onChange={onChange}
-          onImageUploadBefore={handleImageUploadBefore}
-          onImageUploadError={handleImageUploadError}
-          setOptions={{
-            height,
-            minHeight,
-            maxHeight,
-            placeholder,
-            resizingBar: true,
-            resizeEnable: true,
-            showPathLabel: false,
-            imageMultipleFile: true,
-            imageUploadSizeLimit: MAX_INLINE_IMAGE_SIZE,
-            buttonList: [
-              ["undo", "redo"],
-              ["font", "fontSize", "formatBlock"],
-              ["paragraphStyle", "blockquote"],
-              ["bold", "underline", "italic", "strike", "subscript", "superscript"],
-              ["fontColor", "hiliteColor", "textStyle"],
-              ["removeFormat"],
-              ["outdent", "indent"],
-              ["align", "horizontalRule", "list", "lineHeight"],
-              ["table", "link", "image", "video"],
-              ["fullScreen", "showBlocks", "codeView"],
-              ["preview"],
-              ["save"],
+    const existingImages = getEditorImages(value);
+    const nextImageCount = existingImages.length + fileList.length;
+
+    if (nextImageCount > maxImageCount) {
+      toast.error(`Maksimal ${maxImageCount} gambar dalam satu editor.`);
+      return false;
+    }
+
+    const existingInlineSize = existingImages.reduce(
+      (total, image) => total + estimateBase64ImageSize(image.getAttribute("src") || ""),
+      0
+    );
+    const nextInlineSize =
+      existingInlineSize + fileList.reduce((total, file) => total + file.size, 0);
+
+    if (nextInlineSize > maxInlineImagesTotalSize) {
+      toast.error(
+        `Total gambar inline maksimal ${formatBytes(maxInlineImagesTotalSize)}. Saat ini akan menjadi ${formatBytes(nextInlineSize)}.`
+      );
+      return false;
+    }
+
+    Promise.all(fileList.map(async (file) => ({ file, url: await readFileAsDataUrl(file) })))
+      .then((images) => {
+        uploadHandler({
+          result: images.map(({ file, url }) => ({
+            url,
+            name: file.name,
+            size: file.size,
+          })),
+        });
+      })
+      .catch(() => {
+        uploadHandler("Upload gambar gagal. Silakan coba lagi.");
+      });
+
+    return undefined;
+  };
+
+  const handleImageUploadError: SunEditorOnImageUploadError = (message) => {
+    toast.error(
+      message || `Upload gambar gagal. Ukuran gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}.`
+    );
+    return false;
+  };
+
+  return (
+    <div className="sun-editor-resize-frame" style={{ height, minHeight, maxHeight }}>
+      <SunEditor
+        setContents={value}
+        onChange={onChange}
+        onImageUploadBefore={handleImageUploadBefore}
+        onImageUploadError={handleImageUploadError}
+        setOptions={{
+          height,
+          minHeight,
+          maxHeight,
+          placeholder,
+          resizingBar: true,
+          resizeEnable: true,
+          showPathLabel: false,
+          imageMultipleFile: true,
+          imageUploadSizeLimit: 0,
+          buttonList: [
+            ["undo", "redo"],
+            ["font", "fontSize", "formatBlock"],
+            ["paragraphStyle", "blockquote"],
+            ["bold", "underline", "italic", "strike", "subscript", "superscript"],
+            ["fontColor", "hiliteColor", "textStyle"],
+            ["removeFormat"],
+            ["outdent", "indent"],
+            ["align", "horizontalRule", "list", "lineHeight"],
+            ["table", "link", "image", "video"],
+            ["fullScreen", "showBlocks", "codeView"],
+            ["preview"],
+            ["save"],
+            [
+              "%1161",
               [
-                "%1161",
+                ["undo", "redo"],
                 [
-                  ["undo", "redo"],
-                  [
-                    ":p-Formats-default.more_paragraph",
-                    "font",
-                    "fontSize",
-                    "formatBlock",
-                    "paragraphStyle",
-                    "blockquote",
-                  ],
-                  ["bold", "underline", "italic", "strike", "subscript", "superscript"],
-                  ["fontColor", "hiliteColor", "textStyle"],
-                  ["removeFormat"],
-                  ["outdent", "indent"],
-                  ["align", "horizontalRule", "list", "lineHeight"],
-                  ["-right", "save"],
-                  [
-                    "-right",
-                    ":i-Etc-default.more_vertical",
-                    "fullScreen",
-                    "showBlocks",
-                    "codeView",
-                    "preview",
-                  ],
-                  ["-right", ":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
+                  ":p-Formats-default.more_paragraph",
+                  "font",
+                  "fontSize",
+                  "formatBlock",
+                  "paragraphStyle",
+                  "blockquote",
                 ],
-              ],
-              [
-                "%893",
+                ["bold", "underline", "italic", "strike", "subscript", "superscript"],
+                ["fontColor", "hiliteColor", "textStyle"],
+                ["removeFormat"],
+                ["outdent", "indent"],
+                ["align", "horizontalRule", "list", "lineHeight"],
+                ["-right", "save"],
                 [
-                  ["undo", "redo"],
-                  [
-                    ":p-Formats-default.more_paragraph",
-                    "font",
-                    "fontSize",
-                    "formatBlock",
-                    "paragraphStyle",
-                    "blockquote",
-                  ],
-                  ["bold", "underline", "italic", "strike"],
-                  [
-                    ":t-Fonts-default.more_text",
-                    "subscript",
-                    "superscript",
-                    "fontColor",
-                    "hiliteColor",
-                    "textStyle",
-                  ],
-                  ["removeFormat"],
-                  ["outdent", "indent"],
-                  ["align", "horizontalRule", "list", "lineHeight"],
-                  ["-right", "save"],
-                  [
-                    "-right",
-                    ":i-Etc-default.more_vertical",
-                    "fullScreen",
-                    "showBlocks",
-                    "codeView",
-                    "preview",
-                  ],
-                  ["-right", ":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
+                  "-right",
+                  ":i-Etc-default.more_vertical",
+                  "fullScreen",
+                  "showBlocks",
+                  "codeView",
+                  "preview",
                 ],
+                ["-right", ":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
               ],
+            ],
+            [
+              "%893",
               [
-                "%855",
+                ["undo", "redo"],
                 [
-                  ["undo", "redo"],
-                  [
-                    ":p-Formats-default.more_paragraph",
-                    "font",
-                    "fontSize",
-                    "formatBlock",
-                    "paragraphStyle",
-                    "blockquote",
-                  ],
-                  [
-                    ":t-Fonts-default.more_text",
-                    "bold",
-                    "underline",
-                    "italic",
-                    "strike",
-                    "subscript",
-                    "superscript",
-                    "fontColor",
-                    "hiliteColor",
-                    "textStyle",
-                  ],
-                  ["removeFormat"],
-                  ["outdent", "indent"],
-                  ["align", "horizontalRule", "list", "lineHeight"],
-                  [":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
-                  ["-right", "save"],
-                  [
-                    "-right",
-                    ":i-Etc-default.more_vertical",
-                    "fullScreen",
-                    "showBlocks",
-                    "codeView",
-                    "preview",
-                  ],
+                  ":p-Formats-default.more_paragraph",
+                  "font",
+                  "fontSize",
+                  "formatBlock",
+                  "paragraphStyle",
+                  "blockquote",
                 ],
-              ],
-              [
-                "%563",
+                ["bold", "underline", "italic", "strike"],
                 [
-                  ["undo", "redo"],
-                  [
-                    ":p-Formats-default.more_paragraph",
-                    "font",
-                    "fontSize",
-                    "formatBlock",
-                    "paragraphStyle",
-                    "blockquote",
-                  ],
-                  [
-                    ":t-Fonts-default.more_text",
-                    "bold",
-                    "underline",
-                    "italic",
-                    "strike",
-                    "subscript",
-                    "superscript",
-                    "fontColor",
-                    "hiliteColor",
-                    "textStyle",
-                  ],
-                  ["removeFormat"],
-                  ["outdent", "indent"],
-                  [
-                    ":e-List&Line-default.more_horizontal",
-                    "align",
-                    "horizontalRule",
-                    "list",
-                    "lineHeight",
-                  ],
-                  [":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
-                  ["-right", "save"],
-                  [
-                    "-right",
-                    ":i-Etc-default.more_vertical",
-                    "fullScreen",
-                    "showBlocks",
-                    "codeView",
-                    "preview",
-                  ],
+                  ":t-Fonts-default.more_text",
+                  "subscript",
+                  "superscript",
+                  "fontColor",
+                  "hiliteColor",
+                  "textStyle",
                 ],
-              ],
-              [
-                "%458",
+                ["removeFormat"],
+                ["outdent", "indent"],
+                ["align", "horizontalRule", "list", "lineHeight"],
+                ["-right", "save"],
                 [
-                  ["undo", "redo"],
-                  [
-                    ":p-Formats-default.more_paragraph",
-                    "font",
-                    "fontSize",
-                    "formatBlock",
-                    "paragraphStyle",
-                    "blockquote",
-                  ],
-                  [
-                    ":t-Fonts-default.more_text",
-                    "bold",
-                    "underline",
-                    "italic",
-                    "strike",
-                    "subscript",
-                    "superscript",
-                    "fontColor",
-                    "hiliteColor",
-                    "textStyle",
-                    "removeFormat",
-                  ],
-                  [
-                    ":e-List&Line-default.more_horizontal",
-                    "outdent",
-                    "indent",
-                    "align",
-                    "horizontalRule",
-                    "list",
-                    "lineHeight",
-                  ],
-                  [":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
-                  ["-right", "save"],
-                  [
-                    "-right",
-                    ":i-Etc-default.more_vertical",
-                    "fullScreen",
-                    "showBlocks",
-                    "codeView",
-                    "preview",
-                  ],
+                  "-right",
+                  ":i-Etc-default.more_vertical",
+                  "fullScreen",
+                  "showBlocks",
+                  "codeView",
+                  "preview",
+                ],
+                ["-right", ":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
+              ],
+            ],
+            [
+              "%855",
+              [
+                ["undo", "redo"],
+                [
+                  ":p-Formats-default.more_paragraph",
+                  "font",
+                  "fontSize",
+                  "formatBlock",
+                  "paragraphStyle",
+                  "blockquote",
+                ],
+                [
+                  ":t-Fonts-default.more_text",
+                  "bold",
+                  "underline",
+                  "italic",
+                  "strike",
+                  "subscript",
+                  "superscript",
+                  "fontColor",
+                  "hiliteColor",
+                  "textStyle",
+                ],
+                ["removeFormat"],
+                ["outdent", "indent"],
+                ["align", "horizontalRule", "list", "lineHeight"],
+                [":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
+                ["-right", "save"],
+                [
+                  "-right",
+                  ":i-Etc-default.more_vertical",
+                  "fullScreen",
+                  "showBlocks",
+                  "codeView",
+                  "preview",
                 ],
               ],
             ],
-          }}
-        />
-      </div>
-    );
-  }
-);
-
-SunEditorField.displayName = "SunEditorField";
-export default SunEditorField;
+            [
+              "%563",
+              [
+                ["undo", "redo"],
+                [
+                  ":p-Formats-default.more_paragraph",
+                  "font",
+                  "fontSize",
+                  "formatBlock",
+                  "paragraphStyle",
+                  "blockquote",
+                ],
+                [
+                  ":t-Fonts-default.more_text",
+                  "bold",
+                  "underline",
+                  "italic",
+                  "strike",
+                  "subscript",
+                  "superscript",
+                  "fontColor",
+                  "hiliteColor",
+                  "textStyle",
+                ],
+                ["removeFormat"],
+                ["outdent", "indent"],
+                [
+                  ":e-List&Line-default.more_horizontal",
+                  "align",
+                  "horizontalRule",
+                  "list",
+                  "lineHeight",
+                ],
+                [":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
+                ["-right", "save"],
+                [
+                  "-right",
+                  ":i-Etc-default.more_vertical",
+                  "fullScreen",
+                  "showBlocks",
+                  "codeView",
+                  "preview",
+                ],
+              ],
+            ],
+            [
+              "%458",
+              [
+                ["undo", "redo"],
+                [
+                  ":p-Formats-default.more_paragraph",
+                  "font",
+                  "fontSize",
+                  "formatBlock",
+                  "paragraphStyle",
+                  "blockquote",
+                ],
+                [
+                  ":t-Fonts-default.more_text",
+                  "bold",
+                  "underline",
+                  "italic",
+                  "strike",
+                  "subscript",
+                  "superscript",
+                  "fontColor",
+                  "hiliteColor",
+                  "textStyle",
+                  "removeFormat",
+                ],
+                [
+                  ":e-List&Line-default.more_horizontal",
+                  "outdent",
+                  "indent",
+                  "align",
+                  "horizontalRule",
+                  "list",
+                  "lineHeight",
+                ],
+                [":r-Table&Media-default.more_plus", "table", "link", "image", "video"],
+                ["-right", "save"],
+                [
+                  "-right",
+                  ":i-Etc-default.more_vertical",
+                  "fullScreen",
+                  "showBlocks",
+                  "codeView",
+                  "preview",
+                ],
+              ],
+            ],
+          ],
+        }}
+      />
+    </div>
+  );
+}
