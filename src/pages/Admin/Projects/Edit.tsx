@@ -7,7 +7,7 @@ import type { Project } from "@/types/project";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 
 type FieldErrors = Record<string, string[]>;
 
@@ -199,7 +199,7 @@ export default function ProjectEdit() {
                   Description
                 </label>
                 <div className="rounded-lg border border-stroke dark:border-strokedark">
-                  <SunEditorField
+                  <CKEditorField
                     value={project.description ?? ""}
                     onChange={handleChange("description")}
                     placeholder="Write description..."
@@ -216,7 +216,7 @@ export default function ProjectEdit() {
                   Caption
                 </label>
                 <div className="rounded-lg border border-stroke dark:border-strokedark">
-                  <SunEditorField
+                  <CKEditorField
                     value={project.caption ?? ""}
                     onChange={handleChange("caption")}
                     placeholder="Write caption..."

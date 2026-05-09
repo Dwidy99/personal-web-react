@@ -4,7 +4,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
 import SelectGroupTwo from "@/components/general/SelectGroupTwo";
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 import type { ValidationErrors, Post } from "@/types/post";
 import { postService } from "@/services/postService";
 
@@ -175,7 +175,7 @@ export default function PostEdit() {
           {/* CONTENT */}
           <div>
             <label className="mb-1 block text-sm font-medium">Content</label>
-            <SunEditorField
+            <CKEditorField
               value={post.content}
               onChange={(v) => setPost({ ...post, content: v })}
             />

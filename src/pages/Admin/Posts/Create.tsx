@@ -4,7 +4,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
 import SelectGroupTwo from "@/components/general/SelectGroupTwo";
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 import type { ValidationErrors } from "@/types/post";
 import { postService } from "@/services";
 
@@ -145,7 +145,7 @@ export default function PostCreate() {
           {/* CONTENT */}
           <div>
             <label className="mb-1 block text-sm font-medium">Content</label>
-            <SunEditorField value={content} onChange={setContent} />
+            <CKEditorField value={content} onChange={setContent} />
             {errors.content && <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>}
           </div>
         </form>

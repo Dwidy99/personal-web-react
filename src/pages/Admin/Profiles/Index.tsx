@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import profileService from "@/services/profileService";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 
 type FieldErrors = Record<string, string[]>;
 
@@ -310,7 +310,7 @@ export default function ProfilesIndex() {
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                 About
               </label>
-              <SunEditorField
+              <CKEditorField
                 value={form.about}
                 onChange={(val) => setForm((p) => ({ ...p, about: val }))}
               />
@@ -321,7 +321,7 @@ export default function ProfilesIndex() {
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                 Description
               </label>
-              <SunEditorField
+              <CKEditorField
                 value={form.description}
                 onChange={(val) => setForm((p) => ({ ...p, description: val }))}
               />
@@ -334,7 +334,7 @@ export default function ProfilesIndex() {
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                 Content
               </label>
-              <SunEditorField
+              <CKEditorField
                 value={form.content}
                 onChange={(val) => setForm((p) => ({ ...p, content: val }))}
               />
@@ -345,7 +345,7 @@ export default function ProfilesIndex() {
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                 Tech Description
               </label>
-              <SunEditorField
+              <CKEditorField
                 value={form.tech_description}
                 onChange={(val) => setForm((p) => ({ ...p, tech_description: val }))}
               />

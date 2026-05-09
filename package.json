@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-react": "^11.1.2",
     "@tailwindcss/typography": "^0.5.16",
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.7.7",
+    "ckeditor5": "^48.0.1",
     "dompurify": "^3.2.6",
     "js-cookie": "^3.0.5",
     "react": "^18.3.1",
@@ -21,9 +23,7 @@
     "react-helmet-async": "^2.0.5",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^5.4.0",
-    "react-router-dom": "^6.27.0",
-    "suneditor": "^2.47.8",
-    "suneditor-react": "^3.6.1"
+    "react-router-dom": "^6.27.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

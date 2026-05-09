@@ -5,7 +5,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 import experienceService from "@/services/experienceService";
 import type { Experience } from "@/types/experience";
 
@@ -199,7 +199,7 @@ export default function ExperiencesEdit() {
           <div>
             <label className="block text-sm font-medium">Description</label>
             <div className="mt-2">
-              <SunEditorField
+              <CKEditorField
                 value={form.description}
                 onChange={(val) => setForm({ ...form, description: val })}
               />

@@ -36,7 +36,7 @@ export default defineConfig({
           if (id.includes("node_modules")) {
             const packageName = getPackageName(id);
 
-            if (packageName === "suneditor") {
+            if (packageName === "ckeditor5" || packageName.startsWith("@ckeditor/")) {
               return "admin-editor";
             }
 

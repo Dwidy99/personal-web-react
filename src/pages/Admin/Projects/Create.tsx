@@ -6,7 +6,7 @@ import { projectService } from "@/services";
 import SubmitButton from "@/components/admin/SubmitButton";
 import type { ApiResponse } from "@/types/common";
 import type { Project } from "@/types/project";
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 
 type FieldErrors = Record<string, string[]>;
 
@@ -145,7 +145,7 @@ export default function ProjectsCreatePage() {
                 Description
               </label>
               <div className="rounded-lg border border-stroke dark:border-strokedark">
-                <SunEditorField
+                <CKEditorField
                   value={description}
                   onChange={setDescription}
                   placeholder="Write project description..."
@@ -163,7 +163,7 @@ export default function ProjectsCreatePage() {
                 Caption
               </label>
               <div className="rounded-lg border border-stroke dark:border-strokedark">
-                <SunEditorField
+                <CKEditorField
                   value={caption}
                   onChange={setCaption}
                   placeholder="Write short caption..."

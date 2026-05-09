@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
-import SunEditorField from "@/components/general/SunEditor";
+import CKEditorField from "@/components/general/CKEditorField";
 import experienceService from "@/services/experienceService";
 
 interface ValidationErrors {
@@ -172,7 +172,7 @@ export default function ExperiencesCreate() {
           <div>
             <label className="block text-sm font-medium">Description</label>
             <div className="mt-2">
-              <SunEditorField value={description} onChange={setDescription} />
+              <CKEditorField value={description} onChange={setDescription} />
             </div>
             {errors.description && (
               <p className="mt-2 text-xs text-red-500">{errors.description[0]}</p>
