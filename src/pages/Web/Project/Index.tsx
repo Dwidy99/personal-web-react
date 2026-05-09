@@ -76,13 +76,13 @@ export default function ProjectsIndex() {
         description="Selected projects, prototypes, and portfolio work."
       />
 
-      <header className="mx-auto max-w-3xl text-center">
-        <span className="inline-flex rounded-full border border-sky-200 px-3 py-1 text-xs font-semibold uppercase text-sky-600 dark:border-sky-500/40 dark:text-sky-400">
-          Selected Work
-        </span>
-        <h1 className="mt-5 text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">
+      <header className="mx-auto max-w-3xl pt-10 text-center sm:pt-12 lg:pt-14">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">
           Projects
         </h1>
+        <span className="mt-4 inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase text-sky-700 shadow-sm dark:border-white/15 dark:bg-white/5 dark:text-white">
+          Selected Work
+        </span>
         <p className="mt-4 text-base leading-7 text-gray-600 dark:text-gray-300">
           A curated collection of projects, prototypes, and experiments. Each card keeps the preview
           short so the full story can breathe on the detail page.

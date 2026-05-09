@@ -98,7 +98,7 @@ export default function ProjectShow() {
 
         <header className="max-w-3xl">
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-            <span className="rounded-full border border-sky-200 px-3 py-1 text-xs font-semibold uppercase text-sky-600 dark:border-sky-500/40 dark:text-sky-400">
+            <span className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase text-sky-700 shadow-sm dark:border-white/15 dark:bg-white/5 dark:text-white">
               Project Detail
             </span>
             {project.created_at && (

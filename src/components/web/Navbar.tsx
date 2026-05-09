@@ -5,7 +5,7 @@ import useColorMode from "@/hooks/useColorMode";
 import ClickOutside from "@/components/general/ClickOutside";
 import TopToButton from "@/components/general/TopToButton";
 import HandleScroll from "@/components/general/HandleScroll";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import Api from "@/services/Api";
 
 type NavbarConfig = {
@@ -66,22 +66,32 @@ export default function Navbar(): JSX.Element {
     setIsOpen((prev) => !prev);
   };
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    [
+      "mx-8 inline-flex py-2 text-base transition-colors",
+      isActive
+        ? "text-slate-950 dark:text-white"
+        : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white",
+    ].join(" ");
+
   return (
     <>
       {/* Navbar */}
       <header
-        className={`fixed top-0 left-0 z-999 w-full my-4 transition-all duration-300 shadow-md dark:shadow-black ${
-          isFixed ? "bg-transparent navbar-fixed dark:bg-black/80" : ""
+        className={`fixed top-0 left-0 z-999 w-full border-b transition-all duration-300 ${
+          isFixed
+            ? "border-slate-200/70 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-[#202020]/80 dark:shadow-none"
+            : "border-transparent bg-white/65 backdrop-blur-md dark:bg-[#202020]/65"
         }`}
       >
         <div className="container">
           <div className="flex items-center justify-between relative font-bold lg:mx-25.5">
-            <div className="my-6">
+            <div className="my-5">
               <Link
                 to="/"
-                className="flex items-center gap-2 text-lg text-meta-12 hover:text-black dark:text-white dark:hover:text-white"
+                className="flex items-center gap-3 text-lg text-slate-900 transition-colors hover:text-black dark:text-white dark:hover:text-white"
               >
-                <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-white text-xs font-black text-slate-900 ring-1 ring-slate-200 dark:bg-white dark:text-slate-900 dark:ring-white/30">
+                <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white text-xs font-black text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-white dark:text-slate-900 dark:ring-white/25">
                   {!iconFailed ? (
                     <img
                       src={iconUrl}
@@ -106,7 +116,7 @@ export default function Navbar(): JSX.Element {
                 type="button"
                 aria-label="hamburger"
                 onClick={toggleMenu}
-                className={`block absolute right-4 z-50 lg:hidden ${
+                className={`block absolute right-4 z-50 rounded-md p-1 lg:hidden ${
                   isOpen ? "hamburger-active" : ""
                 }`}
               >
@@ -118,42 +128,42 @@ export default function Navbar(): JSX.Element {
               {/* Navigation Menu */}
               <ClickOutside onClickOutside={() => setIsOpen(false)} excludeRef={buttonRef}>
                 <nav
-                  className={`absolute rounded-lg py-4 dark:text-white lg:static lg:block lg:max-w-full lg:rounded-none lg:bg-transparent lg:shadow-none lg:dark:bg-transparent ${
+                  className={`absolute rounded-lg py-4 lg:static lg:block lg:max-w-full lg:rounded-none lg:bg-transparent lg:shadow-none lg:dark:bg-transparent ${
                     isOpen
-                      ? "right-4 top-full block w-full max-w-[250px] border border-gray-200 bg-white drop-shadow-xl dark:border-gray-800 dark:bg-black"
+                      ? "right-4 top-full block w-full max-w-[250px] border border-gray-200 bg-white shadow-xl dark:border-white/10 dark:bg-[#202020]"
                       : "hidden"
                   }`}
                 >
                   <ul className="block lg:flex">
                     <li className="group my-2">
-                      <Link
+                      <NavLink
                         to="/blog"
-                        className="mx-8 py-2 text-base text-slate-700 group-hover:text-black dark:text-gray-300 dark:group-hover:text-white"
+                        className={navLinkClass}
                       >
                         Blog
-                      </Link>
+                      </NavLink>
                     </li>
                     <li className="group my-2">
-                      <Link
+                      <NavLink
                         to="/projects"
-                        className="mx-8 py-2 text-base text-slate-700 group-hover:text-black dark:text-gray-300 dark:group-hover:text-white"
+                        className={navLinkClass}
                       >
                         Projects
-                      </Link>
+                      </NavLink>
                     </li>
                     <li className="group my-2">
-                      <Link
+                      <NavLink
                         to="/about"
-                        className="mx-8 py-2 text-base text-slate-700 group-hover:text-black dark:text-gray-300 dark:group-hover:text-white"
+                        className={navLinkClass}
                       >
                         About
-                      </Link>
+                      </NavLink>
                     </li>
 
                     {/* Dark Mode Toggle */}
                     <li className="my-4 items-center pl-8 lg:mt-3">
                       <div className="flex items-center">
-                        <span className="mr-2 text-sm text-slate-700 dark:text-white">
+                        <span className="mr-2 text-sm text-slate-600 dark:text-white">
                           <IoSunnySharp />
                         </span>
 
@@ -172,7 +182,7 @@ export default function Navbar(): JSX.Element {
                           </div>
                         </label>
 
-                        <span className="ml-2 text-sm text-slate-700 dark:text-white">
+                        <span className="ml-2 text-sm text-slate-600 dark:text-white">
                           <BsMoonStarsFill />
                         </span>
                       </div>
