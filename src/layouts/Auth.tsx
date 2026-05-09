@@ -13,10 +13,10 @@ export default function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div
-      className="flex items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
+      className="flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat px-4 py-8"
       style={{ backgroundImage: `url(${backgroundUrl})` }}
     >
-      <div className="container flex justify-center">{children}</div>
+      <div className="container flex w-full justify-center">{children}</div>
     </div>
   );
 }
