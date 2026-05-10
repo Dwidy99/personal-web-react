@@ -25,9 +25,19 @@ export default function ProjectsCreatePage() {
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [descriptionUploads, setDescriptionUploads] = useState(0);
+  const [captionUploads, setCaptionUploads] = useState(0);
+  const pendingEditorUploads = descriptionUploads + captionUploads;
+  const isSaving = submitting || pendingEditorUploads > 0;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (pendingEditorUploads > 0) {
+      toast.error("Tunggu upload gambar selesai sebelum menyimpan project.");
+      return;
+    }
+
     setErrors({});
     setSubmitting(true);
 
@@ -88,7 +98,7 @@ export default function ProjectsCreatePage() {
               <input
                 type="text"
                 value={title}
-                disabled={submitting}
+                disabled={isSaving}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter project title..."
                 className="w-full rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 placeholder-gray-400
@@ -107,7 +117,7 @@ export default function ProjectsCreatePage() {
               <input
                 type="file"
                 accept="image/*"
-                disabled={submitting}
+                disabled={isSaving}
                 onChange={onFileChange}
                 className="w-full cursor-pointer rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800
                            file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2
@@ -129,7 +139,7 @@ export default function ProjectsCreatePage() {
               <input
                 type="url"
                 value={link}
-                disabled={submitting}
+                disabled={isSaving}
                 onChange={(e) => setLink(e.target.value)}
                 placeholder="https://example.com"
                 className="w-full rounded-md border border-stroke bg-transparent px-4 py-2.5 text-slate-800 placeholder-gray-400
@@ -152,8 +162,14 @@ export default function ProjectsCreatePage() {
                   placeholder="Write project description..."
                   height="320px"
                   uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
+                  onPendingUploadsChange={setDescriptionUploads}
                 />
               </div>
+              {descriptionUploads > 0 && (
+                <p className="mt-2 text-xs text-primary">
+                  Uploading {descriptionUploads} description image{descriptionUploads > 1 ? "s" : ""}...
+                </p>
+              )}
               {errors.description?.[0] && (
                 <p className="mt-1 text-sm text-red-500">{errors.description[0]}</p>
               )}
@@ -171,8 +187,14 @@ export default function ProjectsCreatePage() {
                   placeholder="Write short caption..."
                   height="240px"
                   uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
+                  onPendingUploadsChange={setCaptionUploads}
                 />
               </div>
+              {captionUploads > 0 && (
+                <p className="mt-2 text-xs text-primary">
+                  Uploading {captionUploads} caption image{captionUploads > 1 ? "s" : ""}...
+                </p>
+              )}
               {errors.caption?.[0] && (
                 <p className="mt-1 text-sm text-red-500">{errors.caption[0]}</p>
               )}
@@ -181,7 +203,9 @@ export default function ProjectsCreatePage() {
             {/* Buttons */}
             <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
               <SubmitButton
-                loading={submitting}
+                disabled={pendingEditorUploads > 0}
+                loading={isSaving}
+                loadingText={pendingEditorUploads > 0 ? "Uploading images..." : "Saving..."}
                 icon={<i className="fa-solid fa-plus" />}
                 className="h-11 rounded-md px-5"
               >
@@ -190,7 +214,7 @@ export default function ProjectsCreatePage() {
 
               <button
                 type="button"
-                disabled={submitting}
+                disabled={isSaving}
                 onClick={() => {
                   formRef.current?.reset();
                   setTitle("");

@@ -25,6 +25,10 @@ export default function ProjectEdit() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [descriptionUploads, setDescriptionUploads] = useState(0);
+  const [captionUploads, setCaptionUploads] = useState(0);
+  const pendingEditorUploads = descriptionUploads + captionUploads;
+  const isSaving = submitting || pendingEditorUploads > 0;
 
   // Preview for newly selected image
   useEffect(() => {
@@ -61,6 +65,11 @@ export default function ProjectEdit() {
   const handleUpdate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!id || !project) return;
+
+    if (pendingEditorUploads > 0) {
+      toast.error("Tunggu upload gambar selesai sebelum menyimpan project.");
+      return;
+    }
 
     setErrors({});
 
@@ -135,7 +144,7 @@ export default function ProjectEdit() {
                 type="text"
                 value={project.title ?? ""}
                 onChange={(e) => handleChange("title")(e.target.value)}
-                disabled={submitting}
+                disabled={isSaving}
                 placeholder="Enter project title..."
                 className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 dark:border-strokedark dark:text-white"
               />
@@ -169,7 +178,7 @@ export default function ProjectEdit() {
                 <input
                   type="file"
                   accept="image/*"
-                  disabled={submitting}
+                  disabled={isSaving}
                   onChange={(e) => setImage(e.target.files?.[0] || null)}
                   className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm disabled:opacity-60 dark:border-strokedark"
                 />
@@ -186,7 +195,7 @@ export default function ProjectEdit() {
                 type="text"
                 value={project.link ?? ""}
                 onChange={(e) => handleChange("link")(e.target.value)}
-                disabled={submitting}
+                disabled={isSaving}
                 placeholder="https://your-project-link.com"
                 className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 dark:border-strokedark dark:text-white"
               />
@@ -206,8 +215,14 @@ export default function ProjectEdit() {
                     placeholder="Write description..."
                     height="320px"
                     uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
+                    onPendingUploadsChange={setDescriptionUploads}
                   />
                 </div>
+                {descriptionUploads > 0 && (
+                  <p className="mt-2 text-xs text-primary">
+                    Uploading {descriptionUploads} description image{descriptionUploads > 1 ? "s" : ""}...
+                  </p>
+                )}
                 {errors.description && (
                   <p className="mt-2 text-xs text-red-600">{errors.description[0]}</p>
                 )}
@@ -224,8 +239,14 @@ export default function ProjectEdit() {
                     placeholder="Write caption..."
                     height="240px"
                     uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
+                    onPendingUploadsChange={setCaptionUploads}
                   />
                 </div>
+                {captionUploads > 0 && (
+                  <p className="mt-2 text-xs text-primary">
+                    Uploading {captionUploads} caption image{captionUploads > 1 ? "s" : ""}...
+                  </p>
+                )}
                 {errors.caption && <p className="mt-2 text-xs text-red-600">{errors.caption[0]}</p>}
               </div>
             </div>
@@ -235,13 +256,18 @@ export default function ProjectEdit() {
               <button
                 type="reset"
                 onClick={handleReset}
-                disabled={submitting}
+                disabled={isSaving}
                 className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
               >
                 <i className="fa-solid fa-redo mr-2" /> Reset
               </button>
 
-              <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>
+              <SubmitButton
+                disabled={pendingEditorUploads > 0}
+                loading={isSaving}
+                loadingText={pendingEditorUploads > 0 ? "Uploading images..." : "Saving..."}
+                icon={<i className="fa-solid fa-save" />}
+              >
                 Save Changes
               </SubmitButton>
             </div>

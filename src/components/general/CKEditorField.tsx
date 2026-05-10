@@ -50,6 +50,7 @@ type Props = {
   maxImageCount?: number;
   maxInlineImagesTotalSize?: number;
   uploadEndpoint?: string;
+  onPendingUploadsChange?: (count: number) => void;
 };
 
 type UploadResult = {
@@ -225,11 +226,14 @@ export default function CKEditorField({
   maxImageCount = DEFAULT_MAX_INLINE_IMAGE_COUNT,
   maxInlineImagesTotalSize = DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE,
   uploadEndpoint,
+  onPendingUploadsChange,
 }: Props) {
   const valueRef = useRef(value);
   const pendingUploadRef = useRef({ count: 0, size: 0 });
+  const pendingUploadCountRef = useRef(0);
   const limitsRef = useRef({ maxImageCount, maxInlineImagesTotalSize });
   const uploadEndpointRef = useRef(uploadEndpoint);
+  const onPendingUploadsChangeRef = useRef(onPendingUploadsChange);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const resizeFrameRef = useRef<number | null>(null);
   const [editorHeight, setEditorHeight] = useState(height);
@@ -251,6 +255,10 @@ export default function CKEditorField({
   }, [uploadEndpoint]);
 
   useEffect(() => {
+    onPendingUploadsChangeRef.current = onPendingUploadsChange;
+  }, [onPendingUploadsChange]);
+
+  useEffect(() => {
     injectEditorStyles();
   }, []);
 
@@ -261,7 +269,14 @@ export default function CKEditorField({
       if (resizeFrameRef.current) {
         cancelAnimationFrame(resizeFrameRef.current);
       }
+
+      onPendingUploadsChangeRef.current?.(0);
     };
+  }, []);
+
+  const reportPendingUpload = useCallback((delta: number) => {
+    pendingUploadCountRef.current = Math.max(0, pendingUploadCountRef.current + delta);
+    onPendingUploadsChangeRef.current?.(pendingUploadCountRef.current);
   }, []);
 
   const watchEditorResize = useCallback((editorMainElement: HTMLElement | null) => {
@@ -331,8 +346,14 @@ export default function CKEditorField({
             throw new Error(`Gambar lama berukuran ${formatBytes(file.size)}, melebihi ${MAX_STORAGE_IMAGE_SIZE_LABEL}.`);
           }
 
-          const uploadedUrl = await uploadImageToStorage(file, uploadEndpoint);
-          image.setAttribute("src", uploadedUrl);
+          reportPendingUpload(1);
+
+          try {
+            const uploadedUrl = await uploadImageToStorage(file, uploadEndpoint);
+            image.setAttribute("src", uploadedUrl);
+          } finally {
+            reportPendingUpload(-1);
+          }
         }
 
         const updatedContent = doc.body.innerHTML;
@@ -344,7 +365,7 @@ export default function CKEditorField({
         toast.error("Sebagian gambar lama masih base64. Upload ulang gambar jika submit masih terlalu besar.");
       }
     },
-    [onChange, uploadEndpoint]
+    [onChange, reportPendingUpload, uploadEndpoint]
   );
 
   const uploadAdapterPlugin = useMemo(
@@ -379,9 +400,15 @@ export default function CKEditorField({
             }
 
             if (activeUploadEndpoint) {
-              const uploadedUrl = await uploadImageToStorage(file, activeUploadEndpoint);
+              reportPendingUpload(1);
 
-              return { default: uploadedUrl };
+              try {
+                const uploadedUrl = await uploadImageToStorage(file, activeUploadEndpoint);
+
+                return { default: uploadedUrl };
+              } finally {
+                reportPendingUpload(-1);
+              }
             }
 
             const existingImages = getEditorImages(valueRef.current);
@@ -411,6 +438,7 @@ export default function CKEditorField({
               count: pending.count + 1,
               size: pending.size + file.size,
             };
+            reportPendingUpload(1);
 
             try {
               const dataUrl = await readFileAsDataUrl(file);
@@ -421,6 +449,7 @@ export default function CKEditorField({
                 count: Math.max(0, pendingUploadRef.current.count - 1),
                 size: Math.max(0, pendingUploadRef.current.size - file.size),
               };
+              reportPendingUpload(-1);
             }
           },
           abort() {
@@ -428,7 +457,7 @@ export default function CKEditorField({
           },
         });
       },
-    []
+    [reportPendingUpload]
   );
 
   const editorConfig = useMemo(
