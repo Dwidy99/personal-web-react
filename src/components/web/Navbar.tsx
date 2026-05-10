@@ -68,10 +68,11 @@ export default function Navbar(): JSX.Element {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     [
-      "mx-8 inline-flex py-2 text-base transition-colors",
+      "group/link relative mx-8 inline-flex py-2 text-base transition-all duration-300 ease-out hover:-translate-y-0.5",
+      "after:absolute after:bottom-0 after:left-1/2 after:h-0.5 after:-translate-x-1/2 after:rounded-full after:transition-all after:duration-300 after:ease-out",
       isActive
-        ? "text-slate-950 dark:text-white"
-        : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white",
+        ? "text-slate-950 after:w-8 after:bg-sky-400 dark:text-white dark:after:bg-white"
+        : "text-slate-600 after:w-0 after:bg-sky-400 hover:text-slate-950 hover:after:w-8 dark:text-slate-300 dark:after:bg-white dark:hover:text-white",
     ].join(" ");
 
   return (
@@ -89,9 +90,9 @@ export default function Navbar(): JSX.Element {
             <div className="my-5">
               <Link
                 to="/"
-                className="flex items-center gap-3 text-lg text-slate-900 transition-colors hover:text-black dark:text-white dark:hover:text-white"
+                className="group flex items-center gap-3 text-lg text-slate-900 transition-colors duration-300 hover:text-black dark:text-white dark:hover:text-white"
               >
-                <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white text-xs font-black text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-white dark:text-slate-900 dark:ring-white/25">
+                <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white text-xs font-black text-slate-900 shadow-sm ring-1 ring-slate-200 transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:shadow-md dark:bg-white dark:text-slate-900 dark:ring-white/25">
                   {!iconFailed ? (
                     <img
                       src={iconUrl}
@@ -105,7 +106,7 @@ export default function Navbar(): JSX.Element {
                   ) : null}
                   {(!iconLoaded || iconFailed) && <span>DY</span>}
                 </span>
-                DwiYulianto
+                <span className="transition duration-300 group-hover:tracking-[0.01em]">DwiYulianto</span>
               </Link>
             </div>
 
