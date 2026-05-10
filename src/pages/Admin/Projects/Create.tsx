@@ -9,6 +9,7 @@ import type { Project } from "@/types/project";
 import CKEditorField from "@/components/general/CKEditorField";
 
 type FieldErrors = Record<string, string[]>;
+const PROJECT_EDITOR_UPLOAD_ENDPOINT = "/api/admin/projects/editor-upload";
 
 export default function ProjectsCreatePage() {
   document.title = "Create Project - My Portfolio";
@@ -150,6 +151,7 @@ export default function ProjectsCreatePage() {
                   onChange={setDescription}
                   placeholder="Write project description..."
                   height="320px"
+                  uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
                 />
               </div>
               {errors.description?.[0] && (
@@ -168,6 +170,7 @@ export default function ProjectsCreatePage() {
                   onChange={setCaption}
                   placeholder="Write short caption..."
                   height="240px"
+                  uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
                 />
               </div>
               {errors.caption?.[0] && (

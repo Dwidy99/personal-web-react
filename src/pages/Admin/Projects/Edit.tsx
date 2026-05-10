@@ -10,6 +10,7 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import CKEditorField from "@/components/general/CKEditorField";
 
 type FieldErrors = Record<string, string[]>;
+const PROJECT_EDITOR_UPLOAD_ENDPOINT = "/api/admin/projects/editor-upload";
 
 export default function ProjectEdit() {
   document.title = "Edit Project - My Portfolio";
@@ -204,6 +205,7 @@ export default function ProjectEdit() {
                     onChange={handleChange("description")}
                     placeholder="Write description..."
                     height="320px"
+                    uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
                   />
                 </div>
                 {errors.description && (
@@ -221,6 +223,7 @@ export default function ProjectEdit() {
                     onChange={handleChange("caption")}
                     placeholder="Write caption..."
                     height="240px"
+                    uploadEndpoint={PROJECT_EDITOR_UPLOAD_ENDPOINT}
                   />
                 </div>
                 {errors.caption && <p className="mt-2 text-xs text-red-600">{errors.caption[0]}</p>}

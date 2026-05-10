@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import {
   Alignment,
@@ -36,6 +36,8 @@ import {
   type FileLoader,
 } from "ckeditor5";
 import toast from "react-hot-toast";
+import Api from "@/services/Api";
+import { normalizeEditorImageSources, normalizeEditorImageUrl } from "@/utils/editorImages";
 import "ckeditor5/ckeditor5.css";
 
 type Props = {
@@ -47,6 +49,7 @@ type Props = {
   maxHeight?: string;
   maxImageCount?: number;
   maxInlineImagesTotalSize?: number;
+  uploadEndpoint?: string;
 };
 
 type UploadResult = {
@@ -55,8 +58,18 @@ type UploadResult = {
 
 const MAX_INLINE_IMAGE_SIZE = 500 * 1024;
 const MAX_INLINE_IMAGE_SIZE_LABEL = "500KB";
+const MAX_STORAGE_IMAGE_SIZE = 2 * 1024 * 1024;
+const MAX_STORAGE_IMAGE_SIZE_LABEL = "2MB";
 const DEFAULT_MAX_INLINE_IMAGE_COUNT = 8;
 const DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE = 4 * 1024 * 1024;
+
+type EditorUploadResponse = {
+  url?: string;
+  default?: string;
+  data?: {
+    url?: string;
+  };
+};
 
 function formatBytes(bytes: number) {
   if (bytes >= 1024 * 1024) {
@@ -95,6 +108,48 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
+function getImageFileExtension(mimeType: string) {
+  const extension = mimeType.split("/")[1]?.toLowerCase() || "png";
+  return extension === "jpeg" ? "jpg" : extension;
+}
+
+function dataUrlToFile(dataUrl: string, index: number) {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, mimeType, base64] = match;
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return new File([bytes], `editor-image-${Date.now()}-${index}.${getImageFileExtension(mimeType)}`, {
+    type: mimeType,
+  });
+}
+
+async function uploadImageToStorage(file: File, uploadEndpoint: string) {
+  const formData = new FormData();
+  formData.append("upload", file);
+
+  const res = await Api.post<EditorUploadResponse>(uploadEndpoint, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  const uploadedUrl = res.data.url || res.data.default || res.data.data?.url;
+
+  if (!uploadedUrl) {
+    throw new Error("Response upload gambar tidak memiliki URL.");
+  }
+
+  return normalizeEditorImageUrl(uploadedUrl);
+}
+
 function injectEditorStyles() {
   const styleId = "ckeditor-admin-runtime-styles";
 
@@ -119,11 +174,20 @@ function injectEditorStyles() {
       border-top-right-radius: 8px;
     }
 
-    .admin-rich-editor .ck.ck-editor__main > .ck-editor__editable {
+    .admin-rich-editor .ck.ck-editor__main {
       min-height: var(--admin-editor-min-height);
       height: var(--admin-editor-height);
       max-height: var(--admin-editor-max-height);
       resize: vertical;
+      display: flex;
+      overflow: auto;
+    }
+
+    .admin-rich-editor .ck.ck-editor__main > .ck-editor__editable {
+      flex: 1 1 auto;
+      min-height: 100%;
+      height: auto;
+      resize: none;
       overflow: auto;
       border-color: #d9e0ec;
       border-bottom-left-radius: 8px;
@@ -160,22 +224,128 @@ export default function CKEditorField({
   maxHeight,
   maxImageCount = DEFAULT_MAX_INLINE_IMAGE_COUNT,
   maxInlineImagesTotalSize = DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE,
+  uploadEndpoint,
 }: Props) {
   const valueRef = useRef(value);
   const pendingUploadRef = useRef({ count: 0, size: 0 });
   const limitsRef = useRef({ maxImageCount, maxInlineImagesTotalSize });
+  const uploadEndpointRef = useRef(uploadEndpoint);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const resizeFrameRef = useRef<number | null>(null);
+  const [editorHeight, setEditorHeight] = useState(height);
 
   useEffect(() => {
     valueRef.current = value;
   }, [value]);
 
   useEffect(() => {
+    setEditorHeight(height);
+  }, [height]);
+
+  useEffect(() => {
     limitsRef.current = { maxImageCount, maxInlineImagesTotalSize };
   }, [maxImageCount, maxInlineImagesTotalSize]);
 
   useEffect(() => {
+    uploadEndpointRef.current = uploadEndpoint;
+  }, [uploadEndpoint]);
+
+  useEffect(() => {
     injectEditorStyles();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      resizeObserverRef.current?.disconnect();
+
+      if (resizeFrameRef.current) {
+        cancelAnimationFrame(resizeFrameRef.current);
+      }
+    };
+  }, []);
+
+  const watchEditorResize = useCallback((editorMainElement: HTMLElement | null) => {
+    if (!editorMainElement || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    resizeObserverRef.current?.disconnect();
+
+    resizeObserverRef.current = new ResizeObserver(([entry]) => {
+      const nextHeight = Math.round(entry.contentRect.height);
+
+      if (!nextHeight) {
+        return;
+      }
+
+      if (resizeFrameRef.current) {
+        cancelAnimationFrame(resizeFrameRef.current);
+      }
+
+      resizeFrameRef.current = requestAnimationFrame(() => {
+        setEditorHeight(`${nextHeight}px`);
+      });
+    });
+
+    resizeObserverRef.current.observe(editorMainElement);
+  }, []);
+
+  const migrateInlineImagesToStorage = useCallback(
+    async (editor: Editor) => {
+      if (!uploadEndpoint) {
+        return;
+      }
+
+      const content = editor.getData();
+      const normalizedContent = normalizeEditorImageSources(content);
+
+      if (normalizedContent !== content) {
+        editor.setData(normalizedContent);
+        valueRef.current = normalizedContent;
+        onChange(normalizedContent);
+      }
+
+      if (!normalizedContent.includes("data:image/") || typeof DOMParser === "undefined") {
+        return;
+      }
+
+      const doc = new DOMParser().parseFromString(normalizedContent, "text/html");
+      const inlineImages = Array.from(doc.querySelectorAll("img")).filter((image) =>
+        image.getAttribute("src")?.startsWith("data:image/")
+      );
+
+      if (!inlineImages.length) {
+        return;
+      }
+
+      try {
+        for (const [index, image] of inlineImages.entries()) {
+          const src = image.getAttribute("src") || "";
+          const file = dataUrlToFile(src, index);
+
+          if (!file) {
+            continue;
+          }
+
+          if (file.size > MAX_STORAGE_IMAGE_SIZE) {
+            throw new Error(`Gambar lama berukuran ${formatBytes(file.size)}, melebihi ${MAX_STORAGE_IMAGE_SIZE_LABEL}.`);
+          }
+
+          const uploadedUrl = await uploadImageToStorage(file, uploadEndpoint);
+          image.setAttribute("src", uploadedUrl);
+        }
+
+        const updatedContent = doc.body.innerHTML;
+        editor.setData(updatedContent);
+        valueRef.current = updatedContent;
+        onChange(updatedContent);
+      } catch (error) {
+        console.error(error);
+        toast.error("Sebagian gambar lama masih base64. Upload ulang gambar jika submit masih terlalu besar.");
+      }
+    },
+    [onChange, uploadEndpoint]
+  );
 
   const uploadAdapterPlugin = useMemo(
     () =>
@@ -195,11 +365,23 @@ export default function CKEditorField({
               throw new Error("File harus berupa gambar.");
             }
 
-            if (file.size > MAX_INLINE_IMAGE_SIZE) {
+            const activeUploadEndpoint = uploadEndpointRef.current;
+            const maxImageSize = activeUploadEndpoint ? MAX_STORAGE_IMAGE_SIZE : MAX_INLINE_IMAGE_SIZE;
+            const maxImageSizeLabel = activeUploadEndpoint
+              ? MAX_STORAGE_IMAGE_SIZE_LABEL
+              : MAX_INLINE_IMAGE_SIZE_LABEL;
+
+            if (file.size > maxImageSize) {
               toast.error(
-                `Ukuran tiap gambar maksimal ${MAX_INLINE_IMAGE_SIZE_LABEL}. ${file.name} berukuran ${formatBytes(file.size)}.`
+                `Ukuran tiap gambar maksimal ${maxImageSizeLabel}. ${file.name} berukuran ${formatBytes(file.size)}.`
               );
               throw new Error("Ukuran gambar terlalu besar.");
+            }
+
+            if (activeUploadEndpoint) {
+              const uploadedUrl = await uploadImageToStorage(file, activeUploadEndpoint);
+
+              return { default: uploadedUrl };
             }
 
             const existingImages = getEditorImages(valueRef.current);
@@ -351,7 +533,7 @@ export default function CKEditorField({
       className="admin-rich-editor"
       style={
         {
-          "--admin-editor-height": height,
+          "--admin-editor-height": editorHeight,
           "--admin-editor-min-height": minHeight,
           "--admin-editor-max-height": maxHeight || "none",
         } as React.CSSProperties
@@ -365,6 +547,12 @@ export default function CKEditorField({
           editor.editing.view.change((writer) => {
             writer.setAttribute("spellcheck", "true", editor.editing.view.document.getRoot()!);
           });
+
+          const editableElement = editor.ui.view.editable.element;
+          const editorMainElement = editableElement?.closest(".ck-editor__main") as HTMLElement | null;
+
+          watchEditorResize(editorMainElement);
+          void migrateInlineImagesToStorage(editor);
         }}
         onChange={(_, editor) => {
           const content = editor.getData();
