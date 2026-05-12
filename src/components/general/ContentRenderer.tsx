@@ -21,7 +21,7 @@ function injectContentRendererStyles() {
   style.id = styleId;
   style.textContent = `
     .ckeditor-renderer {
-      line-height: 1.75;
+      line-height: 1.68;
     }
 
     .ckeditor-renderer > :first-child {
@@ -39,19 +39,41 @@ function injectContentRendererStyles() {
     .ckeditor-renderer h5,
     .ckeditor-renderer h6 {
       line-height: 1.18;
-      margin: 1.4em 0 0.55em;
+      margin: 0.85em 0 0.35em;
       font-weight: 800;
     }
 
+    .ckeditor-renderer h1 {
+      font-size: 2rem;
+    }
+
+    .ckeditor-renderer h2 {
+      font-size: 1.6rem;
+    }
+
+    .ckeditor-renderer h3 {
+      font-size: 1.35rem;
+    }
+
+    .ckeditor-renderer h4,
+    .ckeditor-renderer h5,
+    .ckeditor-renderer h6 {
+      font-size: 1.1rem;
+    }
+
     .ckeditor-renderer p,
-    .ckeditor-renderer ul,
-    .ckeditor-renderer ol,
     .ckeditor-renderer blockquote,
     .ckeditor-renderer figure,
     .ckeditor-renderer table,
     .ckeditor-renderer pre {
-      margin-top: 1em;
-      margin-bottom: 1em;
+      margin-top: 0.55em;
+      margin-bottom: 0.55em;
+    }
+
+    .ckeditor-renderer ul,
+    .ckeditor-renderer ol {
+      margin-top: 0.35em;
+      margin-bottom: 0.65em;
     }
 
     .ckeditor-renderer ul,
@@ -65,6 +87,17 @@ function injectContentRendererStyles() {
 
     .ckeditor-renderer ol {
       list-style: decimal;
+    }
+
+    .ckeditor-renderer li {
+      margin-top: 0.18em;
+      margin-bottom: 0.18em;
+      padding-left: 0.2rem;
+    }
+
+    .ckeditor-renderer li > p {
+      margin-top: 0.15em;
+      margin-bottom: 0.15em;
     }
 
     .ckeditor-renderer blockquote {
@@ -216,7 +249,7 @@ export default function ContentRenderer({ content = "", className = "" }: Props)
 
   return (
     <div
-      className={`ckeditor-renderer ck-content prose dark:prose-invert max-w-none break-words ${className}`}
+      className={`ckeditor-renderer ck-content not-prose max-w-none break-words ${className}`}
       dangerouslySetInnerHTML={{ __html: sanitized }}
     />
   );

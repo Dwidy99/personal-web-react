@@ -152,8 +152,6 @@ export default function ProjectShow() {
               content={project.description}
               className="
                 text-gray-700 dark:text-gray-200
-                prose-headings:text-slate-900 dark:prose-headings:text-white
-                prose-p:leading-8
                 [&_img]:rounded-lg [&_img]:border [&_img]:border-gray-200 dark:[&_img]:border-gray-700
                 [&_pre]:max-w-full [&_pre]:overflow-x-auto
                 [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto
