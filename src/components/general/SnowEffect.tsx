@@ -1,5 +1,7 @@
 import { useRef, useEffect } from "react";
 
+const VIEWPORT_MARGIN_FACTOR = 1;
+
 // ==== Types ====
 interface SnowEffectProps {
   /** Mengatur kecepatan jatuhnya salju (default: 1) */
@@ -20,17 +22,34 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const snowflakesRef = useRef<Snowflake[]>([]);
   const animationRef = useRef<number | null>(null);
+  const snowHeightRef = useRef(0);
 
-  const getSnowHeight = () => window.innerHeight * 2;
-  const PARTICLE_COUNT = window.innerWidth > 768 ? 180 : 90;
+  const getSnowHeight = () => {
+    const documentHeight = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.clientHeight,
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight
+    );
+
+    return Math.ceil(documentHeight + window.innerHeight * VIEWPORT_MARGIN_FACTOR);
+  };
+
+  const getParticleCount = () => {
+    const viewportCount = window.innerWidth > 768 ? 180 : 90;
+    const heightRatio = Math.max(1, snowHeightRef.current / Math.max(window.innerHeight, 1));
+
+    return Math.min(Math.ceil(viewportCount * heightRatio * 0.55), window.innerWidth > 768 ? 420 : 220);
+  };
 
   // Membuat partikel salju awal
   const createSnowflakes = (): void => {
     const snowflakes: Snowflake[] = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < getParticleCount(); i++) {
       snowflakes.push({
         x: Math.random() * window.innerWidth,
-        y: Math.random() * getSnowHeight(),
+        y: Math.random() * snowHeightRef.current,
         opacity: Math.random(),
         speedX: (Math.random() * 1 - 0.5) * snowSpeedFactor,
         speedY: (Math.random() * 1 + 0.5) * snowSpeedFactor,
@@ -42,7 +61,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
 
   // Menggambar partikel salju
   const drawSnowflakes = (ctx: CanvasRenderingContext2D): void => {
-    ctx.clearRect(0, 0, window.innerWidth, getSnowHeight());
+    ctx.clearRect(0, 0, window.innerWidth, snowHeightRef.current);
     ctx.beginPath();
 
     snowflakesRef.current.forEach((flake) => {
@@ -60,7 +79,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
       let newX = flake.x + flake.speedX;
       let newY = flake.y + flake.speedY;
 
-      if (newY > getSnowHeight()) {
+      if (newY > snowHeightRef.current) {
         newY = 0;
         newX = Math.random() * window.innerWidth;
       }
@@ -94,22 +113,40 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = getSnowHeight();
+    const syncCanvasSize = (): void => {
+      snowHeightRef.current = getSnowHeight();
+      canvas.width = window.innerWidth;
+      canvas.height = snowHeightRef.current;
+      canvas.style.height = `${snowHeightRef.current}px`;
+    };
+
+    syncCanvasSize();
 
     createSnowflakes();
     animateSnow();
 
     const handleResize = (): void => {
-      canvas.width = window.innerWidth;
-      canvas.height = getSnowHeight();
+      syncCanvasSize();
       createSnowflakes();
     };
 
+    const resizeObserver = new ResizeObserver(() => {
+      const nextHeight = getSnowHeight();
+
+      if (Math.abs(nextHeight - snowHeightRef.current) < 24) {
+        return;
+      }
+
+      syncCanvasSize();
+      createSnowflakes();
+    });
+
     window.addEventListener("resize", handleResize);
+    resizeObserver.observe(document.body);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -117,7 +154,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
   return (
     <canvas
       ref={canvasRef}
-      className="absolute top-0 left-0 z-0 h-[200vh] w-full"
+      className="absolute left-0 top-0 z-0 w-full"
       style={{ pointerEvents: "none" }}
     ></canvas>
   );
