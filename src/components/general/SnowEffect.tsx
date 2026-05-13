@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 
-const VIEWPORT_MARGIN_FACTOR = 1;
+const SNOW_BOTTOM_MARGIN = 32;
 
 // ==== Types ====
 interface SnowEffectProps {
@@ -25,15 +25,17 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
   const snowHeightRef = useRef(0);
 
   const getSnowHeight = () => {
-    const documentHeight = Math.max(
-      document.body.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.clientHeight,
-      document.documentElement.scrollHeight,
-      document.documentElement.offsetHeight
-    );
+    const footer = document.querySelector('footer[role="contentinfo"]');
+    const wrapper = document.querySelector(".site-wrapper");
+    const target = footer || wrapper;
 
-    return Math.ceil(documentHeight + window.innerHeight * VIEWPORT_MARGIN_FACTOR);
+    if (!target) {
+      return window.innerHeight;
+    }
+
+    const targetBottom = target.getBoundingClientRect().bottom + window.scrollY;
+
+    return Math.ceil(targetBottom + SNOW_BOTTOM_MARGIN);
   };
 
   const getParticleCount = () => {
