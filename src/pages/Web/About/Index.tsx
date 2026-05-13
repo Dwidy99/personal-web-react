@@ -6,6 +6,7 @@ import LayoutWeb from "../../../layouts/Web";
 import SEO from "../../../components/general/SEO";
 import Loading from "@/components/web/Loading";
 import AccordionItem from "../../../components/general/AccordionItem";
+import ContentRenderer from "@/components/general/ContentRenderer";
 import { publicService } from "../../../services/publicService";
 
 import type { Experience as ExperienceItem } from "@/types/experience";
@@ -303,19 +304,13 @@ export default function AboutPage() {
                   Hello! I'm {profile.name}
                 </h3>
 
-                <div
-                  className="prose dark:prose-invert max-w-none mt-4"
-                  dangerouslySetInnerHTML={{ __html: profile.about || "" }}
-                />
+                <ContentRenderer content={profile.about || ""} className="mt-4" />
 
                 {/* Why */}
                 <h3 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mt-10">
                   Why this blog?
                 </h3>
-                <div
-                  className="prose dark:prose-invert max-w-none mt-4"
-                  dangerouslySetInnerHTML={{ __html: profile.description || "" }}
-                />
+                <ContentRenderer content={profile.description || ""} className="mt-4" />
 
                 {/* Career */}
                 <div className="mt-10">
@@ -356,10 +351,7 @@ export default function AboutPage() {
                 <h3 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mt-10">
                   Tech Stack
                 </h3>
-                <div
-                  className="prose dark:prose-invert max-w-none mt-4"
-                  dangerouslySetInnerHTML={{ __html: profile.tech_description || "" }}
-                />
+                <ContentRenderer content={profile.tech_description || ""} className="mt-4" />
               </div>
             </article>
           </div>

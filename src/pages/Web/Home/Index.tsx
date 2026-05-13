@@ -6,6 +6,7 @@ import CardCategory from "../../../components/general/CardCategory";
 import CardPost from "../../../components/general/CardPost";
 import SEO from "../../../components/general/SEO";
 import Loading from "@/components/web/Loading";
+import ContentRenderer from "@/components/general/ContentRenderer";
 
 type Profile = {
   image?: string;
@@ -126,9 +127,9 @@ export default function HomePage() {
                 {profile.caption ? ` - ${profile.caption}` : ""}
               </h2>
 
-              <div
-                className="prose prose-sm max-w-none leading-relaxed text-gray-600 dark:prose-invert dark:text-gray-300 sm:prose-base md:prose-lg"
-                dangerouslySetInnerHTML={{ __html: profile.content || "" }}
+              <ContentRenderer
+                content={profile.content || ""}
+                className="text-gray-600 dark:text-gray-300 sm:text-base md:text-lg"
               />
 
               <nav className="mt-6 grid grid-cols-2 gap-3 font-medium text-gray-700 dark:text-gray-300 sm:grid-cols-4 sm:gap-6">

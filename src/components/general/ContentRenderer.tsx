@@ -1,9 +1,15 @@
+import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "dompurify";
 import { normalizeEditorImageSources } from "@/utils/editorImages";
 
 type Props = {
   content?: string;
   className?: string;
+};
+
+type ImagePreview = {
+  src: string;
+  alt: string;
 };
 
 function injectContentRendererStyles() {
@@ -135,6 +141,13 @@ function injectContentRendererStyles() {
       display: block;
       height: auto;
       max-width: 100%;
+      cursor: zoom-in;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .ckeditor-renderer figure.image img:hover,
+    .ckeditor-renderer img:hover {
+      opacity: 0.92;
     }
 
     .ckeditor-renderer figure.image img {
@@ -239,18 +252,80 @@ function injectContentRendererStyles() {
 
 export default function ContentRenderer({ content = "", className = "" }: Props) {
   injectContentRendererStyles();
+  const [preview, setPreview] = useState<ImagePreview | null>(null);
 
-  const normalizedContent = normalizeEditorImageSources(content);
-  const sanitized = DOMPurify.sanitize(normalizedContent, {
-    USE_PROFILES: { html: true },
-    ADD_TAGS: ["figure", "figcaption"],
-    ADD_ATTR: ["target", "rel", "class", "style", "width", "height"],
-  });
+  const sanitized = useMemo(() => {
+    const normalizedContent = normalizeEditorImageSources(content);
+
+    return DOMPurify.sanitize(normalizedContent, {
+      USE_PROFILES: { html: true },
+      ADD_TAGS: ["figure", "figcaption"],
+      ADD_ATTR: ["target", "rel", "class", "style", "width", "height"],
+    });
+  }, [content]);
+
+  useEffect(() => {
+    if (!preview) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPreview(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [preview]);
+
+  const handleContentClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement | null;
+    const image = target?.closest("img") as HTMLImageElement | null;
+
+    if (!image || !event.currentTarget.contains(image)) {
+      return;
+    }
+
+    setPreview({
+      src: image.currentSrc || image.src,
+      alt: image.alt || "Content image preview",
+    });
+  };
 
   return (
-    <div
-      className={`ckeditor-renderer ck-content not-prose max-w-none break-words ${className}`}
-      dangerouslySetInnerHTML={{ __html: sanitized }}
-    />
+    <>
+      <div
+        className={`ckeditor-renderer ck-content not-prose max-w-none break-words ${className}`}
+        dangerouslySetInnerHTML={{ __html: sanitized }}
+        onClick={handleContentClick}
+      />
+
+      {preview && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image preview"
+          onClick={() => setPreview(null)}
+        >
+          <button
+            type="button"
+            className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-xl font-semibold text-slate-900 shadow-lg transition hover:bg-white"
+            aria-label="Close image preview"
+            onClick={() => setPreview(null)}
+          >
+            &times;
+          </button>
+
+          <img
+            src={preview.src}
+            alt={preview.alt}
+            className="max-h-[88vh] max-w-[92vw] rounded-lg object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
   );
 }

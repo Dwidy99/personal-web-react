@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import ContentRenderer from "@/components/general/ContentRenderer";
 
 export type ExperienceItem = {
   id?: number | string;
@@ -89,10 +90,7 @@ export default function AccordionItem({
       >
         <div className="py-4 text-sm text-slate-700 dark:text-slate-300">
           {exp.description ? (
-            <div
-              className="prose prose-sm max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: exp.description }}
-            />
+            <ContentRenderer content={exp.description} className="text-sm" />
           ) : null}
 
           {exp.highlights?.length ? (
