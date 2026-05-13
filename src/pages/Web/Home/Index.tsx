@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Typewriter } from "react-simple-typewriter";
 import LayoutWeb from "../../../layouts/Web";
 import { publicService } from "../../../services/publicService";
 import CardCategory from "../../../components/general/CardCategory";
 import CardPost from "../../../components/general/CardPost";
 import SEO from "../../../components/general/SEO";
 import Loading from "@/components/web/Loading";
-import ContentRenderer from "@/components/general/ContentRenderer";
 
 type Profile = {
   image?: string;
@@ -23,6 +23,35 @@ type HomePost = {
   category: any;
   date: string | null;
 };
+
+const HOME_AUTO_TYPING_LINES = [
+  [
+    "I started learning to code in 2016 when I started college.",
+    "I landed my first job as an IT Operation BI Fast Payment in 2022.",
+  ].join("\n\n"),
+  [
+    "I have a passion for JavaScript and website development.",
+    "I started this blog to practice my skill and share my knowledge.",
+  ].join("\n\n"),
+];
+
+function AutoTypingIntroText() {
+  return (
+    <div className="mx-auto mt-7 min-h-[9.5rem] w-full rounded-xl border border-slate-200/80 bg-white/70 p-5 text-left shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/5 sm:min-h-[8.5rem] sm:p-6 lg:mx-0">
+      <p className="whitespace-pre-line text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg md:text-xl">
+        <Typewriter
+          words={HOME_AUTO_TYPING_LINES}
+          loop={0}
+          cursor
+          cursorStyle="|"
+          typeSpeed={42}
+          deleteSpeed={24}
+          delaySpeed={1800}
+        />
+      </p>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -108,31 +137,20 @@ export default function HomePage() {
 
       <section className="mb-16 lg:mb-24">
         {profile && (
-          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 lg:gap-16">
-            {profile.image && (
-              <figure className="order-1 flex justify-center md:order-none">
-                <img
-                  src={profile.image}
-                  alt={profile.name || "Profile"}
-                  className="w-full max-w-[380px] rounded-lg object-cover shadow-md transition-shadow duration-300 hover:shadow-xl sm:max-w-[420px] md:max-w-[480px]"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </figure>
-            )}
-
-            <article className="space-y-5 px-2 text-center md:text-left sm:px-4">
+          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 lg:gap-14 xl:gap-16">
+            <article className="min-w-0 space-y-5 px-2 text-center sm:px-4 md:text-left">
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white sm:text-3xl md:text-4xl">
                 Hi, I am <span className="text-slate-900 dark:text-white">{profile.name}</span>
                 {profile.caption ? ` - ${profile.caption}` : ""}
               </h2>
 
-              <ContentRenderer
-                content={profile.content || ""}
-                className="text-gray-600 dark:text-gray-300 sm:text-base md:text-lg"
-              />
+              <AutoTypingIntroText />
 
-              <nav className="mt-6 grid grid-cols-2 gap-3 font-medium text-gray-700 dark:text-gray-300 sm:grid-cols-4 sm:gap-6">
+              <p className="pt-2 text-center text-lg font-semibold italic text-slate-800 underline underline-offset-4 dark:text-white sm:text-xl md:text-left">
+                Happy Reading!!!
+              </p>
+
+              <nav className="mt-6 grid grid-cols-2 gap-3 font-medium text-gray-700 dark:text-gray-300 sm:grid-cols-4 sm:gap-6 md:max-w-xl">
                 <Link
                   className="transition-colors hover:text-slate-950 dark:hover:text-white"
                   to="/blog"
@@ -159,6 +177,18 @@ export default function HomePage() {
                 </Link>
               </nav>
             </article>
+
+            {profile.image && (
+              <figure className="flex min-w-0 justify-center md:justify-end lg:-ml-6 xl:-ml-10">
+                <img
+                  src={profile.image}
+                  alt={profile.name || "Profile"}
+                  className="w-full max-w-[420px] rounded-lg object-cover shadow-md transition-shadow duration-300 hover:shadow-xl sm:max-w-[520px] md:max-w-none lg:max-w-[640px]"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+            )}
           </div>
         )}
       </section>
