@@ -58,7 +58,7 @@ export default function ProjectShow() {
 
   if (loading) {
     return (
-      <LayoutWeb disableSnow>
+      <LayoutWeb>
         <Loading message="Loading project..." variant="section" className="my-20" />
       </LayoutWeb>
     );
@@ -66,7 +66,7 @@ export default function ProjectShow() {
 
   if (!project) {
     return (
-      <LayoutWeb disableSnow>
+      <LayoutWeb>
         <div className="mx-auto max-w-xl rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <h1 className="text-2xl font-bold text-red-500">Project not found</h1>
           <Link
@@ -84,7 +84,7 @@ export default function ProjectShow() {
   const seoDescription = captionText || toPlainText(project.description);
 
   return (
-    <LayoutWeb disableSnow>
+    <LayoutWeb>
       <SEO title={project.title} description={seoDescription} />
 
       <article className="mx-auto max-w-5xl">

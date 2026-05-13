@@ -21,7 +21,8 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
   const snowflakesRef = useRef<Snowflake[]>([]);
   const animationRef = useRef<number | null>(null);
 
-  const PARTICLE_COUNT = window.innerWidth > 768 ? 100 : 50;
+  const getSnowHeight = () => window.innerHeight * 2;
+  const PARTICLE_COUNT = window.innerWidth > 768 ? 180 : 90;
 
   // Membuat partikel salju awal
   const createSnowflakes = (): void => {
@@ -29,7 +30,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       snowflakes.push({
         x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
+        y: Math.random() * getSnowHeight(),
         opacity: Math.random(),
         speedX: (Math.random() * 1 - 0.5) * snowSpeedFactor,
         speedY: (Math.random() * 1 + 0.5) * snowSpeedFactor,
@@ -41,7 +42,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
 
   // Menggambar partikel salju
   const drawSnowflakes = (ctx: CanvasRenderingContext2D): void => {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.clearRect(0, 0, window.innerWidth, getSnowHeight());
     ctx.beginPath();
 
     snowflakesRef.current.forEach((flake) => {
@@ -59,7 +60,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
       let newX = flake.x + flake.speedX;
       let newY = flake.y + flake.speedY;
 
-      if (newY > window.innerHeight) {
+      if (newY > getSnowHeight()) {
         newY = 0;
         newX = Math.random() * window.innerWidth;
       }
@@ -94,14 +95,14 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     if (!canvas) return;
 
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height = getSnowHeight();
 
     createSnowflakes();
     animateSnow();
 
     const handleResize = (): void => {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = getSnowHeight();
       createSnowflakes();
     };
 
@@ -116,7 +117,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
   return (
     <canvas
       ref={canvasRef}
-      className="absolute top-0 left-0 w-full h-full z-0"
+      className="absolute top-0 left-0 z-0 h-[200vh] w-full"
       style={{ pointerEvents: "none" }}
     ></canvas>
   );

@@ -108,7 +108,7 @@ export default function BlogShow() {
   }
 
   return (
-    <LayoutWeb disableSnow>
+    <LayoutWeb>
       <SEO title={post.title} description={post.excerpt} />
 
       {/* ✅ Responsive layout: mobile stack, desktop 2col + sidebar */}

@@ -59,7 +59,7 @@ export default function ProjectsIndex() {
 
   if (loading) {
     return (
-      <LayoutWeb disableSnow>
+      <LayoutWeb>
         <SEO
           title="Projects | Portfolio"
           description="Selected projects, prototypes, and portfolio work."
@@ -70,7 +70,7 @@ export default function ProjectsIndex() {
   }
 
   return (
-    <LayoutWeb disableSnow>
+    <LayoutWeb>
       <SEO
         title="Projects | Portfolio"
         description="Selected projects, prototypes, and portfolio work."

@@ -44,8 +44,21 @@ type SafeImageProps = {
   alt: string;
   className: string;
   fallbackClassName: string;
+  loading?: "eager" | "lazy";
   children: ReactNode;
 };
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+function getPublicAssetUrl(path?: string | null) {
+  if (!path) return "";
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+
+  const cleanBase = apiBaseUrl.replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+
+  return `${cleanBase}/${cleanPath}`;
+}
 
 function formatMonthYear(date: string | null | undefined) {
   if (!date) return "Present";
@@ -54,25 +67,47 @@ function formatMonthYear(date: string | null | undefined) {
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
-function SafeImage({ src, alt, className, fallbackClassName, children }: SafeImageProps) {
+function SafeImage({
+  src,
+  alt,
+  className,
+  fallbackClassName,
+  loading = "lazy",
+  children,
+}: SafeImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const imageSrc = src?.trim();
+  const [retryCount, setRetryCount] = useState(0);
+  const imageSrc = getPublicAssetUrl(src?.trim());
 
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
+    setRetryCount(0);
   }, [imageSrc]);
+
+  const handleError = () => {
+    if (retryCount < 2) {
+      window.setTimeout(() => {
+        setRetryCount((count) => count + 1);
+      }, 700);
+      return;
+    }
+
+    setFailed(true);
+  };
 
   return (
     <span className={`relative overflow-hidden ${fallbackClassName}`}>
       {imageSrc && !failed ? (
         <img
-          src={imageSrc}
+          src={retryCount ? `${imageSrc}${imageSrc.includes("?") ? "&" : "?"}retry=${retryCount}` : imageSrc}
           alt={alt}
+          loading={loading}
+          decoding="async"
           className={`${className} ${loaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
+          onError={handleError}
         />
       ) : null}
       {(!loaded || failed || !imageSrc) && (
@@ -207,6 +242,7 @@ export default function AboutPage() {
                   alt={profile.name}
                   className="h-full w-full rounded-full object-cover shadow-md transition-opacity"
                   fallbackClassName="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-slate-100 text-slate-500 shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  loading="eager"
                 >
                   <FaUser className="text-4xl" />
                 </SafeImage>

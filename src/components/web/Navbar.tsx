@@ -92,19 +92,23 @@ export default function Navbar(): JSX.Element {
                 to="/"
                 className="group flex items-center gap-3 text-lg text-slate-900 transition-colors duration-300 hover:text-black dark:text-white dark:hover:text-white"
               >
-                <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white text-xs font-black text-slate-900 shadow-sm ring-1 ring-slate-200 transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:shadow-md dark:bg-white dark:text-slate-900 dark:ring-white/25">
+                <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white text-xs font-black not-italic leading-none text-slate-900 shadow-sm ring-1 ring-slate-200 transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:shadow-md dark:bg-white dark:text-slate-900 dark:ring-white/25">
                   {!iconFailed ? (
                     <img
                       src={iconUrl}
                       alt="DwiYulianto"
-                      className={`h-full w-full object-cover transition-opacity ${
+                      className={`absolute inset-0 h-full w-full object-cover transition-opacity ${
                         iconLoaded ? "opacity-100" : "opacity-0"
                       }`}
                       onLoad={() => setIconLoaded(true)}
                       onError={() => setIconFailed(true)}
                     />
                   ) : null}
-                  {(!iconLoaded || iconFailed) && <span>DY</span>}
+                  {(!iconLoaded || iconFailed) && (
+                    <span className="absolute inset-0 flex items-center justify-center font-black not-italic leading-none tracking-normal">
+                      DY
+                    </span>
+                  )}
                 </span>
                 <span className="transition duration-300 group-hover:tracking-[0.01em]">DwiYulianto</span>
               </Link>

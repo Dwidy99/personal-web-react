@@ -85,7 +85,7 @@ export default function HomePage() {
 
   if (isLoading) {
     return (
-      <LayoutWeb disableSnow>
+      <LayoutWeb>
         <SEO />
         <Loading message="Loading homepage..." variant="section" className="mt-24 min-h-[24rem]" />
       </LayoutWeb>
@@ -93,7 +93,7 @@ export default function HomePage() {
   }
 
   return (
-    <LayoutWeb disableSnow>
+    <LayoutWeb>
       <SEO />
 
       <header className="mx-auto mb-12 max-w-4xl text-center md:mb-20">
