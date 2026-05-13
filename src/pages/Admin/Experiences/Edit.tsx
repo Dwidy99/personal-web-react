@@ -11,6 +11,7 @@ import type { Experience } from "@/types/experience";
 
 type Errors = Record<string, string[]>;
 const FORM_ID = "experience-edit-form";
+const EXPERIENCE_EDITOR_UPLOAD_ENDPOINT = "/api/admin/experiences/editor-upload";
 
 function toDateInput(value?: string | null) {
   if (!value) return "";
@@ -27,6 +28,8 @@ export default function ExperiencesEdit() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
+  const [descriptionUploads, setDescriptionUploads] = useState(0);
+  const isSaving = submitting || descriptionUploads > 0;
 
   const [form, setForm] = useState({
     name: "",
@@ -69,6 +72,11 @@ export default function ExperiencesEdit() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!id) return;
+
+    if (descriptionUploads > 0) {
+      toast.error("Tunggu upload gambar selesai sebelum menyimpan experience.");
+      return;
+    }
 
     setSubmitting(true);
     setErrors({});
@@ -132,7 +140,7 @@ export default function ExperiencesEdit() {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  disabled={submitting}
+                  disabled={isSaving}
                   className="mt-2 w-full rounded-lg border p-3 text-sm focus:ring-2 focus:ring-primary disabled:bg-gray-50"
                 />
                 {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name[0]}</p>}
@@ -145,7 +153,7 @@ export default function ExperiencesEdit() {
                     type="date"
                     value={form.start_date}
                     onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                    disabled={submitting}
+                    disabled={isSaving}
                     className="mt-2 w-full rounded-lg border p-3 text-sm disabled:bg-gray-50"
                   />
                   {errors.start_date && (
@@ -159,7 +167,7 @@ export default function ExperiencesEdit() {
                     type="date"
                     value={form.end_date}
                     onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                    disabled={submitting}
+                    disabled={isSaving}
                     className="mt-2 w-full rounded-lg border p-3 text-sm disabled:bg-gray-50"
                   />
                   {errors.end_date && (
@@ -188,7 +196,7 @@ export default function ExperiencesEdit() {
                 ref={fileRef}
                 type="file"
                 accept="image/*"
-                disabled={submitting}
+                disabled={isSaving}
                 onChange={(e) => setForm({ ...form, image: e.target.files?.[0] ?? null })}
                 className="w-full rounded-lg border p-2 text-sm disabled:bg-gray-50"
               />
@@ -202,21 +210,34 @@ export default function ExperiencesEdit() {
               <CKEditorField
                 value={form.description}
                 onChange={(val) => setForm({ ...form, description: val })}
+                uploadEndpoint={EXPERIENCE_EDITOR_UPLOAD_ENDPOINT}
+                onPendingUploadsChange={setDescriptionUploads}
               />
             </div>
+            {descriptionUploads > 0 && (
+              <p className="mt-2 text-xs text-sky-600">
+                Uploading {descriptionUploads} image{descriptionUploads > 1 ? "s" : ""}...
+              </p>
+            )}
             {errors.description && (
               <p className="mt-2 text-xs text-red-500">{errors.description[0]}</p>
             )}
           </div>
           <div className="flex w-full justify-end flex-col gap-2 sm:w-auto sm:flex-row">
-            <SubmitButton form={FORM_ID} loading={submitting} className="bg-blue-700 px-5 py-2">
+            <SubmitButton
+              form={FORM_ID}
+              disabled={descriptionUploads > 0}
+              loading={isSaving}
+              loadingText={descriptionUploads > 0 ? "Uploading images..." : "Saving..."}
+              className="bg-blue-700 px-5 py-2"
+            >
               Update
             </SubmitButton>
 
             <button
               type="button"
               onClick={handleReset}
-              disabled={submitting}
+              disabled={isSaving}
               className="inline-flex items-center justify-center rounded-lg bg-gray-600 px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
             >
               Reset

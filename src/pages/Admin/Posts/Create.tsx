@@ -9,6 +9,7 @@ import type { ValidationErrors } from "@/types/post";
 import { postService } from "@/services";
 
 type CategoryOption = { id: number; name: string };
+const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
 
 export default function PostCreate() {
   document.title = "Create Post - My Portfolio";
@@ -25,6 +26,8 @@ export default function PostCreate() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [contentUploads, setContentUploads] = useState(0);
+  const isSaving = submitting || contentUploads > 0;
 
   /* ================= FETCH ================= */
   useEffect(() => {
@@ -43,6 +46,11 @@ export default function PostCreate() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    if (contentUploads > 0) {
+      toast.error("Tunggu upload gambar selesai sebelum menyimpan post.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("title", title);
@@ -82,7 +90,9 @@ export default function PostCreate() {
           <div className="flex gap-2">
             <SubmitButton
               form="post-create-form"
-              loading={submitting}
+              disabled={contentUploads > 0}
+              loading={isSaving}
+              loadingText={contentUploads > 0 ? "Uploading images..." : "Saving..."}
               className="bg-sky-600 px-4 py-2"
             >
               Create
@@ -91,6 +101,7 @@ export default function PostCreate() {
             <button
               type="reset"
               form="post-create-form"
+              disabled={isSaving}
               className="rounded-lg bg-gray-500 px-4 py-2 text-sm text-white"
             >
               Reset
@@ -145,7 +156,17 @@ export default function PostCreate() {
           {/* CONTENT */}
           <div>
             <label className="mb-1 block text-sm font-medium">Content</label>
-            <CKEditorField value={content} onChange={setContent} />
+            <CKEditorField
+              value={content}
+              onChange={setContent}
+              uploadEndpoint={POST_EDITOR_UPLOAD_ENDPOINT}
+              onPendingUploadsChange={setContentUploads}
+            />
+            {contentUploads > 0 && (
+              <p className="mt-2 text-xs text-sky-600">
+                Uploading {contentUploads} image{contentUploads > 1 ? "s" : ""}...
+              </p>
+            )}
             {errors.content && <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>}
           </div>
         </form>

@@ -30,6 +30,14 @@ const EMPTY_FORM: ProfileForm = {
   content: "",
   tech_description: "",
 };
+const PROFILE_EDITOR_UPLOAD_ENDPOINT = "/api/admin/profiles/editor-upload";
+type RichEditorKey = "about" | "description" | "content" | "tech_description";
+const EMPTY_EDITOR_UPLOADS: Record<RichEditorKey, number> = {
+  about: 0,
+  description: 0,
+  content: 0,
+  tech_description: 0,
+};
 
 function parseFieldErrors(payload: any): FieldErrors {
   if (!payload) return {};
@@ -45,12 +53,20 @@ export default function ProfilesIndex() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editorUploads, setEditorUploads] =
+    useState<Record<RichEditorKey, number>>(EMPTY_EDITOR_UPLOADS);
 
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
   const [initialForm, setInitialForm] = useState<ProfileForm>(EMPTY_FORM);
 
   const [previewImage, setPreviewImage] = useState<string>("");
   const [initialImageUrl, setInitialImageUrl] = useState<string>("");
+  const pendingEditorUploads = Object.values(editorUploads).reduce((total, count) => total + count, 0);
+  const isSaving = submitting || pendingEditorUploads > 0;
+
+  const setEditorUploadCount = (field: RichEditorKey) => (count: number) => {
+    setEditorUploads((prev) => ({ ...prev, [field]: count }));
+  };
 
   useEffect(() => {
     document.title = "Edit Profile - My Portfolio";
@@ -125,6 +141,11 @@ export default function ProfilesIndex() {
 
     if (!profileId) {
       toast.error("Profile ID not found");
+      return;
+    }
+
+    if (pendingEditorUploads > 0) {
+      toast.error("Tunggu upload gambar selesai sebelum menyimpan profile.");
       return;
     }
 
@@ -222,7 +243,9 @@ export default function ProfilesIndex() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <SubmitButton
                 form="profile-form"
-                loading={submitting}
+                disabled={pendingEditorUploads > 0}
+                loading={isSaving}
+                loadingText={pendingEditorUploads > 0 ? "Uploading images..." : "Saving..."}
                 className="h-11 bg-blue-800 px-5"
               >
                 Save
@@ -231,7 +254,7 @@ export default function ProfilesIndex() {
               <button
                 type="button"
                 onClick={handleReset}
-                disabled={submitting}
+                disabled={isSaving}
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-gray-500 px-5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
               >
                 Reset
@@ -250,7 +273,7 @@ export default function ProfilesIndex() {
                 <input
                   type="text"
                   value={form.name}
-                  disabled={submitting}
+                  disabled={isSaving}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full rounded-lg border border-stroke bg-transparent p-3 text-sm text-slate-800 dark:text-white dark:border-strokedark focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                 />
@@ -264,7 +287,7 @@ export default function ProfilesIndex() {
                 <input
                   type="text"
                   value={form.title}
-                  disabled={submitting}
+                  disabled={isSaving}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full rounded-lg border border-stroke bg-transparent p-3 text-sm text-slate-800 dark:text-white dark:border-strokedark focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                 />
@@ -297,7 +320,7 @@ export default function ProfilesIndex() {
                     ref={fileRef}
                     type="file"
                     accept="image/*"
-                    disabled={submitting}
+                    disabled={isSaving}
                     onChange={(e) => setForm({ ...form, image: e.target.files?.[0] ?? null })}
                     className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark disabled:opacity-60"
                   />
@@ -313,7 +336,14 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.about}
                 onChange={(val) => setForm((p) => ({ ...p, about: val }))}
+                uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
+                onPendingUploadsChange={setEditorUploadCount("about")}
               />
+              {editorUploads.about > 0 && (
+                <p className="mt-2 text-xs text-sky-600">
+                  Uploading {editorUploads.about} image{editorUploads.about > 1 ? "s" : ""}...
+                </p>
+              )}
               {errors.about && <p className="mt-2 text-xs text-red-500">{errors.about[0]}</p>}
             </div>
 
@@ -324,7 +354,15 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.description}
                 onChange={(val) => setForm((p) => ({ ...p, description: val }))}
+                uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
+                onPendingUploadsChange={setEditorUploadCount("description")}
               />
+              {editorUploads.description > 0 && (
+                <p className="mt-2 text-xs text-sky-600">
+                  Uploading {editorUploads.description} image
+                  {editorUploads.description > 1 ? "s" : ""}...
+                </p>
+              )}
               {errors.description && (
                 <p className="mt-2 text-xs text-red-500">{errors.description[0]}</p>
               )}
@@ -337,7 +375,15 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.content}
                 onChange={(val) => setForm((p) => ({ ...p, content: val }))}
+                uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
+                onPendingUploadsChange={setEditorUploadCount("content")}
               />
+              {editorUploads.content > 0 && (
+                <p className="mt-2 text-xs text-sky-600">
+                  Uploading {editorUploads.content} image
+                  {editorUploads.content > 1 ? "s" : ""}...
+                </p>
+              )}
               {errors.content && <p className="mt-2 text-xs text-red-500">{errors.content[0]}</p>}
             </div>
 
@@ -348,7 +394,15 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.tech_description}
                 onChange={(val) => setForm((p) => ({ ...p, tech_description: val }))}
+                uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
+                onPendingUploadsChange={setEditorUploadCount("tech_description")}
               />
+              {editorUploads.tech_description > 0 && (
+                <p className="mt-2 text-xs text-sky-600">
+                  Uploading {editorUploads.tech_description} image
+                  {editorUploads.tech_description > 1 ? "s" : ""}...
+                </p>
+              )}
               {errors.tech_description && (
                 <p className="mt-2 text-xs text-red-500">{errors.tech_description[0]}</p>
               )}

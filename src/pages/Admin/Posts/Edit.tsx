@@ -8,6 +8,8 @@ import CKEditorField from "@/components/general/CKEditorField";
 import type { ValidationErrors, Post } from "@/types/post";
 import { postService } from "@/services/postService";
 
+const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
+
 export default function PostEdit() {
   document.title = "Edit Post";
 
@@ -21,6 +23,8 @@ export default function PostEdit() {
   const [preview, setPreview] = useState<string>("");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [contentUploads, setContentUploads] = useState(0);
+  const isSaving = submitting || contentUploads > 0;
 
   /* ================= FETCH DATA ================= */
   useEffect(() => {
@@ -54,6 +58,11 @@ export default function PostEdit() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!post) return;
+
+    if (contentUploads > 0) {
+      toast.error("Tunggu upload gambar selesai sebelum menyimpan post.");
+      return;
+    }
 
     setErrors({});
 
@@ -100,13 +109,20 @@ export default function PostEdit() {
           <div className="flex gap-2">
             <SubmitButton
               form="post-edit-form"
-              loading={submitting}
+              disabled={contentUploads > 0}
+              loading={isSaving}
+              loadingText={contentUploads > 0 ? "Uploading images..." : "Saving..."}
               className="bg-sky-600 px-4 py-2"
             >
               Save
             </SubmitButton>
 
-            <Link to="/admin/posts" className="rounded-lg bg-gray-500 px-4 py-2 text-sm text-white">
+            <Link
+              to="/admin/posts"
+              className={`rounded-lg bg-gray-500 px-4 py-2 text-sm text-white ${
+                isSaving ? "pointer-events-none opacity-60" : ""
+              }`}
+            >
               Cancel
             </Link>
           </div>
@@ -178,7 +194,14 @@ export default function PostEdit() {
             <CKEditorField
               value={post.content}
               onChange={(v) => setPost({ ...post, content: v })}
+              uploadEndpoint={POST_EDITOR_UPLOAD_ENDPOINT}
+              onPendingUploadsChange={setContentUploads}
             />
+            {contentUploads > 0 && (
+              <p className="mt-2 text-xs text-sky-600">
+                Uploading {contentUploads} image{contentUploads > 1 ? "s" : ""}...
+              </p>
+            )}
             {errors.content && <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>}
           </div>
         </form>
