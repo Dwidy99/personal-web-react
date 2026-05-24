@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "dompurify";
 import { normalizeEditorImageSources } from "@/utils/editorImages";
+import "@/assets/shared/css/fonts.css";
 
 type Props = {
   content?: string;

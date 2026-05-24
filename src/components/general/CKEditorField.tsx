@@ -38,6 +38,7 @@ import {
 import toast from "react-hot-toast";
 import Api from "@/services/Api";
 import { normalizeEditorImageSources, normalizeEditorImageUrl } from "@/utils/editorImages";
+import "@/assets/shared/css/fonts.css";
 import "ckeditor5/ckeditor5.css";
 
 type Props = {
@@ -63,6 +64,15 @@ const MAX_STORAGE_IMAGE_SIZE = 2 * 1024 * 1024;
 const MAX_STORAGE_IMAGE_SIZE_LABEL = "2MB";
 const DEFAULT_MAX_INLINE_IMAGE_COUNT = 8;
 const DEFAULT_MAX_INLINE_IMAGES_TOTAL_SIZE = 4 * 1024 * 1024;
+const EDITOR_FONT_FAMILIES = [
+  "default",
+  "Soria, serif",
+  "Satoshi, Arial, Helvetica, sans-serif",
+  "Arial, Helvetica, sans-serif",
+  "Georgia, serif",
+  '"Times New Roman", Times, serif',
+  '"Courier New", Courier, monospace',
+];
 
 type EditorUploadResponse = {
   url?: string;
@@ -544,6 +554,10 @@ export default function CKEditorField({
           "sourceEditing",
         ],
         shouldNotGroupWhenFull: false,
+      },
+      fontFamily: {
+        options: EDITOR_FONT_FAMILIES,
+        supportAllValues: true,
       },
       image: {
         toolbar: [

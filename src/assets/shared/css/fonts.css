@@ -1,0 +1,9 @@
+@font-face {
+  font-family: "Soria";
+  src:
+    url("../fonts/Soria-Regular.woff") format("woff"),
+    url("../fonts/Soria-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
