@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
 import { ValidationErrors } from "../../../types/category";
@@ -17,8 +17,7 @@ export default function CategoriesCreate() {
 
   const [name, setName] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string>("");
-
+  const [previewImage, setPreviewImage] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,8 +26,10 @@ export default function CategoriesCreate() {
       setPreviewImage("");
       return;
     }
+
     const url = URL.createObjectURL(image);
     setPreviewImage(url);
+
     return () => URL.revokeObjectURL(url);
   }, [image]);
 
@@ -38,8 +39,8 @@ export default function CategoriesCreate() {
     setErrors({});
 
     const formData = new FormData();
-    if (image) formData.append("image", image);
     formData.append("name", name);
+    if (image) formData.append("image", image);
 
     try {
       const res = await categoryService.create(formData);
@@ -64,88 +65,108 @@ export default function CategoriesCreate() {
 
   return (
     <LayoutAdmin>
-      <Link
-        to="/admin/categories"
-        className="inline-flex my-2 items-center justify-center h-11 px-5 rounded-lg bg-meta-4 text-white text-sm font-semibold hover:bg-opacity-90 transition disabled:opacity-60"
-      >
-        Back
-      </Link>
+      <div className="mb-4">
+        <Link
+          to="/admin/categories"
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-opacity-90"
+        >
+          <i className="fa-solid fa-arrow-left mr-2" /> Back
+        </Link>
+      </div>
 
-      <div className="rounded-lg border border-stroke bg-white shadow-sm p-4 sm:p-6 dark:border-strokedark dark:bg-boxdark">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-              Add Category
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Create a category and upload an icon.
-            </p>
-          </div>
+      <div className="mx-auto max-w-5xl rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <div className="border-b border-stroke px-4 py-4 dark:border-strokedark sm:px-6">
+          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+            Add New Category
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Create a clean category entry with a readable name and icon.
+          </p>
         </div>
-        <form id={FORM_ID} ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-5">
+
+        <form id={FORM_ID} ref={formRef} onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-gray-200">
-                  Category Name
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Category Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={submitting}
-                  className="w-full border border-stroke rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-transparent dark:text-white dark:border-strokedark disabled:opacity-60"
-                  placeholder="Enter category name..."
+                  className="w-full rounded-lg border border-stroke bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:bg-transparent dark:text-white dark:placeholder-gray-500"
+                  placeholder="Example: Web Development"
                 />
-                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name[0]}</p>}
+                {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name[0]}</p>}
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <label className="block text-sm font-semibold mb-1 text-slate-700 dark:text-gray-200">
-                Icon File
-              </label>
+              <div className="rounded-lg border border-stroke bg-gray-50 px-4 py-3 text-sm text-slate-600 dark:border-strokedark dark:bg-boxdark-2 dark:text-gray-300">
+                <p className="font-semibold text-slate-700 dark:text-gray-200">Tips</p>
+                <p className="mt-1">
+                  Gunakan nama yang pendek dan jelas agar mudah dibaca di halaman blog dan filter kategori.
+                </p>
+              </div>
+            </section>
 
-              {previewImage ? (
-                <img
-                  src={previewImage}
-                  alt="Icon Preview"
-                  className="h-40 w-full rounded-lg object-cover border border-stroke dark:border-strokedark"
-                />
-              ) : (
-                <div className="h-40 w-full rounded-lg border border-dashed border-stroke dark:border-strokedark flex items-center justify-center text-sm text-gray-500">
-                  No image
+            <aside className="space-y-3">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Category Icon <span className="text-red-500">*</span>
+                </label>
+
+                <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-gray-50 dark:border-strokedark dark:bg-boxdark-2">
+                  {previewImage ? (
+                    <img
+                      src={previewImage}
+                      alt="Category icon preview"
+                      className="h-full w-full object-contain p-4"
+                    />
+                  ) : (
+                    <div className="px-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <i className="fa-regular fa-image mb-3 block text-3xl" />
+                      No icon selected
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                disabled={submitting}
-                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-                className="w-full border border-stroke rounded-lg p-2 text-sm cursor-pointer dark:bg-transparent dark:text-white dark:border-strokedark disabled:opacity-60"
-              />
-              {errors.image && <p className="text-xs text-red-500">{errors.image[0]}</p>}
-            </div>
+              <div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  disabled={submitting}
+                  onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+                  className="w-full cursor-pointer rounded-lg border border-stroke bg-transparent px-3 py-2.5 text-sm text-slate-800 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 hover:file:bg-gray-200 disabled:opacity-60 dark:border-strokedark dark:text-white dark:file:bg-boxdark-2 dark:hover:file:bg-boxdark"
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  PNG/JPG/JPEG, gunakan ikon yang jelas dengan background bersih.
+                </p>
+                {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
+              </div>
+            </aside>
           </div>
 
-          <div className="flex justify-end w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="flex flex-col gap-3 border-t border-stroke px-4 py-4 dark:border-strokedark sm:flex-row sm:justify-end sm:px-6">
             <SubmitButton
               form={FORM_ID}
               loading={submitting}
-              className="h-11 bg-blue-800 px-5 font-semibold"
+              loadingText="Saving..."
+              icon={<i className="fa-solid fa-plus" />}
+              className="h-11 rounded-lg px-5 font-semibold"
             >
-              Save
+              Add Category
             </SubmitButton>
 
             <button
               type="button"
               onClick={handleReset}
               disabled={submitting}
-              className="inline-flex items-center justify-center h-11 px-5 rounded-lg bg-gray-600 text-white text-sm font-semibold hover:bg-opacity-90 transition disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-slate-600 px-5 text-sm font-semibold text-white transition hover:bg-opacity-90 disabled:opacity-60"
             >
-              Reset
+              <i className="fa-solid fa-eraser mr-2" /> Reset
             </button>
           </div>
         </form>
