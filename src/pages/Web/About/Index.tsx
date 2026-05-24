@@ -46,6 +46,7 @@ type SafeImageProps = {
   className: string;
   fallbackClassName: string;
   loading?: "eager" | "lazy";
+  maxRetries?: number;
   children: ReactNode;
 };
 
@@ -61,6 +62,11 @@ function getPublicAssetUrl(path?: string | null) {
   return `${cleanBase}/${cleanPath}`;
 }
 
+function appendRetryParam(url: string, retryCount: number) {
+  if (!retryCount) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}retry=${retryCount}`;
+}
+
 function formatMonthYear(date: string | null | undefined) {
   if (!date) return "Present";
   const d = new Date(date);
@@ -74,12 +80,14 @@ function SafeImage({
   className,
   fallbackClassName,
   loading = "lazy",
+  maxRetries = 6,
   children,
 }: SafeImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const imageSrc = getPublicAssetUrl(src?.trim());
+  const currentSrc = appendRetryParam(imageSrc, retryCount);
 
   useEffect(() => {
     setLoaded(false);
@@ -87,11 +95,51 @@ function SafeImage({
     setRetryCount(0);
   }, [imageSrc]);
 
+  useEffect(() => {
+    if (!imageSrc) return;
+
+    let cancelled = false;
+    let retryTimer: number | undefined;
+    const preloader = new Image();
+
+    preloader.decoding = "async";
+    preloader.onload = () => {
+      if (cancelled) return;
+      setLoaded(true);
+      setFailed(false);
+    };
+    preloader.onerror = () => {
+      if (cancelled) return;
+
+      setLoaded(false);
+
+      if (retryCount >= maxRetries) {
+        setFailed(true);
+        return;
+      }
+
+      const retryDelay = Math.min(500 * 2 ** retryCount, 4000);
+      retryTimer = window.setTimeout(() => {
+        if (!cancelled) {
+          setRetryCount((count) => count + 1);
+        }
+      }, retryDelay);
+    };
+
+    preloader.src = currentSrc;
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) window.clearTimeout(retryTimer);
+    };
+  }, [currentSrc, imageSrc, maxRetries, retryCount]);
+
   const handleError = () => {
-    if (retryCount < 2) {
+    if (retryCount < maxRetries) {
+      const retryDelay = Math.min(500 * 2 ** retryCount, 4000);
       window.setTimeout(() => {
         setRetryCount((count) => count + 1);
-      }, 700);
+      }, retryDelay);
       return;
     }
 
@@ -100,9 +148,9 @@ function SafeImage({
 
   return (
     <span className={`relative overflow-hidden ${fallbackClassName}`}>
-      {imageSrc && !failed ? (
+      {imageSrc && loaded && !failed ? (
         <img
-          src={retryCount ? `${imageSrc}${imageSrc.includes("?") ? "&" : "?"}retry=${retryCount}` : imageSrc}
+          src={currentSrc}
           alt={alt}
           loading={loading}
           decoding="async"
@@ -196,9 +244,9 @@ export default function AboutPage() {
   }, [fetchProfile, fetchExperiences, fetchContacts]);
 
   const currentImage = profile?.image;
-  const isBusy = loading.profile || loading.experiences || loading.contacts;
+  const isBusy = loading.experiences || loading.contacts;
 
-  if (isBusy) {
+  if (loading.profile) {
     return (
       <LayoutWeb>
         <SEO />
@@ -244,6 +292,7 @@ export default function AboutPage() {
                   className="h-full w-full rounded-full object-cover shadow-md transition-opacity"
                   fallbackClassName="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-slate-100 text-slate-500 shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
                   loading="eager"
+                  maxRetries={8}
                 >
                   <FaUser className="text-4xl" />
                 </SafeImage>
@@ -262,7 +311,11 @@ export default function AboutPage() {
                     Connect
                   </p>
 
-                  {contacts.length ? (
+                  {loading.contacts ? (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Loading contacts...
+                    </p>
+                  ) : contacts.length ? (
                     <ul className="flex flex-wrap justify-center lg:justify-start gap-3">
                       {contacts.map((c) => (
                         <li key={c.id}>
@@ -326,7 +379,11 @@ export default function AboutPage() {
                   </div>
 
                   <div className="mt-4">
-                    {experiences.length ? (
+                    {loading.experiences ? (
+                      <p className="text-slate-500 dark:text-slate-400">
+                        Loading experiences...
+                      </p>
+                    ) : experiences.length ? (
                       <div className="space-y-3">
                         {experiences.map((exp, i) => (
                           <AccordionItem
