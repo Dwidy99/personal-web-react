@@ -199,8 +199,21 @@ function injectEditorStyles() {
     .admin-rich-editor .ck.ck-editor__editable_inline {
       padding: 18px 22px;
       color: #111827;
+      font-family: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 15px;
       line-height: 1.7;
+    }
+
+    .admin-rich-editor .ck.ck-editor__editable_inline h1,
+    .admin-rich-editor .ck.ck-editor__editable_inline h2,
+    .admin-rich-editor .ck.ck-editor__editable_inline h3,
+    .admin-rich-editor .ck.ck-editor__editable_inline h4,
+    .admin-rich-editor .ck.ck-editor__editable_inline h5,
+    .admin-rich-editor .ck.ck-editor__editable_inline h6,
+    .admin-rich-editor .ck.ck-editor__editable_inline p,
+    .admin-rich-editor .ck.ck-editor__editable_inline li,
+    .admin-rich-editor .ck.ck-editor__editable_inline blockquote {
+      font-family: inherit;
     }
 
     .admin-rich-editor .ck-content img {

@@ -12,6 +12,53 @@ type ImagePreview = {
   alt: string;
 };
 
+function isThemeSensitiveTextColor(color: string) {
+  const normalized = color.trim().toLowerCase().replace(/\s+/g, "");
+
+  if (!normalized) {
+    return false;
+  }
+
+  return [
+    "black",
+    "#000",
+    "#000000",
+    "rgb(0,0,0)",
+    "rgba(0,0,0,1)",
+    "hsl(0,0%,0%)",
+    "hsla(0,0%,0%,1)",
+    "white",
+    "#fff",
+    "#ffffff",
+    "rgb(255,255,255)",
+    "rgba(255,255,255,1)",
+    "hsl(0,0%,100%)",
+    "hsla(0,0%,100%,1)",
+  ].includes(normalized);
+}
+
+function normalizeThemeSensitiveEditorColors(html: string) {
+  if (!html || typeof DOMParser === "undefined") {
+    return html;
+  }
+
+  const doc = new DOMParser().parseFromString(html, "text/html");
+
+  doc.body.querySelectorAll<HTMLElement>("[style]").forEach((element) => {
+    const color = element.style.color;
+
+    if (color && isThemeSensitiveTextColor(color)) {
+      element.style.removeProperty("color");
+    }
+
+    if (!element.getAttribute("style")?.trim()) {
+      element.removeAttribute("style");
+    }
+  });
+
+  return doc.body.innerHTML;
+}
+
 function injectContentRendererStyles() {
   if (typeof document === "undefined") {
     return;
@@ -27,7 +74,31 @@ function injectContentRendererStyles() {
   style.id = styleId;
   style.textContent = `
     .ckeditor-renderer {
+      color: #334155;
+      font-family: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.68;
+    }
+
+    .dark .ckeditor-renderer {
+      color: #e2e8f0;
+    }
+
+    .ckeditor-renderer h1,
+    .ckeditor-renderer h2,
+    .ckeditor-renderer h3,
+    .ckeditor-renderer h4,
+    .ckeditor-renderer h5,
+    .ckeditor-renderer h6 {
+      color: #0f172a;
+    }
+
+    .dark .ckeditor-renderer h1,
+    .dark .ckeditor-renderer h2,
+    .dark .ckeditor-renderer h3,
+    .dark .ckeditor-renderer h4,
+    .dark .ckeditor-renderer h5,
+    .dark .ckeditor-renderer h6 {
+      color: #ffffff;
     }
 
     .ckeditor-renderer > :first-child {
@@ -256,8 +327,9 @@ export default function ContentRenderer({ content = "", className = "" }: Props)
 
   const sanitized = useMemo(() => {
     const normalizedContent = normalizeEditorImageSources(content);
+    const colorSafeContent = normalizeThemeSensitiveEditorColors(normalizedContent);
 
-    return DOMPurify.sanitize(normalizedContent, {
+    return DOMPurify.sanitize(colorSafeContent, {
       USE_PROFILES: { html: true },
       ADD_TAGS: ["figure", "figcaption"],
       ADD_ATTR: ["target", "rel", "class", "style", "width", "height"],
