@@ -1,44 +1,42 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { MdCategory } from "react-icons/md";
 
 interface CardCategoryProps {
   name: string;
   image: string;
-  colorClass: string;
+  colorClass?: string;
   slug: string;
 }
 
 export default function CardCategory({
   name,
   image,
-  colorClass,
   slug,
 }: CardCategoryProps): JSX.Element {
-  // Tailwind tidak mendukung interpolasi dinamis di dalam className
-  // jadi kita gunakan fallback hover style manual via inline style
-  const baseColor = colorClass.split("-")[0];
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(image) && !imageFailed;
 
   return (
-    <div className="flex justify-evenly items-center my-2">
-      <Link
-        to={`/blog/category/${slug}`}
-        className={`${colorClass} rounded px-3 py-2 text-white drop-shadow-xl transition duration-200 dark:bg-white dark:text-black dark:hover:bg-gray-200`}
-        style={{ cursor: "pointer" }}
-        onMouseEnter={(e) => {
-          e.currentTarget.classList.add(`${baseColor}-600`);
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.classList.remove(`${baseColor}-600`);
-        }}
-      >
-        <img
-          src={image}
-          alt={name}
-          className="inline object-cover rounded-md shadow-md mx-1"
-          style={{ width: "25px" }}
-          loading="lazy"
-        />
-        {name}
-      </Link>
-    </div>
+    <Link
+      to={`/blog/category/${slug}`}
+      className="group inline-flex min-h-12 items-center gap-3 rounded-full border border-slate-200 bg-white/80 px-3 pr-4 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-600 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-sky-400 dark:hover:text-white"
+    >
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-white ring-1 ring-slate-200 transition duration-300 group-hover:scale-105 dark:bg-white dark:text-slate-950 dark:ring-white/20">
+        {showImage ? (
+          <img
+            src={image}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <MdCategory className="text-base" aria-hidden="true" />
+        )}
+      </span>
+      <span className="max-w-[13rem] truncate">{name}</span>
+    </Link>
   );
 }
