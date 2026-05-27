@@ -210,6 +210,9 @@ export default function ExperiencesEdit() {
               <CKEditorField
                 value={form.description}
                 onChange={(val) => setForm({ ...form, description: val })}
+                placeholder="Write experience description..."
+                height="340px"
+                minHeight="260px"
                 uploadEndpoint={EXPERIENCE_EDITOR_UPLOAD_ENDPOINT}
                 onPendingUploadsChange={setDescriptionUploads}
               />

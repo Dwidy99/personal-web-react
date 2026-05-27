@@ -336,6 +336,9 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.about}
                 onChange={(val) => setForm((p) => ({ ...p, about: val }))}
+                placeholder="Write profile about..."
+                height="300px"
+                minHeight="240px"
                 uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
                 onPendingUploadsChange={setEditorUploadCount("about")}
               />
@@ -354,6 +357,9 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.description}
                 onChange={(val) => setForm((p) => ({ ...p, description: val }))}
+                placeholder="Write profile description..."
+                height="340px"
+                minHeight="260px"
                 uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
                 onPendingUploadsChange={setEditorUploadCount("description")}
               />
@@ -375,6 +381,9 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.content}
                 onChange={(val) => setForm((p) => ({ ...p, content: val }))}
+                placeholder="Write profile content..."
+                height="340px"
+                minHeight="260px"
                 uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
                 onPendingUploadsChange={setEditorUploadCount("content")}
               />
@@ -394,6 +403,9 @@ export default function ProfilesIndex() {
               <CKEditorField
                 value={form.tech_description}
                 onChange={(val) => setForm((p) => ({ ...p, tech_description: val }))}
+                placeholder="Write tech description..."
+                height="340px"
+                minHeight="260px"
                 uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
                 onPendingUploadsChange={setEditorUploadCount("tech_description")}
               />

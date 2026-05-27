@@ -3,12 +3,17 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
-import SelectGroupTwo from "@/components/general/SelectGroupTwo";
+import Loading from "@/components/admin/Loading";
 import CKEditorField from "@/components/general/CKEditorField";
+import CategoryIconSelect from "@/components/admin/CategoryIconSelect";
 import type { ValidationErrors, Post } from "@/types/post";
 import { postService } from "@/services/postService";
 
+type CategoryOption = { id: number; name: string; image?: string };
+
+const FORM_ID = "post-edit-form";
 const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
+const POST_CONTENT_EDITOR_HEIGHT = "420px";
 
 export default function PostEdit() {
   document.title = "Edit Post";
@@ -18,15 +23,14 @@ export default function PostEdit() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [post, setPost] = useState<Post | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>("");
+  const [preview, setPreview] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [contentUploads, setContentUploads] = useState(0);
   const isSaving = submitting || contentUploads > 0;
 
-  /* ================= FETCH DATA ================= */
   useEffect(() => {
     Promise.all([postService.getCategories(), postService.getById(Number(id))])
       .then(([cats, data]) => {
@@ -36,25 +40,29 @@ export default function PostEdit() {
       .catch(() => toast.error("Failed to load post"));
   }, [id]);
 
-  /* ================= IMAGE PREVIEW ================= */
   useEffect(() => {
     if (!image) {
       setPreview("");
       return;
     }
-    const url = URL.createObjectURL(image);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
+
+    const nextPreview = URL.createObjectURL(image);
+    setPreview(nextPreview);
+
+    return () => URL.revokeObjectURL(nextPreview);
   }, [image]);
 
-  const options = useMemo(
-    () => categories.map((c) => ({ value: String(c.id), label: c.name })),
+  const categoryOptions = useMemo(
+    () => categories.map((category) => ({
+      value: String(category.id),
+      label: category.name,
+      image: category.image,
+    })),
     [categories]
   );
 
   const currentImage = preview || post?.image || "";
 
-  /* ================= SUBMIT ================= */
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!post) return;
@@ -86,40 +94,65 @@ export default function PostEdit() {
     }
   };
 
-  if (!post) return null;
+  const handleReset = () => {
+    setImage(null);
+    setPreview("");
+    setErrors({});
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  if (!post) {
+    return (
+      <LayoutAdmin>
+        <Loading message="Loading post..." variant="page" className="py-20" />
+      </LayoutAdmin>
+    );
+  }
 
   return (
     <LayoutAdmin>
-      {/* BACK */}
-      <Link
-        to="/admin/posts"
-        className="inline-flex items-center rounded-lg bg-meta-4 px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90 mb-4"
-      >
-        ← Back
-      </Link>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          to="/admin/posts"
+          className="inline-flex w-fit items-center rounded-lg bg-meta-4 px-5 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+        >
+          <i className="fa-solid fa-arrow-left mr-2" /> Back
+        </Link>
 
-      <div className="rounded-xl border bg-white dark:bg-boxdark">
-        {/* HEADER + ACTION */}
-        <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-left sm:text-right">
+          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Edit Post</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Update title, category, cover image, and article content.
+          </p>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <div className="flex flex-col gap-3 border-b border-stroke px-4 py-4 dark:border-strokedark sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Edit Post</h2>
-            <p className="text-sm text-gray-500">Update title, category, image, and content</p>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+              Article Detail
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Metadata sits beside the editor so long content stays easy to scan.
+            </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <SubmitButton
-              form="post-edit-form"
+              form={FORM_ID}
               disabled={contentUploads > 0}
               loading={isSaving}
               loadingText={contentUploads > 0 ? "Uploading images..." : "Saving..."}
-              className="bg-sky-600 px-4 py-2"
+              icon={<i className="fa-solid fa-save" />}
+              className="h-10 bg-sky-600 px-4"
             >
               Save
             </SubmitButton>
 
             <Link
               to="/admin/posts"
-              className={`rounded-lg bg-gray-500 px-4 py-2 text-sm text-white ${
+              className={`inline-flex h-10 items-center justify-center rounded-lg bg-gray-500 px-4 text-sm font-medium text-white hover:bg-opacity-90 ${
                 isSaving ? "pointer-events-none opacity-60" : ""
               }`}
             >
@@ -128,49 +161,86 @@ export default function PostEdit() {
           </div>
         </div>
 
-        {/* FORM */}
-        <form id="post-edit-form" onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
-          {/* TITLE */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">Title</label>
-            <input
-              value={post.title}
-              onChange={(e) => setPost({ ...post, title: e.target.value })}
-              className="w-full rounded-lg border p-3 text-sm"
-            />
-            {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
-          </div>
+        <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6 lg:p-8">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <section className="space-y-5 rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Title
+                </label>
+                <input
+                  value={post.title}
+                  disabled={isSaving}
+                  onChange={(e) => setPost({ ...post, title: e.target.value })}
+                  placeholder="Write a clear post title..."
+                  className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:text-white"
+                />
+                {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
+              </div>
 
-          {/* CATEGORY + IMAGE */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* CATEGORY */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">Category</label>
-              <SelectGroupTwo
-                value={String(post.category_id)}
-                onChange={(v) => setPost({ ...post, category_id: Number(v) })}
-                options={options}
-              />
-              {errors.category_id && (
-                <p className="mt-1 text-xs text-red-500">{errors.category_id[0]}</p>
-              )}
-            </div>
+              <div>
+                <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    Content
+                  </label>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Drag the lower edge to resize the editor.
+                  </span>
+                </div>
 
-            {/* IMAGE */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">Image</label>
+                <div className="rounded-lg border border-stroke dark:border-strokedark">
+                  <CKEditorField
+                    value={post.content}
+                    onChange={(v) => setPost({ ...post, content: v })}
+                    placeholder="Write post content..."
+                    height={POST_CONTENT_EDITOR_HEIGHT}
+                    minHeight="320px"
+                    uploadEndpoint={POST_EDITOR_UPLOAD_ENDPOINT}
+                    onPendingUploadsChange={setContentUploads}
+                  />
+                </div>
 
-              <div className="flex items-center gap-4">
-                <div className="h-40 w-full max-w-xs overflow-hidden rounded-lg border bg-gray-100 flex items-center justify-center">
+                {contentUploads > 0 && (
+                  <p className="mt-2 text-xs text-sky-600">
+                    Uploading {contentUploads} image{contentUploads > 1 ? "s" : ""}...
+                  </p>
+                )}
+                {errors.content && (
+                  <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>
+                )}
+              </div>
+            </section>
+
+            <aside className="space-y-5 rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Category
+                </label>
+                <CategoryIconSelect
+                  value={String(post.category_id)}
+                  onChange={(v) => setPost({ ...post, category_id: Number(v) })}
+                  options={categoryOptions}
+                  disabled={isSaving}
+                />
+                {errors.category_id && (
+                  <p className="mt-1 text-xs text-red-500">{errors.category_id[0]}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Cover Image
+                </label>
+                <div className="mb-3 flex h-52 items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-slate-50 dark:border-strokedark dark:bg-boxdark-2">
                   {currentImage ? (
                     <img
                       src={currentImage}
-                      alt="preview"
-                      className="max-h-full max-w-full object-contain"
+                      alt={post.title || "Post preview"}
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
-                      No image
+                    <div className="px-4 text-center text-xs text-gray-500 dark:text-gray-400">
+                      No image selected.
                     </div>
                   )}
                 </div>
@@ -179,30 +249,25 @@ export default function PostEdit() {
                   ref={fileRef}
                   type="file"
                   accept="image/*"
+                  disabled={isSaving}
                   onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-                  className="w-full rounded-lg border p-2 text-sm"
+                  className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 dark:border-strokedark dark:text-white dark:file:bg-boxdark-2 disabled:opacity-60"
                 />
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  Upload a new image only when the cover needs to be replaced.
+                </p>
+                {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
               </div>
 
-              {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
-            </div>
-          </div>
-
-          {/* CONTENT */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">Content</label>
-            <CKEditorField
-              value={post.content}
-              onChange={(v) => setPost({ ...post, content: v })}
-              uploadEndpoint={POST_EDITOR_UPLOAD_ENDPOINT}
-              onPendingUploadsChange={setContentUploads}
-            />
-            {contentUploads > 0 && (
-              <p className="mt-2 text-xs text-sky-600">
-                Uploading {contentUploads} image{contentUploads > 1 ? "s" : ""}...
-              </p>
-            )}
-            {errors.content && <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>}
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={isSaving}
+                className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-stroke text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary disabled:opacity-60 dark:border-strokedark dark:text-slate-200"
+              >
+                Reset local changes
+              </button>
+            </aside>
           </div>
         </form>
       </div>

@@ -184,6 +184,9 @@ export default function ExperiencesCreate() {
               <CKEditorField
                 value={description}
                 onChange={setDescription}
+                placeholder="Write experience description..."
+                height="340px"
+                minHeight="260px"
                 uploadEndpoint={EXPERIENCE_EDITOR_UPLOAD_ENDPOINT}
                 onPendingUploadsChange={setDescriptionUploads}
               />

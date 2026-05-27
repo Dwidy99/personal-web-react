@@ -8,6 +8,7 @@ export interface Post {
     category?: {
         id: number;
         name: string;
+        image?: string;
     };
     user?: {
         id: number;

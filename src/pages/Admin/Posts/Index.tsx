@@ -8,10 +8,36 @@ import hasAnyPermissions from "../../../utils/Permissions";
 import { postService } from "../../../services/postService";
 import { Post, PaginationMeta } from "../../../types/post";
 import { FaUserEdit } from "react-icons/fa";
-import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
+import { MdCategory, MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
 import { confirmAlert } from "react-confirm-alert";
 import Loading from "@/components/admin/Loading";
+
+function CategoryBadge({ category }: { category?: Post["category"] }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (!category) {
+    return <span className="text-gray-400">-</span>;
+  }
+
+  return (
+    <span className="inline-flex max-w-[220px] items-center gap-2 rounded-full border border-stroke bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-strokedark dark:bg-boxdark-2 dark:text-slate-200">
+      {category.image && !imageFailed ? (
+        <img
+          src={category.image}
+          alt=""
+          className="h-6 w-6 rounded-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-slate-500 dark:bg-boxdark">
+          <MdCategory />
+        </span>
+      )}
+      <span className="truncate">{category.name}</span>
+    </span>
+  );
+}
 
 export default function PostsIndex() {
   document.title = "Posts - Admin Panel";
@@ -140,7 +166,9 @@ export default function PostsIndex() {
                         {index + 1 + (pagination.current_page - 1) * pagination.per_page}
                       </td>
                       <td className="p-3 font-medium">{post.title}</td>
-                      <td className="p-3 text-center">{post.category?.name || "-"}</td>
+                      <td className="p-3 text-center">
+                        <CategoryBadge category={post.category} />
+                      </td>
                       <td className="p-3 text-center">{post.user?.name || "-"}</td>
                       <td className="p-3">
                         <div className="flex justify-center gap-2">
@@ -188,7 +216,7 @@ export default function PostsIndex() {
                 <h4 className="font-semibold text-slate-800 dark:text-white">{post.title}</h4>
 
                 <div className="mt-2 flex justify-between text-xs">
-                  <span>{post.category?.name || "-"}</span>
+                  <CategoryBadge category={post.category} />
                   <span>{post.user?.name || "-"}</span>
                 </div>
 
