@@ -11,7 +11,7 @@ import { postService } from "@/services";
 type CategoryOption = { id: number; name: string; image?: string };
 
 const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
-const POST_CONTENT_EDITOR_HEIGHT = "420px";
+const POST_CONTENT_EDITOR_HEIGHT = "560px";
 
 export default function PostCreate() {
   document.title = "Create Post - My Portfolio";
@@ -115,14 +115,14 @@ export default function PostCreate() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="mx-auto max-w-7xl rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-col gap-3 border-b border-stroke px-4 py-4 dark:border-strokedark sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
               New Article Detail
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Keep metadata compact and give the content editor enough room to breathe.
+              Keep metadata above the editor so the content area stays wide and comfortable.
             </p>
           </div>
 
@@ -155,8 +155,17 @@ export default function PostCreate() {
           onSubmit={handleSubmit}
           className="space-y-6 p-4 sm:p-6 lg:p-8"
         >
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <section className="space-y-5 rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
+          <section className="rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
+            <div className="mb-5">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-white">
+                Post Metadata
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Fill the title, category, and cover before writing the main content.
+              </p>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_320px_360px]">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Title
@@ -171,40 +180,6 @@ export default function PostCreate() {
                 {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
               </div>
 
-              <div>
-                <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                    Content
-                  </label>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Supports image upload, tables, font styles, and links.
-                  </span>
-                </div>
-
-                <div className="rounded-lg border border-stroke dark:border-strokedark">
-                  <CKEditorField
-                    value={content}
-                    onChange={setContent}
-                    placeholder="Write post content..."
-                    height={POST_CONTENT_EDITOR_HEIGHT}
-                    minHeight="320px"
-                    uploadEndpoint={POST_EDITOR_UPLOAD_ENDPOINT}
-                    onPendingUploadsChange={setContentUploads}
-                  />
-                </div>
-
-                {contentUploads > 0 && (
-                  <p className="mt-2 text-xs text-sky-600">
-                    Uploading {contentUploads} image{contentUploads > 1 ? "s" : ""}...
-                  </p>
-                )}
-                {errors.content && (
-                  <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>
-                )}
-              </div>
-            </section>
-
-            <aside className="space-y-5 rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Category
@@ -224,7 +199,7 @@ export default function PostCreate() {
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Cover Image
                 </label>
-                <div className="mb-3 flex h-48 items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-slate-50 dark:border-strokedark dark:bg-boxdark-2">
+                <div className="mb-3 flex h-44 items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-slate-50 dark:border-strokedark dark:bg-boxdark-2">
                   {preview ? (
                     <img src={preview} alt="Post preview" className="h-full w-full object-cover" />
                   ) : (
@@ -245,8 +220,43 @@ export default function PostCreate() {
                 </p>
                 {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
               </div>
-            </aside>
-          </div>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-slate-800 dark:text-white">
+                  Content
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Full-width editor for long-form writing.
+                </p>
+              </div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Supports image upload, tables, font styles, and links.
+              </span>
+            </div>
+
+            <div className="rounded-lg border border-stroke dark:border-strokedark">
+              <CKEditorField
+                value={content}
+                onChange={setContent}
+                placeholder="Write post content..."
+                height={POST_CONTENT_EDITOR_HEIGHT}
+                minHeight="360px"
+                uploadEndpoint={POST_EDITOR_UPLOAD_ENDPOINT}
+                onPendingUploadsChange={setContentUploads}
+              />
+            </div>
+
+            {contentUploads > 0 && (
+              <p className="mt-2 text-xs text-sky-600">
+                Uploading {contentUploads} image{contentUploads > 1 ? "s" : ""}...
+              </p>
+            )}
+            {errors.content && <p className="mt-1 text-xs text-red-500">{errors.content[0]}</p>}
+          </section>
         </form>
       </div>
     </LayoutAdmin>
