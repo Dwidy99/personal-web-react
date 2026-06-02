@@ -175,14 +175,17 @@ export default function BlogIndex() {
                 description={truncate(post.content, 160)}
                 link={`/blog/${post.slug}`}
               >
-                <p className="text-sm font-medium text-right text-blue-600 hover:underline mt-2">
-                  <Link to={`/blog/${post.slug}`}>Read more →</Link>
-                </p>
+                <Link
+                  to={`/blog/${post.slug}`}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-semibold text-gray-900 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-300"
+                >
+                  Read more →
+                </Link>
               </CardProjects>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 dark:text-gray-400 mt-10">No posts available.</p>
+          <p className="text-center text-gray-500 dark:text-sky-400 mt-10">No posts available.</p>
         )}
 
         {/* ✅ Pagination rendered regardless of posts length */}

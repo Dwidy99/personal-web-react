@@ -77,9 +77,7 @@ export default function ProjectsIndex() {
       />
 
       <header className="mx-auto max-w-3xl pt-10 text-center sm:pt-12 lg:pt-14">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">
-          Projects
-        </h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">Projects</h1>
         <span className="mt-4 inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase text-sky-700 shadow-sm dark:border-white/15 dark:bg-white/5 dark:text-white">
           Selected Work
         </span>
@@ -110,10 +108,9 @@ export default function ProjectsIndex() {
                 >
                   <Link
                     to={detailPath}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-sky-600 transition hover:gap-3 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-semibold text-gray-900 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-300"
                   >
-                    Read project detail
-                    <FaArrowRight className="text-xs" />
+                    Read project detail <FaArrowRight className="text-xs" />
                   </Link>
                 </CardProjects>
               );

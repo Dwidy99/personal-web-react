@@ -52,10 +52,10 @@ export default function CardProjects({
   };
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-sky-500/40">
+    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white/80 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md dark:border-gray-800 dark:bg-gray-900/55 dark:hover:border-sky-500/40">
       {image && (
         <ImageWrapper>
-          <div className="aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-gray-900">
+          <div className="m-4 mb-0 aspect-[16/10] overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100 dark:bg-gray-950 dark:ring-gray-800">
             <img
               src={image}
               alt={title || "Project image"}
@@ -66,26 +66,26 @@ export default function CardProjects({
         </ImageWrapper>
       )}
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
         {cleanCaption && (
-          <p className="mb-3 line-clamp-1 text-xs font-semibold uppercase text-sky-600 dark:text-sky-400">
+          <p className="mb-2 line-clamp-1 text-xs font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-300">
             {cleanCaption}
           </p>
         )}
 
         {title && (
-          <h2 className="text-xl font-bold leading-tight text-slate-900 transition group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
+          <h2 className="line-clamp-2 text-xl font-bold leading-snug text-gray-900 transition-colors group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-300">
             {title}
           </h2>
         )}
 
         {cleanDescription && (
-          <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+          <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-400">
             {cleanDescription}
           </p>
         )}
 
-        <div className="mt-auto pt-5">{children}</div>
+        <div className="mt-auto flex items-center justify-end pt-5">{children}</div>
       </div>
     </article>
   );
