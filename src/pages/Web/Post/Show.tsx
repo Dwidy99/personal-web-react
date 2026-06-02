@@ -14,6 +14,14 @@ import { publicService } from "@/services";
 type PostDetail = any; // kalau sudah punya type yang proper, ganti ini
 type PostItem = any;
 
+declare global {
+  interface Window {
+    hljs?: {
+      highlightElement: (element: HTMLElement) => void;
+    };
+  }
+}
+
 export default function BlogShow() {
   const { slug } = useParams();
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -78,7 +86,7 @@ export default function BlogShow() {
         const raw = target.textContent ?? "";
         target.textContent = raw;
 
-        hljs.highlightElement(target);
+        window.hljs?.highlightElement(target);
       });
     });
 

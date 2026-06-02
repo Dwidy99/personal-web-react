@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "dompurify";
+import { normalizeLegacyCodeParagraphs } from "@/utils/editorContent";
 import { normalizeEditorImageSources } from "@/utils/editorImages";
 import "@/assets/shared/css/fonts.css";
 
@@ -307,6 +308,40 @@ function injectContentRendererStyles() {
       overflow-x: auto;
       border-radius: 0.75rem;
       padding: 1rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95em;
+      line-height: 1.7;
+      tab-size: 2;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+    }
+
+    .ckeditor-renderer pre code {
+      display: block;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      white-space: inherit;
+    }
+
+    .ckeditor-renderer code:not(pre code) {
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.35rem;
+      background: #eef2ff;
+      color: #0f172a;
+      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .dark .ckeditor-renderer code:not(pre code) {
+      background: rgba(148, 163, 184, 0.18);
+      color: #e2e8f0;
     }
 
     .ckeditor-renderer iframe {
@@ -327,7 +362,7 @@ export default function ContentRenderer({ content = "", className = "" }: Props)
   const [preview, setPreview] = useState<ImagePreview | null>(null);
 
   const sanitized = useMemo(() => {
-    const normalizedContent = normalizeEditorImageSources(content);
+    const normalizedContent = normalizeLegacyCodeParagraphs(normalizeEditorImageSources(content));
     const colorSafeContent = normalizeThemeSensitiveEditorColors(normalizedContent);
 
     return DOMPurify.sanitize(colorSafeContent, {

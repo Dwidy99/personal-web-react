@@ -39,6 +39,7 @@ import {
 } from "ckeditor5";
 import toast from "react-hot-toast";
 import Api from "@/services/Api";
+import { normalizeLegacyCodeParagraphs } from "@/utils/editorContent";
 import { normalizeEditorImageSources, normalizeEditorImageUrl } from "@/utils/editorImages";
 import "@/assets/shared/css/fonts.css";
 import "ckeditor5/ckeditor5.css";
@@ -302,6 +303,9 @@ function injectEditorStyles() {
       font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.92rem;
       line-height: 1.65;
+      tab-size: 2;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .admin-rich-editor .ck-content pre code {
@@ -440,6 +444,22 @@ export default function CKEditorField({
 
     resizeObserverRef.current.observe(editorMainElement);
   }, []);
+
+  const normalizeInitialEditorContent = useCallback(
+    (editor: Editor) => {
+      const content = editor.getData();
+      const normalizedContent = normalizeLegacyCodeParagraphs(normalizeEditorImageSources(content));
+
+      if (normalizedContent === content) {
+        return;
+      }
+
+      editor.setData(normalizedContent);
+      valueRef.current = normalizedContent;
+      onChange(normalizedContent);
+    },
+    [onChange]
+  );
 
   const migrateInlineImagesToStorage = useCallback(
     async (editor: Editor) => {
@@ -738,6 +758,7 @@ export default function CKEditorField({
           const editorMainElement = editableElement?.closest(".ck-editor__main") as HTMLElement | null;
 
           watchEditorResize(editorMainElement);
+          normalizeInitialEditorContent(editor);
           void migrateInlineImagesToStorage(editor);
         }}
         onChange={(_, editor) => {
