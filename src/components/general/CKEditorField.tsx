@@ -5,6 +5,8 @@ import {
   BlockQuote,
   Bold,
   ClassicEditor,
+  Code,
+  CodeBlock,
   Essentials,
   FontBackgroundColor,
   FontColor,
@@ -226,14 +228,125 @@ function injectEditorStyles() {
       font-family: inherit;
     }
 
+    .admin-rich-editor .ck-content h1,
+    .admin-rich-editor .ck-content h2,
+    .admin-rich-editor .ck-content h3,
+    .admin-rich-editor .ck-content h4 {
+      margin: 1.25em 0 0.55em;
+      color: #111827;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .admin-rich-editor .ck-content h1 {
+      font-size: 2rem;
+    }
+
+    .admin-rich-editor .ck-content h2 {
+      font-size: 1.6rem;
+    }
+
+    .admin-rich-editor .ck-content h3 {
+      font-size: 1.28rem;
+    }
+
+    .admin-rich-editor .ck-content h4 {
+      font-size: 1.08rem;
+    }
+
+    .admin-rich-editor .ck-content p {
+      margin: 0 0 0.95em;
+    }
+
+    .admin-rich-editor .ck-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .admin-rich-editor .ck-content ul,
+    .admin-rich-editor .ck-content ol {
+      margin: 0.75em 0 1em 1.25em;
+      padding-left: 1.15em;
+    }
+
+    .admin-rich-editor .ck-content li {
+      margin: 0.35em 0;
+      padding-left: 0.15em;
+    }
+
+    .admin-rich-editor .ck-content blockquote {
+      margin: 1em 0;
+      padding: 0.75em 1em;
+      border-left: 4px solid #38bdf8;
+      border-radius: 0 8px 8px 0;
+      background: #f8fafc;
+      color: #334155;
+      font-style: normal;
+    }
+
+    .admin-rich-editor .ck-content code {
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.35rem;
+      background: #eef2ff;
+      color: #0f172a;
+      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .admin-rich-editor .ck-content pre {
+      margin: 1em 0;
+      padding: 1rem;
+      overflow: auto;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .admin-rich-editor .ck-content pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    .admin-rich-editor .ck-content figure.image {
+      margin: 1.1rem auto;
+    }
+
     .admin-rich-editor .ck-content img {
       max-width: 100%;
       height: auto;
+      border-radius: 8px;
     }
 
     .dark .admin-rich-editor .ck.ck-toolbar,
     .dark .admin-rich-editor .ck.ck-editor__main > .ck-editor__editable {
       border-color: #334155;
+    }
+
+    .dark .admin-rich-editor .ck.ck-editor__editable_inline {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .dark .admin-rich-editor .ck-content h1,
+    .dark .admin-rich-editor .ck-content h2,
+    .dark .admin-rich-editor .ck-content h3,
+    .dark .admin-rich-editor .ck-content h4 {
+      color: #f8fafc;
+    }
+
+    .dark .admin-rich-editor .ck-content blockquote {
+      background: rgba(15, 23, 42, 0.76);
+      color: #cbd5e1;
+      border-left-color: #38bdf8;
+    }
+
+    .dark .admin-rich-editor .ck-content code {
+      background: rgba(148, 163, 184, 0.18);
+      color: #e2e8f0;
     }
   `;
   document.head.appendChild(style);
@@ -491,6 +604,8 @@ export default function CKEditorField({
         Alignment,
         BlockQuote,
         Bold,
+        Code,
+        CodeBlock,
         Essentials,
         FontBackgroundColor,
         FontColor,
@@ -535,6 +650,8 @@ export default function CKEditorField({
           "strikethrough",
           "subscript",
           "superscript",
+          "code",
+          "codeBlock",
           "|",
           "fontColor",
           "fontBackgroundColor",
@@ -558,6 +675,19 @@ export default function CKEditorField({
       fontFamily: {
         options: EDITOR_FONT_FAMILIES,
         supportAllValues: true,
+      },
+      codeBlock: {
+        languages: [
+          { language: "plaintext", label: "Plain text" },
+          { language: "html", label: "HTML" },
+          { language: "css", label: "CSS" },
+          { language: "javascript", label: "JavaScript" },
+          { language: "typescript", label: "TypeScript" },
+          { language: "php", label: "PHP" },
+          { language: "sql", label: "SQL" },
+          { language: "json", label: "JSON" },
+          { language: "bash", label: "Bash" },
+        ],
       },
       image: {
         toolbar: [
