@@ -163,7 +163,7 @@ export default function PostEdit() {
 
         <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6 lg:p-8">
           <section className="rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
-            <div className="mb-5">
+            <div className="mb-4">
               <h3 className="text-base font-semibold text-slate-800 dark:text-white">
                 Post Metadata
               </h3>
@@ -172,41 +172,43 @@ export default function PostEdit() {
               </p>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_320px_360px]">
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                  Title
-                </label>
-                <input
-                  value={post.title}
-                  disabled={isSaving}
-                  onChange={(e) => setPost({ ...post, title: e.target.value })}
-                  placeholder="Write a clear post title..."
-                  className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:text-white"
-                />
-                {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="grid content-start gap-5 md:grid-cols-2 lg:grid-cols-1">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    Title
+                  </label>
+                  <input
+                    value={post.title}
+                    disabled={isSaving}
+                    onChange={(e) => setPost({ ...post, title: e.target.value })}
+                    placeholder="Write a clear post title..."
+                    className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:text-white"
+                  />
+                  {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    Category
+                  </label>
+                  <CategoryIconSelect
+                    value={String(post.category_id)}
+                    onChange={(v) => setPost({ ...post, category_id: Number(v) })}
+                    options={categoryOptions}
+                    disabled={isSaving}
+                  />
+                  {errors.category_id && (
+                    <p className="mt-1 text-xs text-red-500">{errors.category_id[0]}</p>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                  Category
-                </label>
-                <CategoryIconSelect
-                  value={String(post.category_id)}
-                  onChange={(v) => setPost({ ...post, category_id: Number(v) })}
-                  options={categoryOptions}
-                  disabled={isSaving}
-                />
-                {errors.category_id && (
-                  <p className="mt-1 text-xs text-red-500">{errors.category_id[0]}</p>
-                )}
-              </div>
-
-              <div>
+              <div className="rounded-lg bg-slate-50/70 p-3 ring-1 ring-stroke dark:bg-boxdark-2 dark:ring-strokedark">
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Cover Image
                 </label>
-                <div className="mb-3 flex h-44 items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-slate-50 dark:border-strokedark dark:bg-boxdark-2">
+                <div className="mb-3 flex h-36 items-center justify-center overflow-hidden rounded-lg border border-dashed border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
                   {currentImage ? (
                     <img
                       src={currentImage}
@@ -232,18 +234,16 @@ export default function PostEdit() {
                   Upload a new image only when the cover needs to be replaced.
                 </p>
                 {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
-              </div>
-            </div>
 
-            <div className="mt-5 flex justify-end">
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={isSaving}
-                className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-stroke px-4 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary disabled:opacity-60 dark:border-strokedark dark:text-slate-200 sm:w-auto"
-              >
-                Reset local changes
-              </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={isSaving}
+                  className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg border border-stroke px-4 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary disabled:opacity-60 dark:border-strokedark dark:text-slate-200"
+                >
+                  Reset local changes
+                </button>
+              </div>
             </div>
           </section>
 

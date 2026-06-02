@@ -156,7 +156,7 @@ export default function PostCreate() {
           className="space-y-6 p-4 sm:p-6 lg:p-8"
         >
           <section className="rounded-xl border border-stroke p-4 dark:border-strokedark sm:p-5">
-            <div className="mb-5">
+            <div className="mb-4">
               <h3 className="text-base font-semibold text-slate-800 dark:text-white">
                 Post Metadata
               </h3>
@@ -165,41 +165,43 @@ export default function PostCreate() {
               </p>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_320px_360px]">
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                  Title
-                </label>
-                <input
-                  value={title}
-                  disabled={isSaving}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Write a clear post title..."
-                  className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:text-white"
-                />
-                {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="grid content-start gap-5 md:grid-cols-2 lg:grid-cols-1">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    Title
+                  </label>
+                  <input
+                    value={title}
+                    disabled={isSaving}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Write a clear post title..."
+                    className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:text-white"
+                  />
+                  {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    Category
+                  </label>
+                  <CategoryIconSelect
+                    value={categoryID}
+                    onChange={setCategoryID}
+                    options={categoryOptions}
+                    disabled={isSaving}
+                  />
+                  {errors.category_id && (
+                    <p className="mt-1 text-xs text-red-500">{errors.category_id[0]}</p>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                  Category
-                </label>
-                <CategoryIconSelect
-                  value={categoryID}
-                  onChange={setCategoryID}
-                  options={categoryOptions}
-                  disabled={isSaving}
-                />
-                {errors.category_id && (
-                  <p className="mt-1 text-xs text-red-500">{errors.category_id[0]}</p>
-                )}
-              </div>
-
-              <div>
+              <div className="rounded-lg bg-slate-50/70 p-3 ring-1 ring-stroke dark:bg-boxdark-2 dark:ring-strokedark">
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                   Cover Image
                 </label>
-                <div className="mb-3 flex h-44 items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-slate-50 dark:border-strokedark dark:bg-boxdark-2">
+                <div className="mb-3 flex h-36 items-center justify-center overflow-hidden rounded-lg border border-dashed border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
                   {preview ? (
                     <img src={preview} alt="Post preview" className="h-full w-full object-cover" />
                   ) : (
