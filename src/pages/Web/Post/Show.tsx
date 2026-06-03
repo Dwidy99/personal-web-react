@@ -1,7 +1,7 @@
 // src/pages/Web/Post/Show.tsx
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { FaCalendarAlt, FaUserEdit } from "react-icons/fa";
+import { FaArrowLeft, FaCalendarAlt, FaUserEdit } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 import LayoutWeb from "@/layouts/Web";
@@ -119,8 +119,18 @@ export default function BlogShow() {
     <LayoutWeb>
       <SEO title={post.title} description={post.excerpt} />
 
+      <div className="pt-10">
+        <Link
+          to="/blog"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300"
+        >
+          <FaArrowLeft className="text-xs" />
+          Back to blog
+        </Link>
+      </div>
+
       {/* ✅ Responsive layout: mobile stack, desktop 2col + sidebar */}
-      <div className="pt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="pt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Article */}
         <article className="lg:col-span-2">
           <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 p-5 sm:p-6 md:p-8 text-gray-700 dark:text-gray-200">
@@ -162,6 +172,16 @@ export default function BlogShow() {
             >
               <ContentRenderer content={post.content} />
             </section>
+
+            <footer className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
+              <Link
+                to="/blog"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300"
+              >
+                <FaArrowLeft className="text-xs" />
+                Back to blog
+              </Link>
+            </footer>
           </div>
         </article>
 
