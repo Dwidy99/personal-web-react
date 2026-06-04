@@ -13,6 +13,14 @@ export function getValidationErrors(error: unknown): AdminValidationErrors {
     return {};
   }
 
+  if ("errors" in data) {
+    const errors = data.errors;
+
+    if (errors && typeof errors === "object" && !Array.isArray(errors)) {
+      return errors as AdminValidationErrors;
+    }
+  }
+
   return data as AdminValidationErrors;
 }
 

@@ -1,18 +1,29 @@
-// ExperiencesCreate.tsx
-import { useRef, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
+import LayoutAdmin from "@/layouts/Admin";
 import SubmitButton from "@/components/admin/SubmitButton";
 import CKEditorField from "@/components/general/CKEditorField";
 import experienceService from "@/services/experienceService";
-
-interface ValidationErrors {
-  [key: string]: string[] | undefined;
-}
+import type {
+  AdminExperienceForm,
+  AdminExperienceFormErrors,
+} from "@/features/admin/experiences/types";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 const FORM_ID = "experience-create-form";
 const EXPERIENCE_EDITOR_UPLOAD_ENDPOINT = "/api/admin/experiences/editor-upload";
+
+const initialForm: AdminExperienceForm = {
+  name: "",
+  description: "",
+  start_date: "",
+  end_date: "",
+  image: null,
+};
 
 export default function ExperiencesCreate() {
   document.title = "Create Experience - My Portfolio";
@@ -21,20 +32,27 @@ export default function ExperiencesCreate() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  const [previewImage, setPreviewImage] = useState<string>("");
-
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [form, setForm] = useState<AdminExperienceForm>(initialForm);
+  const [previewImage, setPreviewImage] = useState("");
+  const [errors, setErrors] = useState<AdminExperienceFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [descriptionUploads, setDescriptionUploads] = useState(0);
+
   const isSaving = submitting || descriptionUploads > 0;
 
-  const storeExperience = async (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (!form.image) {
+      setPreviewImage("");
+      return;
+    }
+
+    const url = URL.createObjectURL(form.image);
+    setPreviewImage(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [form.image]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
@@ -46,21 +64,19 @@ export default function ExperiencesCreate() {
     setSubmitting(true);
 
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("start_date", startDate);
-    formData.append("end_date", endDate);
-
-    if (image) formData.append("image", image);
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("start_date", form.start_date);
+    formData.append("end_date", form.end_date);
+    if (form.image) formData.append("image", form.image);
 
     try {
-      const res = await experienceService.create(formData);
-      toast.success(res.message || "Experience created successfully");
+      const response = await experienceService.create(formData);
+      toast.success(response.message || "Experience created successfully.");
       navigate("/admin/experiences");
-    } catch (err: any) {
-      const data = err.response?.data;
-      setErrors(data?.errors || {});
-      toast.error(data?.message || "Failed to save experience");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to save experience"));
     } finally {
       setSubmitting(false);
     }
@@ -68,67 +84,63 @@ export default function ExperiencesCreate() {
 
   const handleReset = () => {
     formRef.current?.reset();
-    setName("");
-    setDescription("");
-    setImage(null);
-    setStartDate("");
-    setEndDate("");
+    if (fileRef.current) fileRef.current.value = "";
+
+    setForm(initialForm);
     setPreviewImage("");
     setErrors({});
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const onFileChange = (file: File | null) => {
-    setImage(file);
-    if (!file) {
-      setPreviewImage("");
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreviewImage(url);
   };
 
   return (
     <LayoutAdmin>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4">
         <Link
           to="/admin/experiences"
-          className="inline-flex items-center justify-center rounded-lg bg-meta-4 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-90"
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-opacity-90"
         >
-          Back
+          <i className="fa-solid fa-arrow-left mr-2" /> Back
         </Link>
       </div>
 
-      <div className="mt-6 rounded-xl border bg-white p-6 shadow-sm">
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold">Create Experience</h3>
-          <p className="mt-1 text-sm text-gray-500">Add a new experience to your profile</p>
+      <div className="mx-auto max-w-6xl rounded-lg border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <div className="border-b border-stroke px-4 py-4 dark:border-strokedark sm:px-6">
+          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+            Create Experience
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Add a career entry with timeline, image, and rich description.
+          </p>
         </div>
 
-        <form id={FORM_ID} ref={formRef} onSubmit={storeExperience} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="space-y-4 lg:col-span-2">
+        <form id={FORM_ID} ref={formRef} onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="space-y-5">
               <div>
-                <label className="block text-sm font-medium">Job Title</label>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Experience Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={form.name}
+                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                   disabled={isSaving}
-                  className="mt-2 w-full rounded-lg border p-3 text-sm focus:ring-2 focus:ring-primary disabled:bg-gray-50"
+                  className="w-full rounded-lg border border-stroke bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:bg-transparent dark:text-white dark:placeholder-gray-500"
+                  placeholder="Example: Frontend Developer"
                 />
                 {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name[0]}</p>}
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium">Start Date</label>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    Start Date <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    value={form.start_date}
+                    onChange={(e) => setForm((prev) => ({ ...prev, start_date: e.target.value }))}
                     disabled={isSaving}
-                    className="mt-2 w-full rounded-lg border p-3 text-sm disabled:bg-gray-50"
+                    className="w-full rounded-lg border border-stroke bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:bg-transparent dark:text-white"
                   />
                   {errors.start_date && (
                     <p className="mt-1 text-xs text-red-500">{errors.start_date[0]}</p>
@@ -136,61 +148,85 @@ export default function ExperiencesCreate() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium">End Date</label>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                    End Date <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    value={form.end_date}
+                    onChange={(e) => setForm((prev) => ({ ...prev, end_date: e.target.value }))}
                     disabled={isSaving}
-                    className="mt-2 w-full rounded-lg border p-3 text-sm disabled:bg-gray-50"
+                    className="w-full rounded-lg border border-stroke bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 dark:border-strokedark dark:bg-transparent dark:text-white"
                   />
                   {errors.end_date && (
                     <p className="mt-1 text-xs text-red-500">{errors.end_date[0]}</p>
                   )}
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="space-y-3">
-              <label className="block text-sm font-medium">Image</label>
+            <aside className="space-y-3">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                  Experience Image
+                </label>
 
-              {previewImage ? (
-                <img
-                  src={previewImage}
-                  className="h-40 w-full rounded-lg object-cover"
-                  alt="Preview"
-                />
-              ) : (
-                <div className="flex h-40 w-full items-center justify-center rounded-lg border bg-gray-50 text-sm text-gray-500">
-                  No image
+                <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-stroke bg-gray-50 dark:border-strokedark dark:bg-boxdark-2">
+                  {previewImage ? (
+                    <img
+                      src={previewImage}
+                      alt="Experience preview"
+                      className="h-full w-full object-contain p-4"
+                    />
+                  ) : (
+                    <div className="px-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <i className="fa-regular fa-image mb-3 block text-3xl" />
+                      No image selected
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                disabled={isSaving}
-                onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
-                className="w-full rounded-lg border p-2 text-sm disabled:bg-gray-50"
-              />
-              {errors.image && <p className="text-xs text-red-500">{errors.image[0]}</p>}
-            </div>
+              <div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  disabled={isSaving}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null;
+                    setForm((prev) => ({ ...prev, image: file }));
+                  }}
+                  className="w-full cursor-pointer rounded-lg border border-stroke bg-transparent px-3 py-2.5 text-sm text-slate-800 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 hover:file:bg-gray-200 disabled:opacity-60 dark:border-strokedark dark:text-white dark:file:bg-boxdark-2 dark:hover:file:bg-boxdark"
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Optional, gunakan logo atau gambar pendukung yang jelas.
+                </p>
+                {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
+              </div>
+            </aside>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium">Description</label>
-            <div className="mt-2">
-              <CKEditorField
-                value={description}
-                onChange={setDescription}
-                placeholder="Write experience description..."
-                height="340px"
-                minHeight="260px"
-                uploadEndpoint={EXPERIENCE_EDITOR_UPLOAD_ENDPOINT}
-                onPendingUploadsChange={setDescriptionUploads}
-              />
+          <div className="border-t border-stroke p-4 dark:border-strokedark sm:p-6">
+            <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-gray-200">
+                Description <span className="text-red-500">*</span>
+              </label>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Drag the lower edge to resize the editor.
+              </span>
             </div>
+
+            <CKEditorField
+              value={form.description}
+              onChange={(value) => setForm((prev) => ({ ...prev, description: value }))}
+              placeholder="Write experience description..."
+              height="340px"
+              minHeight="260px"
+              uploadEndpoint={EXPERIENCE_EDITOR_UPLOAD_ENDPOINT}
+              onPendingUploadsChange={setDescriptionUploads}
+            />
+
             {descriptionUploads > 0 && (
               <p className="mt-2 text-xs text-sky-600">
                 Uploading {descriptionUploads} image{descriptionUploads > 1 ? "s" : ""}...
@@ -201,24 +237,25 @@ export default function ExperiencesCreate() {
             )}
           </div>
 
-          <div className="flex w-full justify-end flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="flex flex-col gap-3 border-t border-stroke px-4 py-4 dark:border-strokedark sm:flex-row sm:justify-end sm:px-6">
             <SubmitButton
               form={FORM_ID}
               disabled={descriptionUploads > 0}
               loading={isSaving}
               loadingText={descriptionUploads > 0 ? "Uploading images..." : "Saving..."}
-              className="bg-blue-700 px-5 py-2"
+              icon={<i className="fa-solid fa-plus" />}
+              className="h-11 rounded-lg px-5 font-semibold"
             >
-              Save
+              Add Experience
             </SubmitButton>
 
             <button
               type="button"
               onClick={handleReset}
               disabled={isSaving}
-              className="inline-flex items-center justify-center rounded-lg bg-gray-600 px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-slate-600 px-5 text-sm font-semibold text-white transition hover:bg-opacity-90 disabled:opacity-60"
             >
-              Reset
+              <i className="fa-solid fa-eraser mr-2" /> Reset
             </button>
           </div>
         </form>
