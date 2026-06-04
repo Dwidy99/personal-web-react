@@ -33,3 +33,11 @@ export function getErrorMessage(error: unknown, fallback: string) {
 
   return fallback;
 }
+
+export function getHttpStatus(error: unknown) {
+  if (!isAxiosError(error)) {
+    return undefined;
+  }
+
+  return error.response?.status;
+}

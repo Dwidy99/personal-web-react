@@ -1,51 +1,56 @@
-// ✅ src/services/categoryService.ts
 import Api from "./Api";
-import Cookies from "js-cookie";
-import { Category } from "../types/category";
-
-const token = Cookies.get("token");
+import type {
+  AdminCategory,
+  AdminCategoryListResult,
+  AdminCategoryMutationResponse,
+  AdminCategoryResponse,
+} from "@/features/admin/categories/types";
 
 export const categoryService = {
-    async getAll(page = 1, search = "") {
-        const res = await Api.get(`/api/admin/categories?search=${search}&page=${page}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.data.data;
-    },
+  async getAll(page = 1, search = ""): Promise<AdminCategoryListResult> {
+    const response = await Api.get<AdminCategoryResponse<AdminCategoryListResult>>(
+      "/api/admin/categories",
+      { params: { search, page } },
+    );
 
-    async getById(id: number) {
-        const res = await Api.get<{ data: Category }>(`/api/admin/categories/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.data.data;
-    },
+    return response.data.data;
+  },
 
-    async create(data: FormData) {
-        const res = await Api.post("/api/admin/categories", data, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return res.data;
-    },
+  async getById(id: number): Promise<AdminCategory> {
+    const response = await Api.get<AdminCategoryResponse<AdminCategory>>(
+      `/api/admin/categories/${id}`,
+    );
 
-    async update(id: number, data: FormData) {
-        const res = await Api.post(`/api/admin/categories/${id}`, data, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return res.data;
-    },
+    return response.data.data;
+  },
 
-    async delete(id: number) {
-        const res = await Api.delete(`/api/admin/categories/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.data;
-    },
+  async create(formData: FormData): Promise<AdminCategoryMutationResponse> {
+    const response = await Api.post<AdminCategoryMutationResponse>(
+      "/api/admin/categories",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data;
+  },
+
+  async update(id: number, formData: FormData): Promise<AdminCategoryMutationResponse> {
+    const response = await Api.post<AdminCategoryMutationResponse>(
+      `/api/admin/categories/${id}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data;
+  },
+
+  async delete(id: number): Promise<AdminCategoryMutationResponse> {
+    const response = await Api.delete<AdminCategoryMutationResponse>(
+      `/api/admin/categories/${id}`,
+    );
+
+    return response.data;
+  },
 };
 
 export default categoryService;

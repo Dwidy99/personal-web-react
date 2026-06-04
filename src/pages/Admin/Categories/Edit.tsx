@@ -1,11 +1,15 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
-import { categoryService } from "../../../services";
-import { ValidationErrors } from "../../../types/category";
+import LayoutAdmin from "@/layouts/Admin";
 import SubmitButton from "@/components/admin/SubmitButton";
 import Loading from "@/components/admin/Loading";
+import { categoryService } from "@/services/categoryService";
+import type { AdminCategoryFormErrors } from "@/features/admin/categories/types";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 const FORM_ID = "category-edit-form";
 
@@ -23,7 +27,7 @@ export default function CategoriesEdit() {
   const [previewImage, setPreviewImage] = useState("");
   const [initialName, setInitialName] = useState("");
   const [initialImageUrl, setInitialImageUrl] = useState("");
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<AdminCategoryFormErrors>({});
   const [loadingCategory, setLoadingCategory] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -41,8 +45,8 @@ export default function CategoriesEdit() {
         setPreviewImage("");
         setInitialName(data.name ?? "");
         setInitialImageUrl(data.image ?? "");
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to load category");
+      } catch (error: unknown) {
+        toast.error(getErrorMessage(error, "Failed to load category"));
       } finally {
         setLoadingCategory(false);
       }
@@ -79,9 +83,9 @@ export default function CategoriesEdit() {
       const res = await categoryService.update(Number(id), formData);
       toast.success(res.message || "Category updated!");
       navigate("/admin/categories");
-    } catch (err: any) {
-      setErrors(err.response?.data ?? {});
-      toast.error(err?.response?.data?.message || "Failed to update category");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to update category"));
     } finally {
       setSubmitting(false);
     }

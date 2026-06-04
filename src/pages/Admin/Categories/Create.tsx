@@ -1,10 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import LayoutAdmin from "../../../layouts/Admin";
 import toast from "react-hot-toast";
-import { ValidationErrors } from "../../../types/category";
-import { categoryService } from "../../../services";
+import LayoutAdmin from "@/layouts/Admin";
 import SubmitButton from "@/components/admin/SubmitButton";
+import { categoryService } from "@/services/categoryService";
+import type { AdminCategoryFormErrors } from "@/features/admin/categories/types";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 const FORM_ID = "category-create-form";
 
@@ -18,7 +22,7 @@ export default function CategoriesCreate() {
   const [name, setName] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState("");
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<AdminCategoryFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -46,9 +50,9 @@ export default function CategoriesCreate() {
       const res = await categoryService.create(formData);
       toast.success(res.message || "Category created successfully!");
       navigate("/admin/categories");
-    } catch (err: any) {
-      setErrors(err.response?.data ?? {});
-      toast.error(err.response?.data?.message || "Failed to create category");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to create category"));
     } finally {
       setSubmitting(false);
     }

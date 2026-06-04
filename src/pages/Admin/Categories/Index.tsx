@@ -1,16 +1,23 @@
-import { useEffect, useRef, useState, ChangeEvent } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
-import type { Category, PaginationMeta } from "../../../types/category";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
-import Pagination from "../../../components/general/Pagination";
-import Loading from "@/components/admin/Loading";
 import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
-import hasAnyPermissions from "../../../utils/Permissions";
-import { categoryService } from "../../../services";
+import LayoutAdmin from "@/layouts/Admin";
+import Pagination from "@/components/general/Pagination";
+import Loading from "@/components/admin/Loading";
+import hasAnyPermissions from "@/utils/Permissions";
+import { categoryService } from "@/services/categoryService";
+import type {
+  AdminCategory,
+  AdminCategoryPagination,
+} from "@/features/admin/categories/types";
+import {
+  getErrorMessage,
+  getHttpStatus,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function CategoriesIndex() {
   document.title = "Categories - Desa Digital";
@@ -18,14 +25,12 @@ export default function CategoriesIndex() {
   const navigate = useNavigate();
 
   const canView = hasAnyPermissions(["categories.index"]);
-  const canCreate = hasAnyPermissions(["categories.create"]);
+  const canCreate = hasAnyPermissions(["categories.store"]);
   const canDelete = hasAnyPermissions(["categories.delete"]);
-  const canEdit = hasAnyPermissions(["categories.edit"]);
+  const canEdit = hasAnyPermissions(["categories.update"]);
 
-  const didFetchRef = useRef(false);
-
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta>({
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [pagination, setPagination] = useState<AdminCategoryPagination>({
     current_page: 1,
     per_page: 10,
     total: 0,
@@ -33,7 +38,7 @@ export default function CategoriesIndex() {
   const [keywords, setKeywords] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchData = async (page = 1, search = ""): Promise<void> => {
+  const fetchData = useCallback(async (page = 1, search = ""): Promise<void> => {
     if (!canView) return;
 
     setLoading(true);
@@ -46,21 +51,18 @@ export default function CategoriesIndex() {
         per_page: data.per_page,
         total: data.total,
       });
-    } catch (err: unknown) {
-      const error = err as any;
-      const status = error?.response?.status;
-
-      if (status === 403) {
+    } catch (error: unknown) {
+      if (getHttpStatus(error) === 403) {
         toast.error("You are not allowed to access Categories.");
         navigate("/forbidden");
         return;
       }
 
-      toast.error(error?.response?.data?.message || "Failed to fetch categories");
+      toast.error(getErrorMessage(error, "Failed to fetch categories"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [canView, navigate]);
 
   useEffect(() => {
     if (!canView) navigate("/forbidden");
@@ -68,11 +70,9 @@ export default function CategoriesIndex() {
 
   useEffect(() => {
     if (!canView) return;
-    if (didFetchRef.current) return;
-    didFetchRef.current = true;
 
     void fetchData(1, "");
-  }, [canView]);
+  }, [canView, fetchData]);
 
   const searchData = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -94,17 +94,14 @@ export default function CategoriesIndex() {
               await categoryService.delete(id);
               toast.success("Category deleted successfully!");
               void fetchData(pagination.current_page, keywords);
-            } catch (err: unknown) {
-              const error = err as any;
-              const status = error?.response?.status;
-
-              if (status === 403) {
+            } catch (error: unknown) {
+              if (getHttpStatus(error) === 403) {
                 toast.error("You are not allowed to delete categories.");
                 void fetchData(pagination.current_page, keywords);
                 return;
               }
 
-              toast.error(error?.response?.data?.message || "Failed to delete category");
+              toast.error(getErrorMessage(error, "Failed to delete category"));
               void fetchData(pagination.current_page, keywords);
             }
           },
