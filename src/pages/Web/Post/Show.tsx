@@ -9,10 +9,8 @@ import SEO from "@/components/general/SEO";
 import Loading from "@/components/web/Loading";
 import ContentRenderer from "@/components/general/ContentRenderer";
 import formatDate from "@/utils/Date";
-import { publicService } from "@/services";
-
-type PostDetail = any; // kalau sudah punya type yang proper, ganti ini
-type PostItem = any;
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import type { WebPost } from "@/features/web/shared/types";
 
 declare global {
   interface Window {
@@ -26,8 +24,8 @@ export default function BlogShow() {
   const { slug } = useParams();
   const contentRef = useRef<HTMLDivElement | null>(null);
 
-  const [post, setPost] = useState<PostDetail | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<PostItem[]>([]);
+  const [post, setPost] = useState<WebPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<WebPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   document.title = "Show | Portfolio";
@@ -39,15 +37,16 @@ export default function BlogShow() {
       setLoading(true);
 
       const [detail, allPosts] = await Promise.all([
-        publicService.getPostBySlug(slug),
-        publicService.getPostsHome(),
+        publicWebApi.getPostBySlug(slug),
+        publicWebApi.getPostsHome(),
       ]);
 
       setPost(detail);
-      setRelatedPosts((allPosts || []).filter((p: any) => p.slug !== slug));
-    } catch (err: any) {
+      setRelatedPosts((allPosts || []).filter((item) => item.slug !== slug));
+    } catch (error) {
       setPost(null);
-      toast.error(err?.response?.data?.message || "Failed to load post");
+      const message = error instanceof Error ? error.message : "Failed to load post";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -58,10 +57,7 @@ export default function BlogShow() {
   }, [fetchData]);
 
   /**
-   * ✅ Highlight code blocks (scoped to article content)
-   * Works for:
-   * - Quill blocks: <pre class="ql-syntax">...</pre>
-   * - Generic: <pre><code>...</code></pre>
+   * Highlight code blocks inside article content.
    */
   useEffect(() => {
     if (!post?.content) return;
@@ -93,7 +89,6 @@ export default function BlogShow() {
     return () => cancelAnimationFrame(raf);
   }, [post?.content]);
 
-  // ✅ Loading state tetap pakai Layout biar Navbar/Footer konsisten
   if (loading) {
     return (
       <LayoutWeb>
@@ -129,7 +124,6 @@ export default function BlogShow() {
         </Link>
       </div>
 
-      {/* ✅ Responsive layout: mobile stack, desktop 2col + sidebar */}
       <div className="pt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Article */}
         <article className="lg:col-span-2">
@@ -162,7 +156,6 @@ export default function BlogShow() {
               </Link>
             )}
 
-            {/* ✅ Content area: scoped highlight + readable prose + overflow safe */}
             <section
               ref={contentRef}
               className="mt-6 prose dark:prose-invert max-w-none break-words

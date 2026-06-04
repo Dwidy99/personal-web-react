@@ -1,35 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaArrowLeft, FaCalendarAlt, FaExternalLinkAlt } from "react-icons/fa";
-import DOMPurify from "dompurify";
 import LayoutWeb from "@/layouts/Web";
-import { publicService } from "@/services/publicService";
 import formatDate from "@/utils/Date";
 import SEO from "@/components/general/SEO";
 import ContentRenderer from "@/components/general/ContentRenderer";
 import Loading from "@/components/web/Loading";
-
-type Project = {
-  title: string;
-  description?: string;
-  caption?: string;
-  image?: string;
-  link?: string;
-  created_at?: string;
-};
-
-function toPlainText(value?: string): string {
-  return DOMPurify.sanitize(value || "", {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  })
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import type { WebProject } from "@/features/web/shared/types";
+import { toPlainText } from "@/features/web/shared/utils/text";
 
 export default function ProjectShow() {
   const { slug } = useParams();
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<WebProject | null>(null);
   const [loading, setLoading] = useState(true);
 
   document.title = project?.title ? `${project.title} | Portfolio` : "Project | Portfolio";
@@ -43,7 +26,7 @@ export default function ProjectShow() {
 
     try {
       setLoading(true);
-      const data = await publicService.getProjectBySlug(slug);
+      const data = await publicWebApi.getProjectBySlug(slug);
       setProject(data);
     } catch {
       setProject(null);
@@ -82,10 +65,11 @@ export default function ProjectShow() {
 
   const captionText = toPlainText(project.caption);
   const seoDescription = captionText || toPlainText(project.description);
+  const projectTitle = project.title || "Project Detail";
 
   return (
     <LayoutWeb>
-      <SEO title={project.title} description={seoDescription} />
+      <SEO title={projectTitle} description={seoDescription} />
 
       <article className="mx-auto max-w-5xl">
         <Link
@@ -110,7 +94,7 @@ export default function ProjectShow() {
           </div>
 
           <h1 className="mt-5 text-3xl font-bold leading-tight text-slate-900 dark:text-white md:text-5xl">
-            {project.title}
+            {projectTitle}
           </h1>
 
           {captionText && (
@@ -136,7 +120,7 @@ export default function ProjectShow() {
           <figure className="mt-10 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <img
               src={project.image}
-              alt={project.title}
+              alt={projectTitle}
               className="max-h-[620px] w-full object-cover"
               loading="eager"
             />

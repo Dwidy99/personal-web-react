@@ -6,23 +6,10 @@ import ClickOutside from "@/components/general/ClickOutside";
 import TopToButton from "@/components/general/TopToButton";
 import HandleScroll from "@/components/general/HandleScroll";
 import { Link, NavLink } from "react-router-dom";
-import Api from "@/services/Api";
-
-type NavbarConfig = {
-  icon?: string | null;
-};
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import { getPublicAssetUrl } from "@/features/web/shared/utils/assets";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
-
-function getAssetUrl(path?: string | null) {
-  if (!path) return "";
-  if (/^(https?:|data:|blob:)/i.test(path)) return path;
-
-  const cleanBase = apiBaseUrl.replace(/\/$/, "");
-  const cleanPath = path.replace(/^\//, "");
-
-  return `${cleanBase}/${cleanPath}`;
-}
 
 export default function Navbar(): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -40,9 +27,9 @@ export default function Navbar(): JSX.Element {
 
     const fetchConfig = async () => {
       try {
-        const res = await Api.get<{ data: NavbarConfig }>("/api/public/configurations");
         if (isMounted) {
-          setIconUrl(getAssetUrl(res.data.data?.icon) || defaultIconUrl);
+          const config = await publicWebApi.getConfiguration();
+          setIconUrl(getPublicAssetUrl(config?.icon) || defaultIconUrl);
         }
       } catch {
         if (isMounted) setIconUrl(defaultIconUrl);

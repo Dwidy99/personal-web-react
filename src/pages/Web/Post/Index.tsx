@@ -1,87 +1,43 @@
-// src/pages/Web/Post/Index.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import LayoutWeb from "@/layouts/Web";
 import SEO from "@/components/general/SEO";
 import Loading from "@/components/web/Loading";
 import Pagination from "@/components/general/Pagination";
-
-import CardCategory from "@/components/general/CardCategory";
-import CardProjects from "@/components/general/CardProjects";
-
-import RandomColors from "@/utils/RandomColors";
-import toast from "react-hot-toast";
-import { publicService } from "@/services/publicService";
-
-// ---- Types (simple & beginner-friendly) ----
-type Category = {
-  id: number;
-  name: string;
-  slug: string;
-  image?: string;
-};
-
-type Post = {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  created_at: string;
-  image?: string; // optional: depends on your API
-  category?: { name: string; slug: string };
-};
-
-type PaginationMeta = {
-  current_page: number;
-  per_page: number;
-  total: number;
-};
-
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, "");
-}
-
-function truncate(text: string, max = 140) {
-  const clean = stripHtml(text || "");
-  return clean.length > max ? clean.slice(0, max) + "..." : clean;
-}
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import WebCategoryPill from "@/features/web/shared/components/WebCategoryPill";
+import WebContentCard from "@/features/web/shared/components/WebContentCard";
+import type {
+  WebCategory,
+  WebPaginationMeta,
+  WebPost,
+} from "@/features/web/shared/types";
 
 export default function BlogIndex() {
   document.title = "Blog | Portfolio";
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  const [loadingCats, setLoadingCats] = useState(true);
+  const [categories, setCategories] = useState<WebCategory[]>([]);
+  const [posts, setPosts] = useState<WebPost[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingPosts, setLoadingPosts] = useState(true);
-
-  const [pagination, setPagination] = useState<PaginationMeta>({
+  const [pagination, setPagination] = useState<WebPaginationMeta>({
     current_page: 1,
-    per_page: 2,
-    total: 10,
+    per_page: 6,
+    total: 0,
   });
 
-  // Cache random colors for categories (avoid changing on every render)
-  const categoryColors = useMemo(() => {
-    const map = new Map<number, string>();
-    return (id: number) => {
-      if (!map.has(id)) map.set(id, RandomColors());
-      return map.get(id)!;
-    };
-  }, []);
-
-  // ---- Fetch categories once ----
   useEffect(() => {
     const fetchCategories = async () => {
-      setLoadingCats(true);
       try {
-        const cats = await publicService.getCategories();
-        setCategories(cats || []);
-      } catch (err: any) {
-        toast.error(err?.message || "Failed to load categories");
+        setLoadingCategories(true);
+        setCategories(await publicWebApi.getCategories());
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load categories";
+        toast.error(message);
       } finally {
-        setLoadingCats(false);
+        setLoadingCategories(false);
       }
     };
 
@@ -89,15 +45,16 @@ export default function BlogIndex() {
   }, []);
 
   const fetchPosts = async (page = 1) => {
-    setLoadingPosts(true);
     try {
-      const data = await publicService.getPosts(page, 6); // ✅ 6 per halaman
+      setLoadingPosts(true);
+      const data = await publicWebApi.getPosts(page, 6);
 
       setPosts(data.data);
       setPagination({
         current_page: data.current_page,
         per_page: data.per_page,
         total: data.total,
+        last_page: data.last_page,
       });
     } finally {
       setLoadingPosts(false);
@@ -105,18 +62,16 @@ export default function BlogIndex() {
   };
 
   useEffect(() => {
-    fetchPosts(pagination.current_page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchPosts();
   }, []);
 
   const handlePageChange = (page: number) => {
-    // Update UI immediately, then fetch the page
     setPagination((prev) => ({ ...prev, current_page: page }));
     fetchPosts(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const isLoading = loadingCats || loadingPosts;
+  const isLoading = loadingCategories || loadingPosts;
 
   if (isLoading) {
     return (
@@ -132,25 +87,25 @@ export default function BlogIndex() {
       <SEO />
 
       <header className="text-center">
-        <h1 className="font-bold text-3xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-white">
+        <h1 className="mt-24 mb-12 text-3xl font-bold text-slate-700 dark:text-white md:text-5xl">
           Latest Posts & Topics
         </h1>
       </header>
 
-      {/* Categories */}
       <section className="mb-16">
-        <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">Popular Tags</h2>
-        <p className="text-gray-500 mb-4">Browse by category and explore diverse ideas.</p>
+        <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-gray-300">
+          Popular Tags
+        </h2>
+        <p className="mb-4 text-gray-500">Browse by category and explore diverse ideas.</p>
 
         {categories.length > 0 ? (
           <div className="flex flex-wrap gap-4">
-            {categories.map((cat) => (
-              <CardCategory
-                key={cat.id}
-                name={cat.name}
-                image={cat.image ?? "/no-image.png"}
-                colorClass={categoryColors(cat.id)}
-                slug={cat.slug}
+            {categories.map((category) => (
+              <WebCategoryPill
+                key={category.id}
+                name={category.name}
+                image={category.image ?? "/no-image.png"}
+                slug={category.slug}
               />
             ))}
           </div>
@@ -159,36 +114,36 @@ export default function BlogIndex() {
         )}
       </section>
 
-      {/* Posts list as cards */}
       <section>
-        <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-gray-300">Recent Posts</h2>
-        <p className="text-gray-500 mb-6">Discover the newest articles and insights.</p>
+        <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-gray-300">
+          Recent Posts
+        </h2>
+        <p className="mb-6 text-gray-500">Discover the newest articles and insights.</p>
 
         {posts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
             {posts.map((post) => (
-              <CardProjects
+              <WebContentCard
                 key={post.id}
                 image={post.image || "/no-image.png"}
                 title={post.title}
-                caption={post.category?.name ? post.category.name : "Blog Post"}
-                description={truncate(post.content, 160)}
+                eyebrow={post.category?.name ? post.category.name : "Blog Post"}
+                description={post.content}
                 link={`/blog/${post.slug}`}
               >
                 <Link
                   to={`/blog/${post.slug}`}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-semibold text-gray-900 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-300"
                 >
-                  Read more →
+                  Read more
                 </Link>
-              </CardProjects>
+              </WebContentCard>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 dark:text-sky-400 mt-10">No posts available.</p>
+          <p className="mt-10 text-center text-gray-500 dark:text-sky-400">No posts available.</p>
         )}
 
-        {/* ✅ Pagination rendered regardless of posts length */}
         <Pagination
           className="mt-10"
           currentPage={pagination.current_page}

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const SNOW_BOTTOM_MARGIN = 32;
 
@@ -24,7 +24,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
   const animationRef = useRef<number | null>(null);
   const snowHeightRef = useRef(0);
 
-  const getSnowHeight = () => {
+  const getSnowHeight = useCallback(() => {
     const footer = document.querySelector('footer[role="contentinfo"]');
     const wrapper = document.querySelector(".site-wrapper");
     const target = footer || wrapper;
@@ -36,17 +36,17 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     const targetBottom = target.getBoundingClientRect().bottom + window.scrollY;
 
     return Math.ceil(targetBottom + SNOW_BOTTOM_MARGIN);
-  };
+  }, []);
 
-  const getParticleCount = () => {
+  const getParticleCount = useCallback(() => {
     const viewportCount = window.innerWidth > 768 ? 180 : 90;
     const heightRatio = Math.max(1, snowHeightRef.current / Math.max(window.innerHeight, 1));
 
     return Math.min(Math.ceil(viewportCount * heightRatio * 0.55), window.innerWidth > 768 ? 420 : 220);
-  };
+  }, []);
 
   // Membuat partikel salju awal
-  const createSnowflakes = (): void => {
+  const createSnowflakes = useCallback((): void => {
     const snowflakes: Snowflake[] = [];
     for (let i = 0; i < getParticleCount(); i++) {
       snowflakes.push({
@@ -59,10 +59,10 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
       });
     }
     snowflakesRef.current = snowflakes;
-  };
+  }, [getParticleCount, snowSpeedFactor]);
 
   // Menggambar partikel salju
-  const drawSnowflakes = (ctx: CanvasRenderingContext2D): void => {
+  const drawSnowflakes = useCallback((ctx: CanvasRenderingContext2D): void => {
     ctx.clearRect(0, 0, window.innerWidth, snowHeightRef.current);
     ctx.beginPath();
 
@@ -73,10 +73,10 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
 
     ctx.fillStyle = "rgba(205, 205, 205, 0.8)";
     ctx.fill();
-  };
+  }, []);
 
   // Memperbarui posisi partikel salju
-  const updateSnowflakes = (): void => {
+  const updateSnowflakes = useCallback((): void => {
     snowflakesRef.current = snowflakesRef.current.map((flake) => {
       let newX = flake.x + flake.speedX;
       let newY = flake.y + flake.speedY;
@@ -91,10 +91,10 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
 
       return { ...flake, x: newX, y: newY };
     });
-  };
+  }, []);
 
   // Loop animasi salju
-  const animateSnow = (): void => {
+  const animateSnow = useCallback((): void => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -108,7 +108,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     };
 
     animate();
-  };
+  }, [drawSnowflakes, updateSnowflakes]);
 
   // Inisialisasi efek salju
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
       resizeObserver.disconnect();
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, []);
+  }, [animateSnow, createSnowflakes, getSnowHeight]);
 
   return (
     <canvas

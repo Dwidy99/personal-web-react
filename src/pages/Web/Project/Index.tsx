@@ -1,41 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import DOMPurify from "dompurify";
 import { FaArrowRight } from "react-icons/fa6";
-import LayoutWeb from "../../../layouts/Web";
-import CardProjects from "../../../components/general/CardProjects";
-import SEO from "../../../components/general/SEO";
-import { publicService } from "../../../services";
+import LayoutWeb from "@/layouts/Web";
+import SEO from "@/components/general/SEO";
 import Loading from "@/components/web/Loading";
-
-type ProjectItem = {
-  id?: number | string;
-  slug?: string;
-  title?: string;
-  caption?: string;
-  description?: string;
-  image?: string;
-  link?: string;
-};
-
-function toPlainText(value?: string): string {
-  return DOMPurify.sanitize(value || "", {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  })
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function excerpt(value?: string, maxLength = 145): string {
-  const text = toPlainText(value);
-
-  if (!text) return "A short look at one of the selected works in this portfolio.";
-  return text.length > maxLength ? `${text.slice(0, maxLength).trim()}...` : text;
-}
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import WebContentCard from "@/features/web/shared/components/WebContentCard";
+import type { WebProject } from "@/features/web/shared/types";
 
 export default function ProjectsIndex() {
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [projects, setProjects] = useState<WebProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,10 +19,11 @@ export default function ProjectsIndex() {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const data = await publicService.getProjects();
+        const data = await publicWebApi.getProjects();
         setProjects(data || []);
-      } catch (err: any) {
-        setError(err?.message || "Failed to load projects");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load projects";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -98,12 +73,12 @@ export default function ProjectsIndex() {
               const detailPath = project.slug ? `/projects/${project.slug}` : "/projects";
 
               return (
-                <CardProjects
+                <WebContentCard
                   key={project.id ?? project.slug ?? index}
                   image={project.image}
                   title={project.title}
-                  caption={project.caption}
-                  description={excerpt(project.description || project.caption)}
+                  eyebrow={project.caption}
+                  description={project.description || project.caption}
                   link={detailPath}
                 >
                   <Link
@@ -112,7 +87,7 @@ export default function ProjectsIndex() {
                   >
                     Read project detail <FaArrowRight className="text-xs" />
                   </Link>
-                </CardProjects>
+                </WebContentCard>
               );
             })}
           </div>

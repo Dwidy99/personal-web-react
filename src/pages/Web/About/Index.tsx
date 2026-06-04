@@ -1,71 +1,19 @@
 // src/pages/Web/About/Index.tsx
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaLink, FaUser } from "react-icons/fa";
 
-import LayoutWeb from "../../../layouts/Web";
-import SEO from "../../../components/general/SEO";
+import LayoutWeb from "@/layouts/Web";
+import SEO from "@/components/general/SEO";
 import Loading from "@/components/web/Loading";
-import AccordionItem from "../../../components/general/AccordionItem";
+import AccordionItem from "@/components/general/AccordionItem";
 import ContentRenderer from "@/components/general/ContentRenderer";
-import { publicService } from "../../../services/publicService";
-
-import type { Experience as ExperienceItem } from "@/types/experience";
-
-// ---- Types (simple & beginner-friendly) ----
-type Profile = {
-  id: number;
-  name: string;
-  title?: string;
-  image?: string;
-  about?: string;
-  description?: string;
-  tech_description?: string;
-};
-
-type Experience = {
-  id: number;
-  title?: string;
-  company?: string;
-  start_date?: string | null;
-  end_date?: string | null;
-  description?: string;
-  // keep it open if AccordionItem expects more fields
-  [key: string]: any;
-};
-
-type Contact = {
-  id: number;
-  name: string;
-  link: string;
-  image?: string;
-};
-
-type SafeImageProps = {
-  src?: string;
-  alt: string;
-  className: string;
-  fallbackClassName: string;
-  loading?: "eager" | "lazy";
-  maxRetries?: number;
-  children: ReactNode;
-};
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
-
-function getPublicAssetUrl(path?: string | null) {
-  if (!path) return "";
-  if (/^(https?:|data:|blob:)/i.test(path)) return path;
-
-  const cleanBase = apiBaseUrl.replace(/\/$/, "");
-  const cleanPath = path.replace(/^\//, "");
-
-  return `${cleanBase}/${cleanPath}`;
-}
-
-function appendRetryParam(url: string, retryCount: number) {
-  if (!retryCount) return url;
-  return `${url}${url.includes("?") ? "&" : "?"}retry=${retryCount}`;
-}
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import WebSafeImage from "@/features/web/shared/components/WebSafeImage";
+import type {
+  WebContact,
+  WebExperience,
+  WebProfile,
+} from "@/features/web/shared/types";
 
 function formatMonthYear(date: string | null | undefined) {
   if (!date) return "Present";
@@ -74,104 +22,12 @@ function formatMonthYear(date: string | null | undefined) {
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
-function SafeImage({
-  src,
-  alt,
-  className,
-  fallbackClassName,
-  loading = "lazy",
-  maxRetries = 6,
-  children,
-}: SafeImageProps) {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const imageSrc = getPublicAssetUrl(src?.trim());
-  const currentSrc = appendRetryParam(imageSrc, retryCount);
-
-  useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-    setRetryCount(0);
-  }, [imageSrc]);
-
-  useEffect(() => {
-    if (!imageSrc) return;
-
-    let cancelled = false;
-    let retryTimer: number | undefined;
-    const preloader = new Image();
-
-    preloader.decoding = "async";
-    preloader.onload = () => {
-      if (cancelled) return;
-      setLoaded(true);
-      setFailed(false);
-    };
-    preloader.onerror = () => {
-      if (cancelled) return;
-
-      setLoaded(false);
-
-      if (retryCount >= maxRetries) {
-        setFailed(true);
-        return;
-      }
-
-      const retryDelay = Math.min(500 * 2 ** retryCount, 4000);
-      retryTimer = window.setTimeout(() => {
-        if (!cancelled) {
-          setRetryCount((count) => count + 1);
-        }
-      }, retryDelay);
-    };
-
-    preloader.src = currentSrc;
-
-    return () => {
-      cancelled = true;
-      if (retryTimer) window.clearTimeout(retryTimer);
-    };
-  }, [currentSrc, imageSrc, maxRetries, retryCount]);
-
-  const handleError = () => {
-    if (retryCount < maxRetries) {
-      const retryDelay = Math.min(500 * 2 ** retryCount, 4000);
-      window.setTimeout(() => {
-        setRetryCount((count) => count + 1);
-      }, retryDelay);
-      return;
-    }
-
-    setFailed(true);
-  };
-
-  return (
-    <span className={`relative overflow-hidden ${fallbackClassName}`}>
-      {imageSrc && loaded && !failed ? (
-        <img
-          src={currentSrc}
-          alt={alt}
-          loading={loading}
-          decoding="async"
-          className={`${className} ${loaded ? "opacity-100" : "opacity-0"}`}
-          onLoad={() => setLoaded(true)}
-          onError={handleError}
-        />
-      ) : null}
-      {(!loaded || failed || !imageSrc) && (
-        <span className="absolute inset-0 flex items-center justify-center">{children}</span>
-      )}
-    </span>
-  );
-}
-
 export default function AboutPage() {
   document.title = "About | Portfolio";
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [profile, setProfile] = useState<WebProfile | null>(null);
+  const [experiences, setExperiences] = useState<WebExperience[]>([]);
+  const [contacts, setContacts] = useState<WebContact[]>([]);
 
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
@@ -189,10 +45,10 @@ export default function AboutPage() {
   const fetchProfile = useCallback(async () => {
     setLoading((p) => ({ ...p, profile: true }));
     try {
-      const profiles = await publicService.getProfiles();
-      setProfile((profiles?.[0] as Profile) ?? null);
-    } catch (err: any) {
-      console.error("Failed to load public profile:", err);
+      const profiles = await publicWebApi.getProfiles();
+      setProfile(profiles?.[0] ?? null);
+    } catch (error) {
+      console.error("Failed to load public profile:", error);
       setProfile(null);
     } finally {
       setLoading((p) => ({ ...p, profile: false }));
@@ -202,21 +58,16 @@ export default function AboutPage() {
   const fetchExperiences = useCallback(async () => {
     setLoading((p) => ({ ...p, experiences: true }));
     try {
-      const res = await publicService.getExperiences();
-
-      // kalau service kamu return array langsung:
-      const list = (res as ExperienceItem[]) ?? [];
-
-      // kalau service kamu return ExperienceResponse:
-      // const list = (res?.data as ExperienceItem[]) ?? [];
+      const list = await publicWebApi.getExperiences();
 
       const sorted = [...list].sort(
-        (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+        (a, b) =>
+          new Date(b.start_date || "").getTime() - new Date(a.start_date || "").getTime()
       );
 
       setExperiences(sorted);
-    } catch (err: any) {
-      console.error("Failed to load public experiences:", err);
+    } catch (error) {
+      console.error("Failed to load public experiences:", error);
       setExperiences([]);
     } finally {
       setLoading((p) => ({ ...p, experiences: false }));
@@ -226,10 +77,10 @@ export default function AboutPage() {
   const fetchContacts = useCallback(async () => {
     setLoading((p) => ({ ...p, contacts: true }));
     try {
-      const list = await publicService.getContacts();
-      setContacts((list as Contact[]) ?? []);
-    } catch (err: any) {
-      console.error("Failed to load public contacts:", err);
+      const list = await publicWebApi.getContacts();
+      setContacts(list);
+    } catch (error) {
+      console.error("Failed to load public contacts:", error);
       setContacts([]);
     } finally {
       setLoading((p) => ({ ...p, contacts: false }));
@@ -282,11 +133,11 @@ export default function AboutPage() {
         </div>
       ) : (
         <section className="mt-10 md:mt-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+          <div className="grid grid-cols-1 items-start gap-6 md:gap-8 lg:grid-cols-12">
             {/* Left column: profile card */}
-            <aside className="lg:col-span-8">
+            <aside className="lg:col-span-4">
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                <SafeImage
+                <WebSafeImage
                   src={currentImage}
                   alt={profile.name}
                   className="h-full w-full rounded-full object-cover shadow-md transition-opacity"
@@ -295,7 +146,7 @@ export default function AboutPage() {
                   maxRetries={8}
                 >
                   <FaUser className="text-4xl" />
-                </SafeImage>
+                </WebSafeImage>
 
                 <h2 className="mt-4 text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">
                   {profile.name}
@@ -327,14 +178,14 @@ export default function AboutPage() {
                             aria-label={c.name}
                             title={c.name}
                           >
-                            <SafeImage
+                            <WebSafeImage
                               src={c.image || "/no-image.png"}
                               alt={c.name}
                               className="h-7 w-7 object-contain transition-opacity group-hover:scale-105"
                               fallbackClassName="h-7 w-7 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-100 dark:text-slate-700"
                             >
                               <FaLink className="text-sm" />
-                            </SafeImage>
+                            </WebSafeImage>
                             <span className="absolute inset-0 rounded-full ring-0 group-hover:ring-2 ring-sky-400/50 transition" />
                           </a>
                         </li>
@@ -374,7 +225,7 @@ export default function AboutPage() {
 
                     {/* optional subtle status */}
                     {isBusy ? (
-                      <span className="text-xs text-slate-500 dark:text-slate-400">Syncing…</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Syncing...</span>
                     ) : null}
                   </div>
 

@@ -1,15 +1,15 @@
 import { Link, useParams } from "react-router-dom";
+
 import LayoutWeb from "@/layouts/Web";
 import SEO from "@/components/general/SEO";
-import CardBlog from "@/components/general/CardBlog";
 import Pagination from "@/components/general/Pagination";
 import Loading from "@/components/web/Loading";
-import { useFetchPostsByCategory } from "@/hooks/useFetchPostsByCategory";
+import { useCategoryPosts } from "@/features/web/blog/hooks/useCategoryPosts";
+import WebContentCard from "@/features/web/shared/components/WebContentCard";
 
 export default function CategoryPostsIndex(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
-  const { posts, category, pagination, loading, fetchPostsByCategory } =
-    useFetchPostsByCategory(slug);
+  const { posts, category, pagination, loading, fetchPostsByCategory } = useCategoryPosts(slug);
 
   document.title = `Category: ${category?.name || "Loading..."} | Blogs`;
 
@@ -26,14 +26,14 @@ export default function CategoryPostsIndex(): JSX.Element {
     );
   }
 
-  if (!category && !loading) {
+  if (!category) {
     return (
       <LayoutWeb>
-        <main className="container text-center py-20">
+        <main className="container py-20 text-center">
           <h1 className="text-2xl font-bold text-red-500">Category not found</h1>
-          <a href="/blog" className="text-blue-600 hover:underline mt-4 inline-block">
+          <Link to="/blog" className="mt-4 inline-block text-blue-600 hover:underline">
             Back to Blog
-          </a>
+          </Link>
         </main>
       </LayoutWeb>
     );
@@ -44,52 +44,49 @@ export default function CategoryPostsIndex(): JSX.Element {
       <SEO />
 
       <header>
-        <h1 className="font-bold text-2xl mt-24 md:text-5xl mb-12 text-slate-700 dark:text-sky-400">
-          Posts in Category: {category?.name || "Loading..."}
+        <h1 className="mt-24 mb-12 text-2xl font-bold text-slate-700 dark:text-white md:text-5xl">
+          Posts in Category: {category.name}
         </h1>
       </header>
 
-      {loading ? (
-        <Loading message="Loading posts..." variant="section" className="mt-8" />
-      ) : (
-        <>
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <CardBlog
-                  key={post.id}
-                  title={post.title}
-                  content={post.content}
-                  category={post.category}
-                  image={post.image}
-                  slug={post.slug}
-                >
-                  <p className="text-sm font-medium text-right text-blue-600 hover:underline">
-                    <Link to={`/blog/${post.slug}`}>Read more →</Link>
-                  </p>
-                </CardBlog>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">No posts found in this category</p>
-                <Link to="/blog" className="text-blue-600 hover:underline mt-2 inline-block">
-                  Back to Blog
-                </Link>
-              </div>
-            )}
-          </section>
+      <section className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <WebContentCard
+              key={post.id}
+              title={post.title}
+              eyebrow={post.category?.name || category.name}
+              description={post.content}
+              image={post.image}
+              link={`/blog/${post.slug}`}
+            >
+              <Link
+                to={`/blog/${post.slug}`}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-semibold text-gray-900 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-300"
+              >
+                Read more
+              </Link>
+            </WebContentCard>
+          ))
+        ) : (
+          <div className="col-span-full py-10 text-center">
+            <p className="text-gray-500">No posts found in this category</p>
+            <Link to="/blog" className="mt-2 inline-block text-blue-600 hover:underline">
+              Back to Blog
+            </Link>
+          </div>
+        )}
+      </section>
 
-          {posts.length > 0 && (
-            <nav className="mt-8">
-              <Pagination
-                currentPage={pagination.current_page}
-                totalCount={pagination.total}
-                pageSize={pagination.per_page}
-                onPageChange={handlePageChange}
-              />
-            </nav>
-          )}
-        </>
+      {posts.length > 0 && (
+        <nav className="mt-8">
+          <Pagination
+            currentPage={pagination.current_page}
+            totalCount={pagination.total}
+            pageSize={pagination.per_page}
+            onPageChange={handlePageChange}
+          />
+        </nav>
       )}
     </LayoutWeb>
   );
