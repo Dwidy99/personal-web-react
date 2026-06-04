@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
@@ -6,10 +6,13 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import Loading from "@/components/admin/Loading";
 import CKEditorField from "@/components/general/CKEditorField";
 import CategoryIconSelect from "@/components/admin/CategoryIconSelect";
-import type { ValidationErrors, Post } from "@/types/post";
 import { postService } from "@/services/postService";
-
-type CategoryOption = { id: number; name: string; image?: string };
+import type {
+  AdminPost,
+  AdminPostCategoryOption,
+  AdminPostFormErrors,
+} from "@/features/admin/posts/types";
+import { getValidationErrors } from "@/features/admin/shared/utils/apiError";
 
 const FORM_ID = "post-edit-form";
 const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
@@ -22,11 +25,11 @@ export default function PostEdit() {
   const { id } = useParams();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [post, setPost] = useState<Post | null>(null);
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [post, setPost] = useState<AdminPost | null>(null);
+  const [categories, setCategories] = useState<AdminPostCategoryOption[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<AdminPostFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [contentUploads, setContentUploads] = useState(0);
   const isSaving = submitting || contentUploads > 0;
@@ -86,8 +89,8 @@ export default function PostEdit() {
       await postService.update(Number(id), fd);
       toast.success("Post updated successfully");
       navigate("/admin/posts");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
       toast.error("Validation error");
     } finally {
       setSubmitting(false);

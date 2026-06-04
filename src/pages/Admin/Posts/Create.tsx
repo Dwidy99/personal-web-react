@@ -1,14 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
 import CKEditorField from "@/components/general/CKEditorField";
 import CategoryIconSelect from "@/components/admin/CategoryIconSelect";
-import type { ValidationErrors } from "@/types/post";
-import { postService } from "@/services";
-
-type CategoryOption = { id: number; name: string; image?: string };
+import { postService } from "@/services/postService";
+import type {
+  AdminPostCategoryOption,
+  AdminPostFormErrors,
+} from "@/features/admin/posts/types";
+import { getValidationErrors } from "@/features/admin/shared/utils/apiError";
 
 const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
 const POST_CONTENT_EDITOR_HEIGHT = "560px";
@@ -25,8 +27,8 @@ export default function PostCreate() {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
 
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [categories, setCategories] = useState<AdminPostCategoryOption[]>([]);
+  const [errors, setErrors] = useState<AdminPostFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [contentUploads, setContentUploads] = useState(0);
   const isSaving = submitting || contentUploads > 0;
@@ -79,8 +81,8 @@ export default function PostCreate() {
       await postService.create(formData);
       toast.success("Post created");
       navigate("/admin/posts");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
       toast.error("Validation error");
     } finally {
       setSubmitting(false);

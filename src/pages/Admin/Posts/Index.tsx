@@ -1,19 +1,19 @@
-// src/pages/Admin/Posts/Index.tsx
-import { useEffect, useState, ChangeEvent } from "react";
-import LayoutAdmin from "../../../layouts/Admin";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
-import Pagination from "../../../components/general/Pagination";
 import toast from "react-hot-toast";
-import hasAnyPermissions from "../../../utils/Permissions";
-import { postService } from "../../../services/postService";
-import { Post, PaginationMeta } from "../../../types/post";
 import { FaUserEdit } from "react-icons/fa";
 import { MdCategory, MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
 import { confirmAlert } from "react-confirm-alert";
+import LayoutAdmin from "@/layouts/Admin";
+import Pagination from "@/components/general/Pagination";
 import Loading from "@/components/admin/Loading";
+import hasAnyPermissions from "@/utils/Permissions";
+import { postService } from "@/services/postService";
+import type { AdminPost, AdminPostPagination } from "@/features/admin/posts/types";
+import { getErrorMessage } from "@/features/admin/shared/utils/apiError";
 
-function CategoryBadge({ category }: { category?: Post["category"] }) {
+function CategoryBadge({ category }: { category?: AdminPost["category"] }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   if (!category) {
@@ -42,11 +42,11 @@ function CategoryBadge({ category }: { category?: Post["category"] }) {
 export default function PostsIndex() {
   document.title = "Posts - Admin Panel";
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState("");
 
-  const [pagination, setPagination] = useState<PaginationMeta>({
+  const [pagination, setPagination] = useState<AdminPostPagination>({
     current_page: 1,
     per_page: 10,
     total: 0,
@@ -63,8 +63,8 @@ export default function PostsIndex() {
         per_page: data.per_page,
         total: data.total,
       });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to load posts");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load posts"));
     } finally {
       setLoading(false);
     }
@@ -92,8 +92,8 @@ export default function PostsIndex() {
               await postService.delete(id);
               toast.success("Post deleted successfully");
               fetchData(pagination.current_page, keywords);
-            } catch (err: any) {
-              toast.error(err?.response?.data?.message || "Delete failed");
+            } catch (error: unknown) {
+              toast.error(getErrorMessage(error, "Delete failed"));
             }
           },
         },
@@ -104,13 +104,10 @@ export default function PostsIndex() {
 
   return (
     <LayoutAdmin>
-      {/* ===== Header ===== */}
       <div className="mb-6 space-y-4">
         <h1 className="text-xl font-semibold text-slate-800 dark:text-white">Posts Management</h1>
 
-        {/* ===== Action Bar ===== */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          {/* Search */}
           <div className="relative w-full sm:max-w-md">
             <MdPersonSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
@@ -124,8 +121,7 @@ export default function PostsIndex() {
             />
           </div>
 
-          {/* Create */}
-          {hasAnyPermissions(["posts.create"]) && (
+          {hasAnyPermissions(["posts.store"]) && (
             <Link
               to="/admin/posts/create"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-lg
@@ -138,12 +134,10 @@ export default function PostsIndex() {
         </div>
       </div>
 
-      {/* ===== Content ===== */}
       {loading ? (
         <Loading message="Loading posts..." variant="page" className="py-20" />
       ) : (
         <div className="rounded-lg border border-stroke bg-white p-4 sm:p-6 dark:border-strokedark dark:bg-boxdark">
-          {/* ===== Desktop Table ===== */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 dark:bg-meta-4">
@@ -202,46 +196,50 @@ export default function PostsIndex() {
             </table>
           </div>
 
-          {/* ===== Mobile Cards ===== */}
           <div className="grid gap-4 md:hidden">
-            {posts.map((post, index) => (
-              <div
-                key={post.id}
-                className="rounded-lg border border-stroke p-4 dark:border-strokedark dark:bg-boxdark"
-              >
-                <p className="text-xs text-gray-500">
-                  #{index + 1 + (pagination.current_page - 1) * pagination.per_page}
-                </p>
+            {posts.length > 0 ? (
+              posts.map((post, index) => (
+                <div
+                  key={post.id}
+                  className="rounded-lg border border-stroke p-4 dark:border-strokedark dark:bg-boxdark"
+                >
+                  <p className="text-xs text-gray-500">
+                    #{index + 1 + (pagination.current_page - 1) * pagination.per_page}
+                  </p>
 
-                <h4 className="font-semibold text-slate-800 dark:text-white">{post.title}</h4>
+                  <h4 className="font-semibold text-slate-800 dark:text-white">{post.title}</h4>
 
-                <div className="mt-2 flex justify-between text-xs">
-                  <CategoryBadge category={post.category} />
-                  <span>{post.user?.name || "-"}</span>
-                </div>
+                  <div className="mt-2 flex justify-between text-xs">
+                    <CategoryBadge category={post.category} />
+                    <span>{post.user?.name || "-"}</span>
+                  </div>
 
-                <div className="mt-3 flex gap-2">
-                  <Link
-                    to={`/admin/posts/edit/${post.id}`}
-                    className="flex-1 rounded-md bg-sky-700 p-2 text-center text-white"
-                  >
-                    Edit
-                  </Link>
-
-                  {hasAnyPermissions(["posts.delete"]) && (
-                    <button
-                      onClick={() => handleDelete(post.id)}
-                      className="flex-1 rounded-md bg-danger p-2 text-white"
+                  <div className="mt-3 flex gap-2">
+                    <Link
+                      to={`/admin/posts/edit/${post.id}`}
+                      className="flex-1 rounded-md bg-sky-700 p-2 text-center text-white"
                     >
-                      Delete
-                    </button>
-                  )}
+                      Edit
+                    </Link>
+
+                    {hasAnyPermissions(["posts.delete"]) && (
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="flex-1 rounded-md bg-danger p-2 text-white"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="rounded-lg border border-dashed border-stroke p-6 text-center text-sm text-red-500 dark:border-strokedark">
+                No data found
               </div>
-            ))}
+            )}
           </div>
 
-          {/* ===== Pagination ===== */}
           <div className="mt-6 flex justify-center md:justify-end">
             <Pagination
               currentPage={pagination.current_page}

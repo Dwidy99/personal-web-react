@@ -1,15 +1,19 @@
-// src/services/postService.ts
 import Api from "./Api";
+import type {
+    AdminPost,
+    AdminPostCategoryOption,
+    AdminPostListResult,
+} from "@/features/admin/posts/types";
 
 export const postService = {
-    async getAll(page = 1, search = "") {
+    async getAll(page = 1, search = ""): Promise<AdminPostListResult> {
         const res = await Api.get(`/api/admin/posts`, {
             params: { search, page },
         });
         return res.data.data;
     },
 
-    async getById(id: number) {
+    async getById(id: number): Promise<AdminPost> {
         const res = await Api.get(`/api/admin/posts/${id}`);
         return res.data.data;
     },
@@ -22,8 +26,6 @@ export const postService = {
     },
 
     async update(id: number, formData: FormData) {
-        // kalau backend pakai method spoofing
-        // formData.append("_method", "PUT");
         const res = await Api.post(`/api/admin/posts/${id}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
@@ -35,7 +37,7 @@ export const postService = {
         return res.data;
     },
 
-    async getCategories() {
+    async getCategories(): Promise<AdminPostCategoryOption[]> {
         const res = await Api.get("/api/admin/categories/all");
         return res.data.data;
     },
