@@ -72,7 +72,7 @@ export default function WebLayout({
 
         <main id="main-content" role="main" className="min-h-[calc(100vh-160px)]">
           {/* 🔹 Global content container & spacing for all Web pages */}
-          <div className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25.5">
+          <div className="container mx-auto px-6 sm:px-8 md:px-10 mt-10 md:mt-16 lg:mt-25">
             {children ?? (
               <section aria-labelledby="missing-content-heading">
                 <h1 id="missing-content-heading" className="sr-only">

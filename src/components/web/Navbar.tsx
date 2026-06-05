@@ -73,7 +73,7 @@ export default function Navbar(): JSX.Element {
         }`}
       >
         <div className="container">
-          <div className="flex items-center justify-between relative font-bold lg:mx-25.5">
+          <div className="flex items-center justify-between relative font-bold lg:mx-25">
             <div className="my-5">
               <Link
                 to="/"
