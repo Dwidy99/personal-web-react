@@ -1,41 +1,32 @@
 import Api from "./Api";
-import Cookies from "js-cookie";
-import { ConfigData } from "@/types/configuration";
-import { ApiResponse } from "@/types/common";
-
-const token = Cookies.get("token");
+import type {
+  AdminConfigurationData,
+  AdminConfigurationResponse,
+} from "@/features/admin/configurations/types";
 
 export const configurationService = {
-    /**
-     * Ambil konfigurasi berdasarkan userId
-     */
-    async getByUserId(userId: number): Promise<ConfigData> {
-        const res = await Api.get<ApiResponse<ConfigData>>(
-            `/api/admin/configurations/${userId}`,
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
-        return res.data.data;
-    },
+  async getByUserId(userId: number): Promise<AdminConfigurationData> {
+    const response = await Api.get<AdminConfigurationResponse<AdminConfigurationData>>(
+      `/api/admin/configurations/${userId}`,
+    );
 
-    /**
-     * Update konfigurasi user (gunakan FormData)
-     */
-    async update(userId: number, data: FormData): Promise<ApiResponse<ConfigData>> {
-        const res = await Api.post<ApiResponse<ConfigData>>(
-            `/api/admin/configurations/${userId}`,
-            data,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
-            }
-        );
-        return res.data;
-    },
+    return response.data.data;
+  },
+
+  async update(
+    userId: number,
+    data: FormData,
+  ): Promise<AdminConfigurationResponse<AdminConfigurationData>> {
+    if (!data.has("_method")) data.append("_method", "PUT");
+
+    const response = await Api.post<AdminConfigurationResponse<AdminConfigurationData>>(
+      `/api/admin/configurations/${userId}`,
+      data,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data;
+  },
 };
 
-// ✅ Tambahkan default export agar bisa diimport dari index.ts
 export default configurationService;

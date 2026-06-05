@@ -1,11 +1,18 @@
-import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
-import type { ValidationErrors, Contact } from "../../../types/contact";
-import { contactService } from "../../../services";
+import type {
+  AdminContact,
+  AdminContactFormErrors,
+} from "@/features/admin/contacts/types";
+import { contactService } from "@/services";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function ContactsEdit() {
   document.title = "Edit Contact - My Portfolio";
@@ -14,10 +21,10 @@ export default function ContactsEdit() {
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const [contact, setContact] = useState<Contact | null>(null);
+  const [contact, setContact] = useState<AdminContact | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<AdminContactFormErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,23 +38,24 @@ export default function ContactsEdit() {
     return () => URL.revokeObjectURL(url);
   }, [image]);
 
-  useEffect(() => {
-    const fetch = async () => {
-      if (!id) return;
+  const fetchContact = useCallback(async (): Promise<void> => {
+    if (!id) return;
 
-      setLoading(true);
-      try {
-        const data = await contactService.getById(Number(id));
-        setContact(data);
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to load contact");
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
 
-    fetch();
+    try {
+      const data = await contactService.getById(Number(id));
+      setContact(data);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load contact"));
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    void fetchContact();
+  }, [fetchContact]);
 
   const currentImage = useMemo(() => imagePreview || contact?.image || "", [imagePreview, contact]);
 
@@ -66,9 +74,9 @@ export default function ContactsEdit() {
       const res = await contactService.update(Number(id), formData);
       toast.success(res.message || "Contact updated!");
       navigate("/admin/contacts");
-    } catch (err: any) {
-      setErrors(err.response?.data ?? {});
-      toast.error(err?.response?.data?.message || "Failed to update contact");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to update contact"));
     } finally {
       setSubmitting(false);
     }
@@ -113,10 +121,11 @@ export default function ContactsEdit() {
                       <input
                         type="text"
                         value={contact.name || ""}
+                        disabled={submitting}
                         onChange={(e) =>
                           setContact((prev) => (prev ? { ...prev, name: e.target.value } : prev))
                         }
-                        className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                       />
                       {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name[0]}</p>}
                     </div>
@@ -128,10 +137,11 @@ export default function ContactsEdit() {
                       <input
                         type="text"
                         value={contact.link || ""}
+                        disabled={submitting}
                         onChange={(e) =>
                           setContact((prev) => (prev ? { ...prev, link: e.target.value } : prev))
                         }
-                        className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                       />
                       {errors.link && <p className="mt-1 text-xs text-red-500">{errors.link[0]}</p>}
                     </div>
@@ -162,8 +172,9 @@ export default function ContactsEdit() {
                     <input
                       type="file"
                       accept="image/*"
+                      disabled={submitting}
                       onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-                      className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark"
+                      className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark disabled:opacity-60"
                     />
                     {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
                   </div>
@@ -176,7 +187,7 @@ export default function ContactsEdit() {
                   type="reset"
                   onClick={handleReset}
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+                  className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
                 >
                   <i className="fa-solid fa-redo mr-2"></i> Reset
                 </button>

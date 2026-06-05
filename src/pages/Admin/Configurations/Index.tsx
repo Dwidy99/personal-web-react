@@ -4,8 +4,12 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import SubmitButton from "@/components/admin/SubmitButton";
-import { ConfigData, FileInputs, ValidationErrors } from "@/types/configuration";
 import { configurationService } from "@/services";
+import type {
+  AdminConfigurationData,
+  AdminConfigurationFiles,
+  AdminConfigurationFormErrors,
+} from "@/features/admin/configurations/types";
 import {
   getErrorMessage,
   getValidationErrors,
@@ -27,7 +31,7 @@ export default function ConfigurationsIndex() {
     ? JSON.parse(Cookies.get("user") as string)
     : null;
 
-  const [form, setForm] = useState<ConfigData>({
+  const [form, setForm] = useState<AdminConfigurationData>({
     abbreviation: "",
     tagline: "",
     about: "",
@@ -55,7 +59,7 @@ export default function ConfigurationsIndex() {
     banner: "",
   });
 
-  const [files, setFiles] = useState<FileInputs>({
+  const [files, setFiles] = useState<AdminConfigurationFiles>({
     logo: null,
     icon: null,
     banner: null,
@@ -67,7 +71,7 @@ export default function ConfigurationsIndex() {
     banner: "",
   });
 
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<AdminConfigurationFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
   const fetchConfig = useCallback(async () => {
@@ -116,7 +120,7 @@ export default function ConfigurationsIndex() {
       });
       navigate("/admin/configurations");
     } catch (error: unknown) {
-      setErrors(getValidationErrors(error) as ValidationErrors);
+      setErrors(getValidationErrors(error));
       toast.error(getErrorMessage(error, "Failed to update configuration"), {
         position: "top-center",
       });
@@ -133,11 +137,11 @@ export default function ConfigurationsIndex() {
     setErrors({});
   };
 
-  const handleChange = (key: keyof ConfigData, value: string) => {
+  const handleChange = (key: keyof AdminConfigurationData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleFileChange = (name: keyof FileInputs, file: File | null) => {
+  const handleFileChange = (name: keyof AdminConfigurationFiles, file: File | null) => {
     setFiles((prev) => ({ ...prev, [name]: file }));
   };
 

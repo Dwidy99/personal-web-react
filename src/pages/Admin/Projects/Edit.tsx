@@ -1,15 +1,20 @@
-import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { projectService } from "@/services";
-import type { Project } from "@/types/project";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
-
 import CKEditorField from "@/components/general/CKEditorField";
+import type {
+  AdminProject,
+  AdminProjectFormErrors,
+} from "@/features/admin/projects/types";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
-type FieldErrors = Record<string, string[]>;
 const PROJECT_EDITOR_UPLOAD_ENDPOINT = "/api/admin/projects/editor-upload";
 
 export default function ProjectEdit() {
@@ -19,10 +24,10 @@ export default function ProjectEdit() {
   const { id } = useParams<{ id: string }>();
   const formRef = useRef<HTMLFormElement>(null);
 
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<AdminProject | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminProjectFormErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [descriptionUploads, setDescriptionUploads] = useState(0);
@@ -30,7 +35,6 @@ export default function ProjectEdit() {
   const pendingEditorUploads = descriptionUploads + captionUploads;
   const isSaving = submitting || pendingEditorUploads > 0;
 
-  // Preview for newly selected image
   useEffect(() => {
     if (!image) {
       setImagePreview("");
@@ -41,24 +45,25 @@ export default function ProjectEdit() {
     return () => URL.revokeObjectURL(url);
   }, [image]);
 
-  // Fetch project detail
-  useEffect(() => {
-    const fetchProject = async () => {
-      if (!id) return;
-      setLoading(true);
-      try {
-        const data = await projectService.getById(id);
-        setProject(data);
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to load project");
-        setProject(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProject = useCallback(async (): Promise<void> => {
+    if (!id) return;
 
-    fetchProject();
+    setLoading(true);
+
+    try {
+      const data = await projectService.getById(id);
+      setProject(data);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load project"));
+      setProject(null);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    void fetchProject();
+  }, [fetchProject]);
 
   const currentImage = useMemo(() => imagePreview || project?.image || "", [imagePreview, project]);
 
@@ -86,29 +91,27 @@ export default function ProjectEdit() {
       const res = await projectService.update(id, formData);
       toast.success(res.message || "Project updated successfully!");
       navigate("/admin/projects");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
-      toast.error(err?.response?.data?.message || "Failed to update project");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to update project"));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    // reset only local temp state (image, errors)
     formRef.current?.reset();
     setImage(null);
     setImagePreview("");
     setErrors({});
   };
 
-  const handleChange = (key: keyof Project) => (value: string) => {
+  const handleChange = (key: "title" | "link" | "description" | "caption") => (value: string) => {
     setProject((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
   return (
     <LayoutAdmin>
-      {/* Header */}
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           to="/admin/projects"
@@ -125,7 +128,6 @@ export default function ProjectEdit() {
         </div>
       </div>
 
-      {/* Card */}
       <div className="mx-auto max-w-5xl rounded-xl border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-6 lg:p-8">
         {loading ? (
           <Loading message="Loading project data..." variant="page" className="py-16" />
@@ -135,7 +137,6 @@ export default function ProjectEdit() {
           </div>
         ) : (
           <form ref={formRef} onSubmit={handleUpdate} className="space-y-6">
-            {/* Title */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                 Title
@@ -151,7 +152,6 @@ export default function ProjectEdit() {
               {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title[0]}</p>}
             </div>
 
-            {/* Project Image */}
             <div className="rounded-xl border border-stroke p-4 dark:border-strokedark">
               <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
                 Project Image
@@ -186,7 +186,6 @@ export default function ProjectEdit() {
               </div>
             </div>
 
-            {/* Link */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
                 Project Link
@@ -202,7 +201,6 @@ export default function ProjectEdit() {
               {errors.link && <p className="mt-1 text-xs text-red-600">{errors.link[0]}</p>}
             </div>
 
-            {/* Editors */}
             <div className="space-y-6">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
@@ -251,7 +249,6 @@ export default function ProjectEdit() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="reset"

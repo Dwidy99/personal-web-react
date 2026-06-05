@@ -1,14 +1,16 @@
-import { useRef, useState, FormEvent, ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import { projectService } from "@/services";
 import SubmitButton from "@/components/admin/SubmitButton";
-import type { ApiResponse } from "@/types/common";
-import type { Project } from "@/types/project";
 import CKEditorField from "@/components/general/CKEditorField";
+import type { AdminProjectFormErrors } from "@/features/admin/projects/types";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
-type FieldErrors = Record<string, string[]>;
 const PROJECT_EDITOR_UPLOAD_ENDPOINT = "/api/admin/projects/editor-upload";
 
 export default function ProjectsCreatePage() {
@@ -23,7 +25,7 @@ export default function ProjectsCreatePage() {
   const [link, setLink] = useState<string>("");
   const [image, setImage] = useState<File | null>(null);
 
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminProjectFormErrors>({});
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [descriptionUploads, setDescriptionUploads] = useState(0);
   const [captionUploads, setCaptionUploads] = useState(0);
@@ -49,15 +51,14 @@ export default function ProjectsCreatePage() {
     if (image) formData.append("image", image);
 
     try {
-      const res: ApiResponse<Project> = await projectService.create(formData);
+      const res = await projectService.create(formData);
       toast.success(res.message || "Project created successfully!");
 
-      // reset + redirect
       formRef.current?.reset();
       navigate("/admin/projects");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
-      toast.error(err?.response?.data?.message || "Failed to create project");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to create project"));
     } finally {
       setSubmitting(false);
     }
@@ -90,7 +91,6 @@ export default function ProjectsCreatePage() {
 
         <div className="p-4 sm:p-6 md:p-8">
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Title
@@ -109,7 +109,6 @@ export default function ProjectsCreatePage() {
               {errors.title?.[0] && <p className="mt-1 text-sm text-red-500">{errors.title[0]}</p>}
             </div>
 
-            {/* Image */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Image
@@ -131,7 +130,6 @@ export default function ProjectsCreatePage() {
               {errors.image?.[0] && <p className="mt-1 text-sm text-red-500">{errors.image[0]}</p>}
             </div>
 
-            {/* Link */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Link
@@ -150,7 +148,6 @@ export default function ProjectsCreatePage() {
               {errors.link?.[0] && <p className="mt-1 text-sm text-red-500">{errors.link[0]}</p>}
             </div>
 
-            {/* Description */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Description
@@ -175,7 +172,6 @@ export default function ProjectsCreatePage() {
               )}
             </div>
 
-            {/* Caption */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Caption
@@ -200,7 +196,6 @@ export default function ProjectsCreatePage() {
               )}
             </div>
 
-            {/* Buttons */}
             <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
               <SubmitButton
                 disabled={pendingEditorUploads > 0}

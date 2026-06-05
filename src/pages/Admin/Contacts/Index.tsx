@@ -1,51 +1,83 @@
-import { useEffect, useState, ChangeEvent } from "react";
-import { Link } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
-import type { Contact, PaginationMeta } from "../../../types/contact";
+import type {
+  AdminContact,
+  AdminContactPagination,
+} from "@/features/admin/contacts/types";
 import { confirmAlert } from "react-confirm-alert";
-import hasAnyPermissions from "../../../utils/Permissions";
-import Pagination from "../../../components/general/Pagination";
+import hasAnyPermissions from "@/utils/Permissions";
+import Pagination from "@/components/general/Pagination";
+import Loading from "@/components/admin/Loading";
 import { FaUserEdit } from "react-icons/fa";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
-
-// Service
-import { contactService } from "../../../services";
+import { contactService } from "@/services";
+import {
+  getErrorMessage,
+  getHttpStatus,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function ContactsIndex() {
   document.title = "Contacts - My Portfolio";
 
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta>({
+  const navigate = useNavigate();
+
+  const canView = hasAnyPermissions(["contacts.index"]);
+  const canCreate = hasAnyPermissions(["contacts.store"]);
+  const canEdit = hasAnyPermissions(["contacts.update"]);
+  const canDelete = hasAnyPermissions(["contacts.delete"]);
+
+  const [contacts, setContacts] = useState<AdminContact[]>([]);
+  const [pagination, setPagination] = useState<AdminContactPagination>({
     current_page: 1,
     per_page: 10,
     total: 0,
   });
   const [keywords, setKeywords] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const fetchData = async (page = 1, search = "") => {
+  const fetchData = useCallback(async (page = 1, search = ""): Promise<void> => {
+    if (!canView) return;
+
+    setLoading(true);
+
     try {
       const data = await contactService.getAll(page, search);
-      setContacts(data.data || []);
+      setContacts(data.data ?? []);
       setPagination({
-        current_page: data.current_page ?? 1,
+        current_page: data.current_page ?? page,
         per_page: data.per_page ?? 10,
         total: data.total ?? 0,
       });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to load contacts");
+    } catch (error: unknown) {
+      if (getHttpStatus(error) === 403) {
+        toast.error("You are not allowed to access Contacts.");
+        navigate("/forbidden");
+        return;
+      }
+
+      toast.error(getErrorMessage(error, "Failed to load contacts"));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [canView, navigate]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!canView) navigate("/forbidden");
+  }, [canView, navigate]);
+
+  useEffect(() => {
+    if (!canView) return;
+
+    void fetchData(1, "");
+  }, [canView, fetchData]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setKeywords(value);
-    fetchData(1, value);
+    void fetchData(1, value);
   };
 
   const handleDelete = (id: number) => {
@@ -56,24 +88,26 @@ export default function ContactsIndex() {
         {
           label: "Yes",
           onClick: async () => {
-            // Optimistic UI
             setContacts((prev) => prev.filter((item) => item.id !== id));
 
             try {
               await contactService.delete(id);
               toast.success("Contact deleted successfully");
 
-              // Refresh to keep pagination accurate
-              setTimeout(() => {
-                fetchData(pagination.current_page ?? 1, keywords);
-              }, 0);
-            } catch (error: any) {
-              toast.error(error?.response?.data?.message || "Failed to delete contact");
-              fetchData(pagination.current_page ?? 1, keywords);
+              void fetchData(pagination.current_page, keywords);
+            } catch (error: unknown) {
+              if (getHttpStatus(error) === 403) {
+                toast.error("You are not allowed to delete contacts.");
+                void fetchData(pagination.current_page, keywords);
+                return;
+              }
+
+              toast.error(getErrorMessage(error, "Failed to delete contact"));
+              void fetchData(pagination.current_page, keywords);
             }
           },
         },
-        { label: "No", onClick: () => {} },
+        { label: "No" },
       ],
     });
   };
@@ -81,7 +115,6 @@ export default function ContactsIndex() {
   return (
     <LayoutAdmin>
       <div className="rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-4 sm:p-6 lg:p-8">
-        {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h4 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
@@ -92,7 +125,7 @@ export default function ContactsIndex() {
             </p>
           </div>
 
-          {hasAnyPermissions(["contacts.create"]) && (
+          {canCreate && (
             <Link
               to="/admin/contacts/create"
               className="inline-flex w-fit items-center justify-center rounded-lg bg-primary px-8 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
@@ -102,7 +135,6 @@ export default function ContactsIndex() {
           )}
         </div>
 
-        {/* Search */}
         <div className="relative mb-6">
           <MdPersonSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
           <input
@@ -114,9 +146,12 @@ export default function ContactsIndex() {
           />
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden sm:block overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
-          <table className="w-full border-collapse text-sm text-center">
+        {loading ? (
+          <Loading message="Loading contacts..." variant="page" className="py-14" />
+        ) : (
+          <>
+            <div className="hidden sm:block overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
+              <table className="w-full border-collapse text-sm text-center">
             <thead className="bg-gray-100 dark:bg-meta-4 text-gray-700 dark:text-gray-300">
               <tr>
                 <th className="p-3 font-semibold border-b">No.</th>
@@ -134,7 +169,9 @@ export default function ContactsIndex() {
                     key={item.id}
                     className="border-b border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-boxdark-2 transition-colors"
                   >
-                    <td className="p-3">{index + 1}</td>
+                    <td className="p-3">
+                      {index + 1 + (pagination.current_page - 1) * pagination.per_page}
+                    </td>
                     <td className="p-3 font-medium text-slate-800 dark:text-gray-200">
                       {item.name}
                     </td>
@@ -162,14 +199,16 @@ export default function ContactsIndex() {
                     </td>
                     <td className="p-3">
                       <div className="flex justify-center gap-2">
-                        <Link
-                          to={`/admin/contacts/edit/${item.id}`}
-                          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
-                        >
-                          <FaUserEdit />
-                        </Link>
+                        {canEdit && (
+                          <Link
+                            to={`/admin/contacts/edit/${item.id}`}
+                            className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                          >
+                            <FaUserEdit />
+                          </Link>
+                        )}
 
-                        {hasAnyPermissions(["contacts.delete"]) && (
+                        {canDelete && (
                           <button
                             onClick={() => handleDelete(item.id)}
                             className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
@@ -190,10 +229,9 @@ export default function ContactsIndex() {
               )}
             </tbody>
           </table>
-        </div>
+            </div>
 
-        {/* Mobile Cards */}
-        <div className="grid sm:hidden gap-4">
+            <div className="grid sm:hidden gap-4">
           {contacts.length > 0 ? (
             contacts.map((item) => (
               <div
@@ -230,14 +268,16 @@ export default function ContactsIndex() {
                 </div>
 
                 <div className="mt-4 flex justify-end gap-2">
-                  <Link
-                    to={`/admin/contacts/edit/${item.id}`}
-                    className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
-                  >
-                    <FaUserEdit />
-                  </Link>
+                  {canEdit && (
+                    <Link
+                      to={`/admin/contacts/edit/${item.id}`}
+                      className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                    >
+                      <FaUserEdit />
+                    </Link>
+                  )}
 
-                  {hasAnyPermissions(["contacts.delete"]) && (
+                  {canDelete && (
                     <button
                       onClick={() => handleDelete(item.id)}
                       className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
@@ -251,17 +291,18 @@ export default function ContactsIndex() {
           ) : (
             <p className="text-center text-red-500 font-semibold py-10">No Data Found!</p>
           )}
-        </div>
+            </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center sm:justify-end mt-6">
-          <Pagination
-            currentPage={pagination.current_page}
-            totalCount={pagination.total}
-            pageSize={pagination.per_page}
-            onPageChange={(page) => fetchData(page, keywords)}
-          />
-        </div>
+            <div className="flex justify-center sm:justify-end mt-6">
+              <Pagination
+                currentPage={pagination.current_page}
+                totalCount={pagination.total}
+                pageSize={pagination.per_page}
+                onPageChange={(page) => void fetchData(page, keywords)}
+              />
+            </div>
+          </>
+        )}
       </div>
     </LayoutAdmin>
   );

@@ -1,26 +1,23 @@
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import profileService from "@/services/profileService";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
 import CKEditorField from "@/components/general/CKEditorField";
+import type {
+  AdminProfile,
+  AdminProfileEditorKey,
+  AdminProfileForm,
+  AdminProfileFormErrors,
+} from "@/features/admin/profiles/types";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
-type FieldErrors = Record<string, string[]>;
-
-type ProfileForm = {
-  name: string;
-  title: string;
-  image: File | null;
-  about: string;
-  caption: string;
-  description: string;
-  content: string;
-  tech_description: string;
-};
-
-const EMPTY_FORM: ProfileForm = {
+const EMPTY_FORM: AdminProfileForm = {
   name: "",
   title: "",
   image: null,
@@ -31,40 +28,45 @@ const EMPTY_FORM: ProfileForm = {
   tech_description: "",
 };
 const PROFILE_EDITOR_UPLOAD_ENDPOINT = "/api/admin/profiles/editor-upload";
-type RichEditorKey = "about" | "description" | "content" | "tech_description";
-const EMPTY_EDITOR_UPLOADS: Record<RichEditorKey, number> = {
+const EMPTY_EDITOR_UPLOADS: Record<AdminProfileEditorKey, number> = {
   about: 0,
   description: 0,
   content: 0,
   tech_description: 0,
 };
 
-function parseFieldErrors(payload: any): FieldErrors {
-  if (!payload) return {};
-  if (payload.errors && typeof payload.errors === "object") return payload.errors as FieldErrors;
-  if (typeof payload === "object" && !Array.isArray(payload)) return payload as FieldErrors;
-  return {};
+function mapProfileToForm(profile: AdminProfile): AdminProfileForm {
+  return {
+    name: profile.name ?? "",
+    title: profile.title ?? "",
+    image: null,
+    about: profile.about ?? "",
+    caption: profile.caption ?? "",
+    description: profile.description ?? "",
+    content: profile.content ?? "",
+    tech_description: profile.tech_description ?? "",
+  };
 }
 
 export default function ProfilesIndex() {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const [profileId, setProfileId] = useState<number | null>(null);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminProfileFormErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [editorUploads, setEditorUploads] =
-    useState<Record<RichEditorKey, number>>(EMPTY_EDITOR_UPLOADS);
+    useState<Record<AdminProfileEditorKey, number>>(EMPTY_EDITOR_UPLOADS);
 
-  const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
-  const [initialForm, setInitialForm] = useState<ProfileForm>(EMPTY_FORM);
+  const [form, setForm] = useState<AdminProfileForm>(EMPTY_FORM);
+  const [initialForm, setInitialForm] = useState<AdminProfileForm>(EMPTY_FORM);
 
   const [previewImage, setPreviewImage] = useState<string>("");
   const [initialImageUrl, setInitialImageUrl] = useState<string>("");
   const pendingEditorUploads = Object.values(editorUploads).reduce((total, count) => total + count, 0);
   const isSaving = submitting || pendingEditorUploads > 0;
 
-  const setEditorUploadCount = (field: RichEditorKey) => (count: number) => {
+  const setEditorUploadCount = (field: AdminProfileEditorKey) => (count: number) => {
     setEditorUploads((prev) => ({ ...prev, [field]: count }));
   };
 
@@ -95,16 +97,7 @@ export default function ProfilesIndex() {
 
         setProfileId(Number(data.id));
 
-        const mapped: ProfileForm = {
-          name: data.name ?? "",
-          title: data.title ?? "",
-          image: null,
-          about: data.about ?? "",
-          caption: data.caption ?? "",
-          description: data.description ?? "",
-          content: data.content ?? "",
-          tech_description: data.tech_description ?? "",
-        };
+        const mapped = mapProfileToForm(data);
 
         setForm(mapped);
         setInitialForm(mapped);
@@ -114,9 +107,9 @@ export default function ProfilesIndex() {
         setInitialImageUrl(imgUrl);
 
         setErrors({});
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (!alive) return;
-        toast.error(error?.response?.data?.message || "Failed to load profile");
+        toast.error(getErrorMessage(error, "Failed to load profile"));
       } finally {
         if (alive) setLoading(false);
       }
@@ -170,16 +163,7 @@ export default function ProfilesIndex() {
       if (refreshed) {
         setProfileId(Number(refreshed.id));
 
-        const mapped: ProfileForm = {
-          name: refreshed.name ?? "",
-          title: refreshed.title ?? "",
-          image: null,
-          about: refreshed.about ?? "",
-          caption: refreshed.caption ?? "",
-          description: refreshed.description ?? "",
-          content: refreshed.content ?? "",
-          tech_description: refreshed.tech_description ?? "",
-        };
+        const mapped = mapProfileToForm(refreshed);
 
         setForm(mapped);
         setInitialForm(mapped);
@@ -193,10 +177,9 @@ export default function ProfilesIndex() {
 
       setForm((prev) => ({ ...prev, image: null }));
       if (fileRef.current) fileRef.current.value = "";
-    } catch (error: any) {
-      const payload = error?.response?.data;
-      setErrors(parseFieldErrors(payload));
-      toast.error(payload?.message || "Failed to update profile");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to update profile"));
     } finally {
       setSubmitting(false);
     }

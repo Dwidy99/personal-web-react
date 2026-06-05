@@ -1,51 +1,56 @@
 import Api from "./Api";
-import Cookies from "js-cookie";
-import { Contact } from "../types/contact";
-
-const token = Cookies.get("token");
+import type {
+  AdminContact,
+  AdminContactListResult,
+  AdminContactMutationResponse,
+  AdminContactResponse,
+} from "@/features/admin/contacts/types";
 
 export const contactService = {
-    async getAll(page = 1, search = "") {
-        const res = await Api.get(`/api/admin/contacts?search=${search}&page=${page}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.data.data;
-    },
+  async getAll(page = 1, search = ""): Promise<AdminContactListResult> {
+    const response = await Api.get<AdminContactResponse<AdminContactListResult>>(
+      "/api/admin/contacts",
+      { params: { search, page } },
+    );
 
-    async getById(id: number) {
-        const res = await Api.get<{ data: Contact }>(`/api/admin/contacts/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.data.data;
-    },
+    return response.data.data;
+  },
 
-    async create(data: FormData) {
-        const res = await Api.post("/api/admin/contacts", data, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return res.data;
-    },
+  async getById(id: number): Promise<AdminContact> {
+    const response = await Api.get<AdminContactResponse<AdminContact>>(
+      `/api/admin/contacts/${id}`,
+    );
 
-    async update(id: number, data: FormData) {
-        const res = await Api.post(`/api/admin/contacts/${id}`, data, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return res.data;
-    },
+    return response.data.data;
+  },
 
-    async delete(id: number) {
-        const res = await Api.delete(`/api/admin/contacts/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.data;
-    },
+  async create(data: FormData): Promise<AdminContactMutationResponse> {
+    const response = await Api.post<AdminContactMutationResponse>(
+      "/api/admin/contacts",
+      data,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data;
+  },
+
+  async update(id: number, data: FormData): Promise<AdminContactMutationResponse> {
+    if (!data.has("_method")) data.append("_method", "PUT");
+
+    const response = await Api.post<AdminContactMutationResponse>(
+      `/api/admin/contacts/${id}`,
+      data,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data;
+  },
+
+  async delete(id: number): Promise<AdminContactMutationResponse> {
+    const response = await Api.delete<AdminContactMutationResponse>(`/api/admin/contacts/${id}`);
+
+    return response.data;
+  },
 };
 
-// ✅ Tambahkan default export agar bisa diimport dari index.ts
 export default contactService;

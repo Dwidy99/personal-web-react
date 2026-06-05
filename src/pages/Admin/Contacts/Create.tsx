@@ -1,10 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useRef, useState, FormEvent } from "react";
-import LayoutAdmin from "../../../layouts/Admin";
+import { useRef, useState, type FormEvent } from "react";
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
-import type { ValidationErrors } from "../../../types/contact";
-import { contactService } from "../../../services";
+import type { AdminContactFormErrors } from "@/features/admin/contacts/types";
+import { contactService } from "@/services";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function ContactsCreate() {
   document.title = "Create Contact - My Portfolio";
@@ -15,7 +19,7 @@ export default function ContactsCreate() {
   const [name, setName] = useState("");
   const [link, setLink] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<AdminContactFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -31,9 +35,9 @@ export default function ContactsCreate() {
       const res = await contactService.create(formData);
       toast.success(res.message || "Contact created successfully!");
       navigate("/admin/contacts");
-    } catch (err: any) {
-      setErrors(err.response?.data ?? {});
-      toast.error(err?.response?.data?.message || "Failed to create contact");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to create contact"));
     } finally {
       setSubmitting(false);
     }
@@ -72,8 +76,9 @@ export default function ContactsCreate() {
               <input
                 type="text"
                 value={name}
+                disabled={submitting}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                 placeholder="Enter contact name..."
               />
               {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name[0]}</p>}
@@ -86,8 +91,9 @@ export default function ContactsCreate() {
               <input
                 type="text"
                 value={link}
+                disabled={submitting}
                 onChange={(e) => setLink(e.target.value)}
-                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                 placeholder="https://example.com"
               />
               {errors.link && <p className="mt-1 text-xs text-red-500">{errors.link[0]}</p>}
@@ -101,8 +107,9 @@ export default function ContactsCreate() {
             <input
               type="file"
               accept="image/*"
+              disabled={submitting}
               onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark"
+              className="w-full cursor-pointer rounded-lg border border-stroke p-2 text-sm dark:border-strokedark disabled:opacity-60"
             />
             {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image[0]}</p>}
           </div>
@@ -112,7 +119,7 @@ export default function ContactsCreate() {
               type="reset"
               onClick={handleReset}
               disabled={submitting}
-              className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
+              className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-60"
             >
               <i className="fa-solid fa-redo mr-2"></i> Reset
             </button>
