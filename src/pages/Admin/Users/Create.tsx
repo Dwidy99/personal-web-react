@@ -1,4 +1,4 @@
-import { useEffect, useState, FormEvent, ChangeEvent } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
@@ -8,15 +8,18 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import type { UserForm } from "@/types/user";
 import type { Role } from "@/types/role";
 import { FaArrowLeft } from "react-icons/fa6";
-
-type FieldErrors = Record<string, string[]>;
+import {
+  getErrorMessage,
+  getValidationErrors,
+  type AdminValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function UsersCreate() {
   document.title = "Create User - Desa Digital";
 
   const navigate = useNavigate();
   const [roles, setRoles] = useState<Role[]>([]);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminValidationErrors>({});
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,19 +31,22 @@ export default function UsersCreate() {
     roles: [],
   });
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const res = await roleService.getAll(1, "");
-        setRoles(res.items || []);
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to load roles");
-      } finally {
-        setLoadingRoles(false);
-      }
-    };
-    fetchRoles();
+  const fetchRoles = useCallback(async (): Promise<void> => {
+    setLoadingRoles(true);
+
+    try {
+      const res = await roleService.getAll(1, "");
+      setRoles(res.items || []);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load roles"));
+    } finally {
+      setLoadingRoles(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchRoles();
+  }, [fetchRoles]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,7 +61,7 @@ export default function UsersCreate() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
@@ -69,9 +75,9 @@ export default function UsersCreate() {
       const res = await userService.create(formData);
       toast.success(res.message || "User created successfully");
       navigate("/admin/users");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
-      toast.error(err?.response?.data?.message || "Failed to create user");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to create user"));
     } finally {
       setSubmitting(false);
     }
@@ -116,6 +122,7 @@ export default function UsersCreate() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                disabled={submitting}
                 className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter full name"
               />
@@ -131,6 +138,7 @@ export default function UsersCreate() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={submitting}
                 className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter email address"
               />
@@ -149,6 +157,7 @@ export default function UsersCreate() {
                 name="password"
                 value={formData.password || ""}
                 onChange={handleChange}
+                disabled={submitting}
                 className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter password"
               />
@@ -164,6 +173,7 @@ export default function UsersCreate() {
                 name="password_confirmation"
                 value={formData.password_confirmation || ""}
                 onChange={handleChange}
+                disabled={submitting}
                 className="w-full rounded-lg border border-stroke bg-transparent px-6 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Confirm password"
               />
@@ -193,6 +203,7 @@ export default function UsersCreate() {
                       value={role.name}
                       checked={formData.roles.includes(role.name)}
                       onChange={handleCheckboxChange}
+                      disabled={submitting}
                       className="h-5 w-5"
                     />
                     <span className="text-sm text-slate-700 dark:text-gray-200">{role.name}</span>

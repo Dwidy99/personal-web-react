@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
@@ -7,8 +7,11 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import type { Permission } from "@/types/permission";
 import type { RoleForm } from "@/types/role";
 import { permissionService, roleService } from "@/services";
-
-type FieldErrors = Record<string, string[]>;
+import {
+  getErrorMessage,
+  getValidationErrors,
+  type AdminValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function RolesCreate() {
   document.title = "Create Role - Desa Digital";
@@ -16,23 +19,26 @@ export default function RolesCreate() {
 
   const [formData, setFormData] = useState<RoleForm>({ name: "", permissions: [] });
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminValidationErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const loadPermissions = async () => {
-      try {
-        const res = await permissionService.getAll(1, "");
-        setPermissions(res.items || []);
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to load permissions");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadPermissions();
+  const loadPermissions = useCallback(async (): Promise<void> => {
+    setLoading(true);
+
+    try {
+      const res = await permissionService.getAll(1, "");
+      setPermissions(res.items || []);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load permissions"));
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void loadPermissions();
+  }, [loadPermissions]);
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
@@ -44,7 +50,7 @@ export default function RolesCreate() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
@@ -53,9 +59,9 @@ export default function RolesCreate() {
       const res = await roleService.create(formData);
       toast.success(res.message || "Role created successfully");
       navigate("/admin/roles");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
-      toast.error(err?.response?.data?.message || "Failed to create role");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to create role"));
     } finally {
       setSubmitting(false);
     }
@@ -92,6 +98,7 @@ export default function RolesCreate() {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              disabled={submitting}
               placeholder="Enter role name..."
               className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -121,6 +128,7 @@ export default function RolesCreate() {
                       value={permission.name}
                       checked={formData.permissions.includes(permission.name)}
                       onChange={handleCheckboxChange}
+                      disabled={submitting}
                       className="h-5 w-5"
                     />
                     <span className="text-sm text-slate-700 dark:text-gray-200">

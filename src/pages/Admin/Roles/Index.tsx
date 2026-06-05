@@ -1,7 +1,8 @@
-import { useEffect, useState, ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import Pagination from "@/components/general/Pagination";
+import Loading from "@/components/admin/Loading";
 import hasAnyPermissions from "@/utils/Permissions";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
@@ -10,6 +11,7 @@ import { FaCirclePlus } from "react-icons/fa6";
 import type { Role } from "@/types/role";
 import { roleService } from "@/services";
 import { FaUserEdit } from "react-icons/fa";
+import { getErrorMessage, getHttpStatus } from "@/features/admin/shared/utils/apiError";
 
 type PageState = {
   currentPage: number;
@@ -20,15 +22,29 @@ type PageState = {
 export default function RolesIndex() {
   document.title = "Roles - Desa Digital";
 
+  const navigate = useNavigate();
   const [roles, setRoles] = useState<Role[]>([]);
   const [keywords, setKeywords] = useState("");
+  const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<PageState>({
     currentPage: 1,
     perPage: 10,
     total: 0,
   });
 
-  const fetchData = async (page = 1, search = "") => {
+  const canView = hasAnyPermissions(["roles.index"]);
+  const canCreate = hasAnyPermissions(["roles.store"]);
+  const canEdit = hasAnyPermissions(["roles.update"]);
+  const canDelete = hasAnyPermissions(["roles.delete"]);
+
+  const fetchData = useCallback(async (page = 1, search = ""): Promise<void> => {
+    if (!canView) {
+      navigate("/forbidden");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const { items, pagination: pageInfo } = await roleService.getAll(page, search);
 
@@ -38,22 +54,34 @@ export default function RolesIndex() {
         perPage: pageInfo.per_page ?? 10,
         total: pageInfo.total ?? 0,
       });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to load roles");
+    } catch (error: unknown) {
+      if (getHttpStatus(error) === 403) {
+        navigate("/forbidden");
+        return;
+      }
+
+      toast.error(getErrorMessage(error, "Failed to load roles"));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [canView, navigate]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    void fetchData();
+  }, [fetchData]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setKeywords(value);
-    fetchData(1, value);
+    void fetchData(1, value);
   };
 
   const handleDelete = (id: number) => {
+    if (!canDelete) {
+      navigate("/forbidden");
+      return;
+    }
+
     confirmAlert({
       title: "Delete Role?",
       message: "Are you sure you want to delete this role?",
@@ -61,17 +89,15 @@ export default function RolesIndex() {
         {
           label: "Yes",
           onClick: async () => {
-            // Optimistic UI
             setRoles((prev) => prev.filter((r) => r.id !== id));
 
             try {
               const res = await roleService.delete(id);
               toast.success(res.message || "Role deleted");
-
-              setTimeout(() => fetchData(pagination.currentPage, keywords), 0);
-            } catch (error: any) {
-              toast.error(error?.response?.data?.message || "Failed to delete role");
-              fetchData(pagination.currentPage, keywords);
+              void fetchData(pagination.currentPage, keywords);
+            } catch (error: unknown) {
+              toast.error(getErrorMessage(error, "Failed to delete role"));
+              void fetchData(pagination.currentPage, keywords);
             }
           },
         },
@@ -94,7 +120,7 @@ export default function RolesIndex() {
             </p>
           </div>
 
-          {hasAnyPermissions(["roles.create"]) && (
+          {canCreate && (
             <Link
               to="/admin/roles/create"
               className="inline-flex w-fit items-center justify-center rounded-lg bg-meta-5 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
@@ -116,8 +142,11 @@ export default function RolesIndex() {
           />
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden sm:block overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
+        {loading ? (
+          <Loading message="Loading roles..." className="py-14" />
+        ) : (
+          <>
+            <div className="hidden sm:block overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
           <table className="w-full border-collapse text-sm">
             <thead className="bg-gray-100 dark:bg-meta-4 text-gray-700 dark:text-gray-300">
               <tr>
@@ -160,15 +189,17 @@ export default function RolesIndex() {
 
                     <td className="p-3">
                       <div className="flex justify-center gap-2">
-                        <Link
-                          to={`/admin/roles/edit/${role.id}`}
-                          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
-                          title="Edit"
-                        >
-                          <FaUserEdit />
-                        </Link>
+                        {canEdit && (
+                          <Link
+                            to={`/admin/roles/edit/${role.id}`}
+                            className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                            title="Edit"
+                          >
+                            <FaUserEdit />
+                          </Link>
+                        )}
 
-                        {hasAnyPermissions(["roles.delete"]) && (
+                        {canDelete && (
                           <button
                             onClick={() => handleDelete(Number(role.id))}
                             className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
@@ -190,10 +221,9 @@ export default function RolesIndex() {
               )}
             </tbody>
           </table>
-        </div>
+            </div>
 
-        {/* Mobile Cards */}
-        <div className="grid sm:hidden gap-4">
+            <div className="grid sm:hidden gap-4">
           {roles.length ? (
             roles.map((role) => (
               <div
@@ -211,15 +241,17 @@ export default function RolesIndex() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Link
-                      to={`/admin/roles/edit/${role.id}`}
-                      className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
-                      title="Edit"
-                    >
-                      <FaUserEdit />
-                    </Link>
+                    {canEdit && (
+                      <Link
+                        to={`/admin/roles/edit/${role.id}`}
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                        title="Edit"
+                      >
+                        <FaUserEdit />
+                      </Link>
+                    )}
 
-                    {hasAnyPermissions(["roles.delete"]) && (
+                    {canDelete && (
                       <button
                         onClick={() => handleDelete(Number(role.id))}
                         className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
@@ -250,17 +282,18 @@ export default function RolesIndex() {
           ) : (
             <p className="text-center text-red-500 font-semibold py-10">No Data Found!</p>
           )}
-        </div>
+            </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center sm:justify-end mt-6">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalCount={pagination.total}
-            pageSize={pagination.perPage}
-            onPageChange={(page) => fetchData(page, keywords)}
-          />
-        </div>
+            <div className="flex justify-center sm:justify-end mt-6">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalCount={pagination.total}
+                pageSize={pagination.perPage}
+                onPageChange={(page) => void fetchData(page, keywords)}
+              />
+            </div>
+          </>
+        )}
       </div>
     </LayoutAdmin>
   );

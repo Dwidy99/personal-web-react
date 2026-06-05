@@ -1,12 +1,14 @@
-import { useEffect, useState, ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import Pagination from "@/components/general/Pagination";
+import Loading from "@/components/admin/Loading";
 import hasAnyPermissions from "@/utils/Permissions";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
 import { userService } from "@/services";
 import type { User } from "@/types/user";
+import { getErrorMessage, getHttpStatus } from "@/features/admin/shared/utils/apiError";
 import { MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus, FaTrash } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
@@ -20,15 +22,29 @@ type PageState = {
 export default function UsersIndex() {
   document.title = "Users - My Portfolio";
 
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [keywords, setKeywords] = useState("");
+  const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<PageState>({
     currentPage: 1,
     perPage: 10,
     total: 0,
   });
 
-  const fetchData = async (page = 1, search = "") => {
+  const canView = hasAnyPermissions(["users.index"]);
+  const canCreate = hasAnyPermissions(["users.store"]);
+  const canEdit = hasAnyPermissions(["users.update"]);
+  const canDelete = hasAnyPermissions(["users.delete"]);
+
+  const fetchData = useCallback(async (page = 1, search = ""): Promise<void> => {
+    if (!canView) {
+      navigate("/forbidden");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const res = await userService.getAll(page, search);
       setUsers(res.items || []);
@@ -37,22 +53,34 @@ export default function UsersIndex() {
         perPage: res.pagination.per_page ?? 10,
         total: res.pagination.total ?? 0,
       });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to load users");
+    } catch (error: unknown) {
+      if (getHttpStatus(error) === 403) {
+        navigate("/forbidden");
+        return;
+      }
+
+      toast.error(getErrorMessage(error, "Failed to load users"));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [canView, navigate]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    void fetchData();
+  }, [fetchData]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setKeywords(value);
-    fetchData(1, value);
+    void fetchData(1, value);
   };
 
   const handleDelete = (id: number | string) => {
+    if (!canDelete) {
+      navigate("/forbidden");
+      return;
+    }
+
     confirmAlert({
       title: "Delete User?",
       message: "Are you sure you want to delete this user?",
@@ -65,13 +93,10 @@ export default function UsersIndex() {
             try {
               await userService.delete(id);
               toast.success("User deleted successfully");
-
-              setTimeout(() => {
-                fetchData(pagination.currentPage, keywords);
-              }, 0);
-            } catch (error: any) {
-              toast.error(error?.response?.data?.message || "Failed to delete user");
-              fetchData(pagination.currentPage, keywords);
+              void fetchData(pagination.currentPage, keywords);
+            } catch (error: unknown) {
+              toast.error(getErrorMessage(error, "Failed to delete user"));
+              void fetchData(pagination.currentPage, keywords);
             }
           },
         },
@@ -80,7 +105,9 @@ export default function UsersIndex() {
     });
   };
 
-  const handlePageChange = (page: number) => fetchData(page, keywords);
+  const handlePageChange = (page: number) => {
+    void fetchData(page, keywords);
+  };
 
   return (
     <LayoutAdmin>
@@ -96,7 +123,7 @@ export default function UsersIndex() {
             </p>
           </div>
 
-          {hasAnyPermissions(["users.create"]) && (
+          {canCreate && (
             <Link
               to="/admin/users/create"
               className="inline-flex w-fit items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-opacity-90"
@@ -118,8 +145,11 @@ export default function UsersIndex() {
           />
         </div>
 
-        {/* Desktop/Tablet Table */}
-        <div className="hidden sm:block overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
+        {loading ? (
+          <Loading message="Loading users..." className="py-14" />
+        ) : (
+          <>
+            <div className="hidden sm:block overflow-x-auto rounded-lg border border-stroke dark:border-strokedark">
           <table className="w-full border-collapse text-sm">
             <thead className="bg-gray-100 dark:bg-meta-4 text-gray-700 dark:text-gray-300">
               <tr>
@@ -167,15 +197,17 @@ export default function UsersIndex() {
 
                     <td className="p-3">
                       <div className="flex justify-center gap-2">
-                        <Link
-                          to={`/admin/users/edit/${user.id}`}
-                          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
-                          title="Edit"
-                        >
-                          <FaEdit />
-                        </Link>
+                        {canEdit && (
+                          <Link
+                            to={`/admin/users/edit/${user.id}`}
+                            className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                            title="Edit"
+                          >
+                            <FaEdit />
+                          </Link>
+                        )}
 
-                        {hasAnyPermissions(["users.delete"]) && (
+                        {canDelete && (
                           <button
                             onClick={() => handleDelete(user.id)}
                             className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
@@ -197,10 +229,9 @@ export default function UsersIndex() {
               )}
             </tbody>
           </table>
-        </div>
+            </div>
 
-        {/* Mobile Cards */}
-        <div className="grid sm:hidden gap-4">
+            <div className="grid sm:hidden gap-4">
           {users.length ? (
             users.map((user) => (
               <div
@@ -217,15 +248,17 @@ export default function UsersIndex() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Link
-                      to={`/admin/users/edit/${user.id}`}
-                      className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
-                      title="Edit"
-                    >
-                      <FaEdit />
-                    </Link>
+                    {canEdit && (
+                      <Link
+                        to={`/admin/users/edit/${user.id}`}
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-white hover:bg-opacity-90"
+                        title="Edit"
+                      >
+                        <FaEdit />
+                      </Link>
+                    )}
 
-                    {hasAnyPermissions(["users.delete"]) && (
+                    {canDelete && (
                       <button
                         onClick={() => handleDelete(user.id)}
                         className="inline-flex items-center justify-center rounded-md bg-danger px-3 py-2 text-white hover:bg-opacity-90"
@@ -256,17 +289,18 @@ export default function UsersIndex() {
           ) : (
             <p className="text-center text-red-500 font-semibold py-10">No users found</p>
           )}
-        </div>
+            </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center sm:justify-end mt-6">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalCount={pagination.total}
-            pageSize={pagination.perPage}
-            onPageChange={handlePageChange}
-          />
-        </div>
+            <div className="flex justify-center sm:justify-end mt-6">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalCount={pagination.total}
+                pageSize={pagination.perPage}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          </>
+        )}
       </div>
     </LayoutAdmin>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
@@ -7,8 +7,11 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import type { RoleForm } from "@/types/role";
 import type { Permission } from "@/types/permission";
 import { permissionService, roleService } from "@/services";
-
-type FieldErrors = Record<string, string[]>;
+import {
+  getErrorMessage,
+  getValidationErrors,
+  type AdminValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function RolesEdit() {
   document.title = "Edit Role - Desa Digital";
@@ -18,35 +21,36 @@ export default function RolesEdit() {
 
   const [formData, setFormData] = useState<RoleForm>({ name: "", permissions: [] });
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminValidationErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchRoleAndPermissions = async () => {
-      if (!id) return;
+  const fetchRoleAndPermissions = useCallback(async (): Promise<void> => {
+    if (!id) return;
 
-      setLoading(true);
-      try {
-        const [permRes, roleRes] = await Promise.all([
-          permissionService.getAll(1, ""),
-          roleService.getById(id),
-        ]);
+    setLoading(true);
 
-        setPermissions(permRes.items || []);
-        setFormData({
-          name: roleRes.name || "",
-          permissions: roleRes.permissions?.map((p: any) => p.name) || [],
-        });
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to load role data");
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const [permRes, roleRes] = await Promise.all([
+        permissionService.getAll(1, ""),
+        roleService.getById(id),
+      ]);
 
-    fetchRoleAndPermissions();
+      setPermissions(permRes.items || []);
+      setFormData({
+        name: roleRes.name || "",
+        permissions: roleRes.permissions?.map((permission) => permission.name) || [],
+      });
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load role data"));
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    void fetchRoleAndPermissions();
+  }, [fetchRoleAndPermissions]);
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
@@ -58,7 +62,7 @@ export default function RolesEdit() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!id) return;
 
@@ -68,9 +72,9 @@ export default function RolesEdit() {
       const res = await roleService.update(id, formData);
       toast.success(res.message || "Role updated successfully");
       navigate("/admin/roles");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
-      toast.error(err?.response?.data?.message || "Failed to update role");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to update role"));
     } finally {
       setSubmitting(false);
     }
@@ -78,8 +82,7 @@ export default function RolesEdit() {
 
   const handleReset = () => {
     setErrors({});
-    // reset to loaded state (not empty) is usually better for edit page:
-    // simply do nothing if still loading.
+    void fetchRoleAndPermissions();
   };
 
   return (
@@ -111,6 +114,7 @@ export default function RolesEdit() {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                disabled={submitting}
                 placeholder="Enter role name..."
                 className="w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-sm dark:border-strokedark dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -139,6 +143,7 @@ export default function RolesEdit() {
                       value={permission.name}
                       checked={formData.permissions.includes(permission.name)}
                       onChange={handleCheckboxChange}
+                      disabled={submitting}
                       className="h-5 w-5"
                     />
                     <span className="text-sm text-slate-700 dark:text-gray-200">
@@ -161,7 +166,7 @@ export default function RolesEdit() {
                 disabled={submitting}
                 className="inline-flex items-center justify-center rounded-lg bg-gray-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90"
               >
-                <i className="fa-solid fa-redo mr-2"></i> Reset Errors
+                <i className="fa-solid fa-redo mr-2"></i> Reset
               </button>
 
               <SubmitButton loading={submitting} icon={<i className="fa-solid fa-save" />}>

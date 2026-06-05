@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
-import Cookies from "js-cookie";
+import LayoutAdmin from "@/layouts/Admin";
 import { TbCategory2 } from "react-icons/tb";
 import { LuSignpostBig } from "react-icons/lu";
 import { MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { SlPicture } from "react-icons/sl";
 import { FiArrowUpRight, FiGrid } from "react-icons/fi";
 import Loading from "@/components/admin/Loading";
-import { Api } from "../../../services";
+import { Api } from "@/services";
+import { getErrorMessage } from "@/features/admin/shared/utils/apiError";
 
 interface DashboardData {
   categories: number;
@@ -28,6 +28,13 @@ interface StatCard {
   rateTone: string;
 }
 
+type DashboardResponse = {
+  success?: boolean;
+  status?: boolean;
+  message?: string;
+  data: DashboardData;
+};
+
 export default function DashboardIndex() {
   document.title = "Dashboard - My Portfolio";
 
@@ -40,25 +47,23 @@ export default function DashboardIndex() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const token = Cookies.get("token");
+  const fetchDashboardData = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await Api.get<DashboardResponse>("/api/admin/dashboard");
+      setDashboardData(response.data.data);
+    } catch (error: unknown) {
+      setError(getErrorMessage(error, "Failed to load dashboard data."));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await Api.get("/api/admin/dashboard", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setDashboardData(response.data.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load dashboard data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, [token]);
+    void fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const statsData: StatCard[] = useMemo(
     () => [

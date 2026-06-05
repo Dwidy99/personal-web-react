@@ -1,39 +1,35 @@
-import { Permission } from "@/types/permission";
 import Api from "./Api";
-import Cookies from "js-cookie";
+import type { Permission } from "@/types/permission";
+import type { ApiResponse } from "@/types/common";
 
-export interface ApiListResponse<T> {
-    data: T[];
-    current_page: number;
-    per_page: number;
-    total: number;
-}
+type ApiListResponse<T> = {
+  data: T[];
+  current_page: number;
+  per_page: number;
+  total: number;
+};
 
-// Reusable GET list with pagination service
-export async function fetchList<T>(url: string, page: number, search: string) {
-    const token = Cookies.get("token");
+async function fetchList<T>(url: string, page: number, search: string) {
+  const res = await Api.get<ApiResponse<ApiListResponse<T>>>(url, {
+    params: { page, search },
+  });
 
-    const res = await Api.get(url, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page, search },
-    });
+  const response = res.data.data;
 
-    const response = res.data.data;
-
-    return {
-        items: response.data as T[],
-        pagination: {
-            current_page: response.current_page,
-            per_page: response.per_page,
-            total: response.total,
-        },
-    };
+  return {
+    items: response.data || [],
+    pagination: {
+      current_page: response.current_page,
+      per_page: response.per_page,
+      total: response.total,
+    },
+  };
 }
 
 const permissionService = {
-    async getAll(page = 1, search = "") {
-        return fetchList<Permission>("/api/admin/permissions", page, search);
-    },
+  async getAll(page = 1, search = "") {
+    return fetchList<Permission>("/api/admin/permissions", page, search);
+  },
 };
 
 export default permissionService;
