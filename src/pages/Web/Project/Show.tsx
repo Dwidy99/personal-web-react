@@ -50,14 +50,16 @@ export default function ProjectShow() {
   if (!project) {
     return (
       <LayoutWeb>
-        <div className="mx-auto max-w-xl rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h1 className="text-2xl font-bold text-red-500">Project not found</h1>
-          <Link
-            to="/projects"
-            className="mt-4 inline-flex items-center justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
-          >
-            Back to Projects
-          </Link>
+        <div className="mx-auto max-w-xl pt-14 md:pt-12">
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <h1 className="text-2xl font-bold text-red-500">Project not found</h1>
+            <Link
+              to="/projects"
+              className="mt-4 inline-flex items-center justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+            >
+              Back to Projects
+            </Link>
+          </div>
         </div>
       </LayoutWeb>
     );
@@ -71,7 +73,7 @@ export default function ProjectShow() {
     <LayoutWeb>
       <SEO title={projectTitle} description={seoDescription} />
 
-      <article className="mx-auto max-w-5xl">
+      <article className="mx-auto max-w-5xl pt-14 md:pt-12">
         <Link
           to="/projects"
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300"
