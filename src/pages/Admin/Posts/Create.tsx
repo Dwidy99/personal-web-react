@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
@@ -10,7 +10,10 @@ import type {
   AdminPostCategoryOption,
   AdminPostFormErrors,
 } from "@/features/admin/posts/types";
-import { getValidationErrors } from "@/features/admin/shared/utils/apiError";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
 const POST_CONTENT_EDITOR_HEIGHT = "560px";
@@ -33,12 +36,18 @@ export default function PostCreate() {
   const [contentUploads, setContentUploads] = useState(0);
   const isSaving = submitting || contentUploads > 0;
 
-  useEffect(() => {
-    postService
-      .getCategories()
-      .then(setCategories)
-      .catch(() => toast.error("Failed to load categories"));
+  const fetchCategories = useCallback(async (): Promise<void> => {
+    try {
+      const data = await postService.getCategories();
+      setCategories(data);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load categories"));
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchCategories();
+  }, [fetchCategories]);
 
   useEffect(() => {
     if (!image) {
@@ -61,7 +70,7 @@ export default function PostCreate() {
     [categories]
   );
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
@@ -83,7 +92,7 @@ export default function PostCreate() {
       navigate("/admin/posts");
     } catch (error: unknown) {
       setErrors(getValidationErrors(error));
-      toast.error("Validation error");
+      toast.error(getErrorMessage(error, "Failed to create post"));
     } finally {
       setSubmitting(false);
     }

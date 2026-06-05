@@ -1,5 +1,5 @@
-import { useEffect, useState, type ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaUserEdit } from "react-icons/fa";
 import { MdCategory, MdDeleteForever, MdPersonSearch } from "react-icons/md";
@@ -11,7 +11,10 @@ import Loading from "@/components/admin/Loading";
 import hasAnyPermissions from "@/utils/Permissions";
 import { postService } from "@/services/postService";
 import type { AdminPost, AdminPostPagination } from "@/features/admin/posts/types";
-import { getErrorMessage } from "@/features/admin/shared/utils/apiError";
+import {
+  getErrorMessage,
+  getHttpStatus,
+} from "@/features/admin/shared/utils/apiError";
 
 function CategoryBadge({ category }: { category?: AdminPost["category"] }) {
   const [imageFailed, setImageFailed] = useState(false);
@@ -42,8 +45,15 @@ function CategoryBadge({ category }: { category?: AdminPost["category"] }) {
 export default function PostsIndex() {
   document.title = "Posts - Admin Panel";
 
+  const navigate = useNavigate();
+
+  const canView = hasAnyPermissions(["posts.index"]);
+  const canCreate = hasAnyPermissions(["posts.store"]);
+  const canEdit = hasAnyPermissions(["posts.update"]);
+  const canDelete = hasAnyPermissions(["posts.delete"]);
+
   const [posts, setPosts] = useState<AdminPost[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [keywords, setKeywords] = useState("");
 
   const [pagination, setPagination] = useState<AdminPostPagination>({
@@ -52,9 +62,12 @@ export default function PostsIndex() {
     total: 0,
   });
 
-  const fetchData = async (page = 1, search = "") => {
+  const fetchData = useCallback(async (page = 1, search = ""): Promise<void> => {
+    if (!canView) return;
+
+    setLoading(true);
+
     try {
-      setLoading(true);
       const data = await postService.getAll(page, search);
 
       setPosts(data.data);
@@ -64,20 +77,32 @@ export default function PostsIndex() {
         total: data.total,
       });
     } catch (error: unknown) {
+      if (getHttpStatus(error) === 403) {
+        toast.error("You are not allowed to access Posts.");
+        navigate("/forbidden");
+        return;
+      }
+
       toast.error(getErrorMessage(error, "Failed to load posts"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [canView, navigate]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!canView) navigate("/forbidden");
+  }, [canView, navigate]);
+
+  useEffect(() => {
+    if (!canView) return;
+
+    void fetchData(1, "");
+  }, [canView, fetchData]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setKeywords(value);
-    fetchData(1, value);
+    void fetchData(1, value);
   };
 
   const handleDelete = (id: number) => {
@@ -91,9 +116,16 @@ export default function PostsIndex() {
             try {
               await postService.delete(id);
               toast.success("Post deleted successfully");
-              fetchData(pagination.current_page, keywords);
+              void fetchData(pagination.current_page, keywords);
             } catch (error: unknown) {
+              if (getHttpStatus(error) === 403) {
+                toast.error("You are not allowed to delete posts.");
+                void fetchData(pagination.current_page, keywords);
+                return;
+              }
+
               toast.error(getErrorMessage(error, "Delete failed"));
+              void fetchData(pagination.current_page, keywords);
             }
           },
         },
@@ -121,7 +153,7 @@ export default function PostsIndex() {
             />
           </div>
 
-          {hasAnyPermissions(["posts.store"]) && (
+          {canCreate && (
             <Link
               to="/admin/posts/create"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-lg
@@ -166,14 +198,16 @@ export default function PostsIndex() {
                       <td className="p-3 text-center">{post.user?.name || "-"}</td>
                       <td className="p-3">
                         <div className="flex justify-center gap-2">
-                          <Link
-                            to={`/admin/posts/edit/${post.id}`}
-                            className="rounded-md bg-sky-800 p-2 text-white"
-                          >
-                            <FaUserEdit />
-                          </Link>
+                          {canEdit && (
+                            <Link
+                              to={`/admin/posts/edit/${post.id}`}
+                              className="rounded-md bg-sky-800 p-2 text-white"
+                            >
+                              <FaUserEdit />
+                            </Link>
+                          )}
 
-                          {hasAnyPermissions(["posts.delete"]) && (
+                          {canDelete && (
                             <button
                               onClick={() => handleDelete(post.id)}
                               className="rounded-md bg-danger p-2 text-white"
@@ -215,14 +249,16 @@ export default function PostsIndex() {
                   </div>
 
                   <div className="mt-3 flex gap-2">
-                    <Link
-                      to={`/admin/posts/edit/${post.id}`}
-                      className="flex-1 rounded-md bg-sky-700 p-2 text-center text-white"
-                    >
-                      Edit
-                    </Link>
+                    {canEdit && (
+                      <Link
+                        to={`/admin/posts/edit/${post.id}`}
+                        className="flex-1 rounded-md bg-sky-700 p-2 text-center text-white"
+                      >
+                        Edit
+                      </Link>
+                    )}
 
-                    {hasAnyPermissions(["posts.delete"]) && (
+                    {canDelete && (
                       <button
                         onClick={() => handleDelete(post.id)}
                         className="flex-1 rounded-md bg-danger p-2 text-white"

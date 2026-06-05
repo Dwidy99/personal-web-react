@@ -11,6 +11,19 @@ export type AdminPostAuthor = {
   name: string;
 };
 
+export type AdminPostResponse<T> = {
+  success?: boolean;
+  status?: boolean;
+  message?: string;
+  data: T;
+};
+
+export type AdminPostMutationResponse = {
+  success?: boolean;
+  status?: boolean;
+  message?: string;
+};
+
 export type AdminPost = {
   id: number;
   title: string;

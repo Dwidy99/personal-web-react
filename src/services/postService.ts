@@ -1,46 +1,61 @@
 import Api from "./Api";
 import type {
-    AdminPost,
-    AdminPostCategoryOption,
-    AdminPostListResult,
+  AdminPost,
+  AdminPostCategoryOption,
+  AdminPostListResult,
+  AdminPostMutationResponse,
+  AdminPostResponse,
 } from "@/features/admin/posts/types";
 
 export const postService = {
-    async getAll(page = 1, search = ""): Promise<AdminPostListResult> {
-        const res = await Api.get(`/api/admin/posts`, {
-            params: { search, page },
-        });
-        return res.data.data;
-    },
+  async getAll(page = 1, search = ""): Promise<AdminPostListResult> {
+    const response = await Api.get<AdminPostResponse<AdminPostListResult>>(
+      "/api/admin/posts",
+      { params: { search, page } },
+    );
 
-    async getById(id: number): Promise<AdminPost> {
-        const res = await Api.get(`/api/admin/posts/${id}`);
-        return res.data.data;
-    },
+    return response.data.data;
+  },
 
-    async create(formData: FormData) {
-        const res = await Api.post("/api/admin/posts", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-        return res.data;
-    },
+  async getById(id: number): Promise<AdminPost> {
+    const response = await Api.get<AdminPostResponse<AdminPost>>(`/api/admin/posts/${id}`);
 
-    async update(id: number, formData: FormData) {
-        const res = await Api.post(`/api/admin/posts/${id}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-        return res.data;
-    },
+    return response.data.data;
+  },
 
-    async delete(id: number) {
-        const res = await Api.delete(`/api/admin/posts/${id}`);
-        return res.data;
-    },
+  async create(formData: FormData): Promise<AdminPostMutationResponse> {
+    const response = await Api.post<AdminPostMutationResponse>(
+      "/api/admin/posts",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
 
-    async getCategories(): Promise<AdminPostCategoryOption[]> {
-        const res = await Api.get("/api/admin/categories/all");
-        return res.data.data;
-    },
+    return response.data;
+  },
+
+  async update(id: number, formData: FormData): Promise<AdminPostMutationResponse> {
+    const response = await Api.post<AdminPostMutationResponse>(
+      `/api/admin/posts/${id}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+
+    return response.data;
+  },
+
+  async delete(id: number): Promise<AdminPostMutationResponse> {
+    const response = await Api.delete<AdminPostMutationResponse>(`/api/admin/posts/${id}`);
+
+    return response.data;
+  },
+
+  async getCategories(): Promise<AdminPostCategoryOption[]> {
+    const response = await Api.get<AdminPostResponse<AdminPostCategoryOption[]>>(
+      "/api/admin/categories/all",
+    );
+
+    return response.data.data;
+  },
 };
 
 export default postService;

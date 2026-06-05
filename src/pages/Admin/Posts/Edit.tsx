@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
@@ -12,7 +12,10 @@ import type {
   AdminPostCategoryOption,
   AdminPostFormErrors,
 } from "@/features/admin/posts/types";
-import { getValidationErrors } from "@/features/admin/shared/utils/apiError";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 const FORM_ID = "post-edit-form";
 const POST_EDITOR_UPLOAD_ENDPOINT = "/api/admin/posts/editor-upload";
@@ -34,14 +37,25 @@ export default function PostEdit() {
   const [contentUploads, setContentUploads] = useState(0);
   const isSaving = submitting || contentUploads > 0;
 
-  useEffect(() => {
-    Promise.all([postService.getCategories(), postService.getById(Number(id))])
-      .then(([cats, data]) => {
-        setCategories(cats);
-        setPost(data);
-      })
-      .catch(() => toast.error("Failed to load post"));
+  const fetchPost = useCallback(async (): Promise<void> => {
+    if (!id) return;
+
+    try {
+      const [categoryData, postData] = await Promise.all([
+        postService.getCategories(),
+        postService.getById(Number(id)),
+      ]);
+
+      setCategories(categoryData);
+      setPost(postData);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load post"));
+    }
   }, [id]);
+
+  useEffect(() => {
+    void fetchPost();
+  }, [fetchPost]);
 
   useEffect(() => {
     if (!image) {
@@ -91,7 +105,7 @@ export default function PostEdit() {
       navigate("/admin/posts");
     } catch (error: unknown) {
       setErrors(getValidationErrors(error));
-      toast.error("Validation error");
+      toast.error(getErrorMessage(error, "Failed to update post"));
     } finally {
       setSubmitting(false);
     }
