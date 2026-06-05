@@ -1,15 +1,16 @@
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import LayoutAdmin from "../../../layouts/Admin";
+import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import SubmitButton from "@/components/admin/SubmitButton";
-import { ConfigData, FileInputs, ValidationErrors } from "../../../types/configuration";
+import { ConfigData, FileInputs, ValidationErrors } from "@/types/configuration";
+import { configurationService } from "@/services";
+import {
+  getErrorMessage,
+  getValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
-// Service
-import { configurationService } from "../../../services";
-
-// Cookie type
 interface UserCookie {
   id: number;
   name?: string;
@@ -26,7 +27,6 @@ export default function ConfigurationsIndex() {
     ? JSON.parse(Cookies.get("user") as string)
     : null;
 
-  // 🧾 Form state
   const [form, setForm] = useState<ConfigData>({
     abbreviation: "",
     tagline: "",
@@ -70,8 +70,7 @@ export default function ConfigurationsIndex() {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  // 🧠 Fetch Config Data
-  const fetchConfig = async () => {
+  const fetchConfig = useCallback(async () => {
     try {
       if (!user?.id) {
         toast.error("Invalid user session!", { position: "top-center" });
@@ -85,17 +84,17 @@ export default function ConfigurationsIndex() {
         icon: data.icon ?? "",
         banner: data.banner ?? "",
       });
-    } catch (err) {
-      toast.error("Failed to load configuration", { position: "top-center" });
-      console.error(err);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load configuration"), {
+        position: "top-center",
+      });
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
-    fetchConfig();
-  }, []);
+    void fetchConfig();
+  }, [fetchConfig]);
 
-  // 📝 Update Configuration
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user?.id) return;
@@ -116,15 +115,16 @@ export default function ConfigurationsIndex() {
         position: "top-center",
       });
       navigate("/admin/configurations");
-    } catch (err: any) {
-      console.error(err);
-      setErrors(err.response?.data ?? {});
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error) as ValidationErrors);
+      toast.error(getErrorMessage(error, "Failed to update configuration"), {
+        position: "top-center",
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
-  // 🔁 Reset form
   const handleReset = () => {
     formRef.current?.reset();
     setForm((prev) => ({ ...prev, protocol: "smtp" }));
@@ -133,7 +133,6 @@ export default function ConfigurationsIndex() {
     setErrors({});
   };
 
-  // 🎯 Input handlers
   const handleChange = (key: keyof ConfigData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };

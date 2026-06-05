@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
@@ -8,8 +8,11 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import type { UserForm } from "@/types/user";
 import type { Role } from "@/types/role";
 import { FaArrowLeft } from "react-icons/fa6";
-
-type FieldErrors = Record<string, string[]>;
+import {
+  getErrorMessage,
+  getValidationErrors,
+  type AdminValidationErrors,
+} from "@/features/admin/shared/utils/apiError";
 
 export default function UsersEdit() {
   document.title = "Edit User - Desa Digital";
@@ -18,7 +21,7 @@ export default function UsersEdit() {
   const { id } = useParams<{ id: string }>();
 
   const [roles, setRoles] = useState<Role[]>([]);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<AdminValidationErrors>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -30,7 +33,7 @@ export default function UsersEdit() {
     roles: [],
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!id) return;
 
     setLoading(true);
@@ -48,16 +51,16 @@ export default function UsersEdit() {
         password_confirmation: "",
         roles: userRes.roles?.map((r) => r.name) || [],
       });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to load data");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to load data"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    fetchData();
-  }, [id]);
+    void fetchData();
+  }, [fetchData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -82,15 +85,17 @@ export default function UsersEdit() {
       const res = await userService.update(Number(id), formData);
       toast.success(res.message || "User updated successfully");
       navigate("/admin/users");
-    } catch (err: any) {
-      setErrors(err?.response?.data || {});
-      toast.error(err?.response?.data?.message || "Failed to update user");
+    } catch (error: unknown) {
+      setErrors(getValidationErrors(error));
+      toast.error(getErrorMessage(error, "Failed to update user"));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleReset = () => fetchData();
+  const handleReset = () => {
+    void fetchData();
+  };
 
   return (
     <LayoutAdmin>
