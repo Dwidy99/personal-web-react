@@ -7,7 +7,7 @@ import SEO from "@/components/general/SEO";
 import ContentRenderer from "@/components/general/ContentRenderer";
 import Loading from "@/components/web/Loading";
 import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
-import type { WebProject } from "@/features/web/shared/types";
+import type { WebProject } from "@/types/web";
 import { toPlainText } from "@/features/web/shared/utils/text";
 
 export default function ProjectShow() {

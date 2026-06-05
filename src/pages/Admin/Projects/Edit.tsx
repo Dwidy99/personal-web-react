@@ -9,7 +9,7 @@ import CKEditorField from "@/components/general/CKEditorField";
 import type {
   AdminProject,
   AdminProjectFormErrors,
-} from "@/features/admin/projects/types";
+} from "@/types/admin/projects";
 import {
   getErrorMessage,
   getValidationErrors,

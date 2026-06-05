@@ -9,7 +9,7 @@ import type {
   AdminConfigurationData,
   AdminConfigurationFiles,
   AdminConfigurationFormErrors,
-} from "@/features/admin/configurations/types";
+} from "@/types/admin/configurations";
 import {
   getErrorMessage,
   getValidationErrors,

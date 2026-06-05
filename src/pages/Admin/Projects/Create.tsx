@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { projectService } from "@/services";
 import SubmitButton from "@/components/admin/SubmitButton";
 import CKEditorField from "@/components/general/CKEditorField";
-import type { AdminProjectFormErrors } from "@/features/admin/projects/types";
+import type { AdminProjectFormErrors } from "@/types/admin/projects";
 import {
   getErrorMessage,
   getValidationErrors,

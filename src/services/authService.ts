@@ -1,6 +1,6 @@
 import Api from "./Api";
 import Cookies from "js-cookie";
-import { AuthCredentials, ForgotPasswordPayload, ResetPasswordPayload } from "../types/auth";
+import { AuthCredentials, ForgotPasswordPayload, ResetPasswordPayload } from "@/types/shared/auth";
 
 const authService = {
     async login(data: AuthCredentials) {

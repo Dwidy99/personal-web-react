@@ -7,7 +7,7 @@ import hasAnyPermissions from "@/utils/Permissions";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
 import { userService } from "@/services";
-import type { User } from "@/types/user";
+import type { User } from "@/types/admin/users";
 import { getErrorMessage, getHttpStatus } from "@/features/admin/shared/utils/apiError";
 import { MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus, FaTrash } from "react-icons/fa6";

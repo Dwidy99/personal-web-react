@@ -7,7 +7,7 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import type {
   AdminContact,
   AdminContactFormErrors,
-} from "@/features/admin/contacts/types";
+} from "@/types/admin/contacts";
 import { contactService } from "@/services";
 import {
   getErrorMessage,

@@ -5,8 +5,8 @@ import toast from "react-hot-toast";
 import { userService, roleService } from "@/services";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
-import type { UserForm } from "@/types/user";
-import type { Role } from "@/types/role";
+import type { UserForm } from "@/types/admin/users";
+import type { Role } from "@/types/admin/roles";
 import { FaArrowLeft } from "react-icons/fa6";
 import {
   getErrorMessage,

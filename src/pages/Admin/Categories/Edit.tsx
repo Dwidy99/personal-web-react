@@ -5,7 +5,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import SubmitButton from "@/components/admin/SubmitButton";
 import Loading from "@/components/admin/Loading";
 import { categoryService } from "@/services/categoryService";
-import type { AdminCategoryFormErrors } from "@/features/admin/categories/types";
+import type { AdminCategoryFormErrors } from "@/types/admin/categories";
 import {
   getErrorMessage,
   getValidationErrors,

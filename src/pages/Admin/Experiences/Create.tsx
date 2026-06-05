@@ -8,7 +8,7 @@ import experienceService from "@/services/experienceService";
 import type {
   AdminExperienceForm,
   AdminExperienceFormErrors,
-} from "@/features/admin/experiences/types";
+} from "@/types/admin/experiences";
 import {
   getErrorMessage,
   getValidationErrors,

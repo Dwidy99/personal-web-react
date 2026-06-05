@@ -2,7 +2,7 @@ import Api from "./Api";
 import type {
   AdminProfile,
   AdminProfileResponse,
-} from "@/features/admin/profiles/types";
+} from "@/types/admin/profiles";
 
 export const profileService = {
   async getByUserId(userId: number | string): Promise<AdminProfile | null> {

@@ -13,7 +13,7 @@ import type {
   WebCategory,
   WebPaginationMeta,
   WebPost,
-} from "@/features/web/shared/types";
+} from "@/types/web";
 
 export default function BlogIndex() {
   document.title = "Blog | Portfolio";

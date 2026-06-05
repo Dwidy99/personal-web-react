@@ -9,7 +9,7 @@ import { postService } from "@/services/postService";
 import type {
   AdminPostCategoryOption,
   AdminPostFormErrors,
-} from "@/features/admin/posts/types";
+} from "@/types/admin/posts";
 import {
   getErrorMessage,
   getValidationErrors,

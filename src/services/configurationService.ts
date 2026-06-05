@@ -2,7 +2,7 @@ import Api from "./Api";
 import type {
   AdminConfigurationData,
   AdminConfigurationResponse,
-} from "@/features/admin/configurations/types";
+} from "@/types/admin/configurations";
 
 export const configurationService = {
   async getByUserId(userId: number): Promise<AdminConfigurationData> {

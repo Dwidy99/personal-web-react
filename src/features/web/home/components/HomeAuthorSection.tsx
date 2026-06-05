@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Typewriter } from "react-simple-typewriter";
-import type { WebProfile } from "@/features/web/shared/types";
+import type { WebProfile } from "@/types/web";
 
 type HomeAuthorSectionProps = {
   profile: WebProfile;

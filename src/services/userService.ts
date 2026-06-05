@@ -1,6 +1,6 @@
 import Api from "./Api";
-import type { User, UserResponse, UserForm } from "@/types/user";
-import type { ApiResponse, ID } from "@/types/common";
+import type { User, UserResponse, UserForm } from "@/types/admin/users";
+import type { ApiResponse, ID } from "@/types/shared/api";
 
 const userService = {
     async getAll(page = 1, search = "") {

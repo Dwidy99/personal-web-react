@@ -13,7 +13,7 @@ import type {
   WebContact,
   WebExperience,
   WebProfile,
-} from "@/features/web/shared/types";
+} from "@/types/web";
 
 function formatMonthYear(date: string | null | undefined) {
   if (!date) return "Present";

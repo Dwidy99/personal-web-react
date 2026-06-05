@@ -11,7 +11,7 @@ import type {
   AdminPost,
   AdminPostCategoryOption,
   AdminPostFormErrors,
-} from "@/features/admin/posts/types";
+} from "@/types/admin/posts";
 import {
   getErrorMessage,
   getValidationErrors,

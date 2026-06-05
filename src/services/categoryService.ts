@@ -4,7 +4,7 @@ import type {
   AdminCategoryListResult,
   AdminCategoryMutationResponse,
   AdminCategoryResponse,
-} from "@/features/admin/categories/types";
+} from "@/types/admin/categories";
 
 export const categoryService = {
   async getAll(page = 1, search = ""): Promise<AdminCategoryListResult> {

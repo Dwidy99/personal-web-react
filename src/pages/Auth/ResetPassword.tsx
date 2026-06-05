@@ -2,7 +2,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
 import LayoutAuth from "../../layouts/Auth";
 import toast from "react-hot-toast";
-import { ValidationErrors } from "../../types/auth";
+import { ValidationErrors } from "@/types/shared/auth";
 import { RiLockPasswordLine } from "react-icons/ri";
 
 // Service

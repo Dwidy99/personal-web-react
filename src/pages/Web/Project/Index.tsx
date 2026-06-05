@@ -6,7 +6,7 @@ import SEO from "@/components/general/SEO";
 import Loading from "@/components/web/Loading";
 import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
 import WebContentCard from "@/features/web/shared/components/WebContentCard";
-import type { WebProject } from "@/features/web/shared/types";
+import type { WebProject } from "@/types/web";
 
 export default function ProjectsIndex() {
   const [projects, setProjects] = useState<WebProject[]>([]);

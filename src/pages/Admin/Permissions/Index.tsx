@@ -3,7 +3,7 @@ import LayoutAdmin from "@/layouts/Admin";
 import Pagination from "@/components/general/Pagination";
 import { MdPersonSearch } from "react-icons/md";
 import { permissionService } from "@/services";
-import type { Permission, PaginationMeta } from "@/types/permission";
+import type { Permission, PaginationMeta } from "@/types/admin/permissions";
 
 export default function PermissionsIndex() {
   document.title = "Permissions - My Portfolio";

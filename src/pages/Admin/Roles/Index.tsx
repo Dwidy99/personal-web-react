@@ -8,7 +8,7 @@ import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";
 import { MdDeleteForever, MdPersonSearch } from "react-icons/md";
 import { FaCirclePlus } from "react-icons/fa6";
-import type { Role } from "@/types/role";
+import type { Role } from "@/types/admin/roles";
 import { roleService } from "@/services";
 import { FaUserEdit } from "react-icons/fa";
 import { getErrorMessage, getHttpStatus } from "@/features/admin/shared/utils/apiError";

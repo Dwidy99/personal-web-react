@@ -1,4 +1,4 @@
-import type { AdminValidationErrors } from "@/features/admin/shared/utils/apiError";
+import type { AdminValidationErrors } from "./shared";
 
 export type AdminConfigurationResponse<T> = {
   success?: boolean;

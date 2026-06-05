@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
-import type { WebCategory, WebPaginationMeta, WebPost } from "@/features/web/shared/types";
+import type { WebCategory, WebPaginationMeta, WebPost } from "@/types/web";
 
 type UseCategoryPostsResult = {
   posts: WebPost[];

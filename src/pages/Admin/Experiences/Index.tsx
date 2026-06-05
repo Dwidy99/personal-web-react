@@ -14,7 +14,7 @@ import formatDateTime from "@/utils/Date";
 import type {
   AdminExperience,
   AdminExperiencePagination,
-} from "@/features/admin/experiences/types";
+} from "@/types/admin/experiences";
 import {
   getErrorMessage,
   getHttpStatus,

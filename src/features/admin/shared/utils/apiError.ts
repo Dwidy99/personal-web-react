@@ -1,6 +1,5 @@
 import { isAxiosError } from "axios";
-
-export type AdminValidationErrors = Record<string, string[] | undefined>;
+import type { AdminValidationErrors } from "@/types/admin/shared";
 
 export function getValidationErrors(error: unknown): AdminValidationErrors {
   if (!isAxiosError(error)) {

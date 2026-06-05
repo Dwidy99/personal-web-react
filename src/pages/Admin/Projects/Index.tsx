@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LayoutAdmin from "@/layouts/Admin";
 import Pagination from "@/components/general/Pagination";
 import Loading from "@/components/admin/Loading";
-import type { AdminProject } from "@/features/admin/projects/types";
+import type { AdminProject } from "@/types/admin/projects";
 import hasAnyPermissions from "@/utils/Permissions";
 import { confirmAlert } from "react-confirm-alert";
 import toast from "react-hot-toast";

@@ -10,7 +10,7 @@ import Pagination from "@/components/general/Pagination";
 import Loading from "@/components/admin/Loading";
 import hasAnyPermissions from "@/utils/Permissions";
 import { postService } from "@/services/postService";
-import type { AdminPost, AdminPostPagination } from "@/features/admin/posts/types";
+import type { AdminPost, AdminPostPagination } from "@/types/admin/posts";
 import {
   getErrorMessage,
   getHttpStatus,

@@ -1,6 +1,6 @@
 import Api from "./Api";
-import type { Role, RoleForm } from "@/types/role";
-import type { ApiResponse, ID } from "@/types/common";
+import type { Role, RoleForm } from "@/types/admin/roles";
+import type { ApiResponse, ID } from "@/types/shared/api";
 
 type RolePaginationResponse = {
   data: Role[];

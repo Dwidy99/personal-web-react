@@ -4,8 +4,8 @@ import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import Loading from "@/components/admin/Loading";
 import SubmitButton from "@/components/admin/SubmitButton";
-import type { Permission } from "@/types/permission";
-import type { RoleForm } from "@/types/role";
+import type { Permission } from "@/types/admin/permissions";
+import type { RoleForm } from "@/types/admin/roles";
 import { permissionService, roleService } from "@/services";
 import {
   getErrorMessage,

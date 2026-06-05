@@ -10,7 +10,7 @@ import Loading from "@/components/web/Loading";
 import ContentRenderer from "@/components/general/ContentRenderer";
 import formatDate from "@/utils/Date";
 import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
-import type { WebPost } from "@/features/web/shared/types";
+import type { WebPost } from "@/types/web";
 
 declare global {
   interface Window {

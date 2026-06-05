@@ -9,7 +9,7 @@ import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
 import WebCategoryPill from "@/features/web/shared/components/WebCategoryPill";
 import WebPostListItem from "@/features/web/shared/components/WebPostListItem";
 import WebSectionHeader from "@/features/web/shared/components/WebSectionHeader";
-import type { WebCategory, WebPost, WebProfile } from "@/features/web/shared/types";
+import type { WebCategory, WebPost, WebProfile } from "@/types/web";
 
 export default function HomePage() {
   const [profile, setProfile] = useState<WebProfile | null>(null);

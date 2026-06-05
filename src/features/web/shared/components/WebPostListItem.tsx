@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { GoArrowRight } from "react-icons/go";
 import { MdCalendarMonth } from "react-icons/md";
-import type { WebPost } from "../types";
+import type { WebPost } from "@/types/web";
 import { createExcerpt } from "../utils/text";
 
 type WebPostListItemProps = {

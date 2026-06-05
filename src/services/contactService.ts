@@ -4,7 +4,7 @@ import type {
   AdminContactListResult,
   AdminContactMutationResponse,
   AdminContactResponse,
-} from "@/features/admin/contacts/types";
+} from "@/types/admin/contacts";
 
 export const contactService = {
   async getAll(page = 1, search = ""): Promise<AdminContactListResult> {

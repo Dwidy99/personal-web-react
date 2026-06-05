@@ -1,5 +1,5 @@
-import type { ID } from "@/types/common";
-import type { AdminValidationErrors } from "@/features/admin/shared/utils/apiError";
+import type { ID } from "@/types/shared/api";
+import type { AdminValidationErrors } from "./shared";
 
 export type AdminProjectResponse<T> = {
   success?: boolean;

@@ -11,7 +11,7 @@ import type {
   AdminProfileEditorKey,
   AdminProfileForm,
   AdminProfileFormErrors,
-} from "@/features/admin/profiles/types";
+} from "@/types/admin/profiles";
 import {
   getErrorMessage,
   getValidationErrors,

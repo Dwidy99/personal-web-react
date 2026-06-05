@@ -1,6 +1,6 @@
 import Api from "./Api";
-import type { Permission } from "@/types/permission";
-import type { ApiResponse } from "@/types/common";
+import type { Permission } from "@/types/admin/permissions";
+import type { ApiResponse } from "@/types/shared/api";
 
 type ApiListResponse<T> = {
   data: T[];

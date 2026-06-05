@@ -5,7 +5,7 @@ import type {
   AdminProjectMutationResponse,
   AdminProjectPaginator,
   AdminProjectResponse,
-} from "@/features/admin/projects/types";
+} from "@/types/admin/projects";
 
 export const projectService = {
   async getAll(page = 1, search = ""): Promise<AdminProjectListResult> {

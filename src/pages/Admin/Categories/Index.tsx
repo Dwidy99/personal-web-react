@@ -13,7 +13,7 @@ import { categoryService } from "@/services/categoryService";
 import type {
   AdminCategory,
   AdminCategoryPagination,
-} from "@/features/admin/categories/types";
+} from "@/types/admin/categories";
 import {
   getErrorMessage,
   getHttpStatus,

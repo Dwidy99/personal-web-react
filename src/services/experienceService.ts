@@ -4,7 +4,7 @@ import type {
   AdminExperienceListResult,
   AdminExperienceMutationResponse,
   AdminExperienceResponse,
-} from "@/features/admin/experiences/types";
+} from "@/types/admin/experiences";
 
 type Paginator<T> = {
   current_page?: number;

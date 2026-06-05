@@ -3,7 +3,7 @@ import { NavLink, Navigate, useNavigate } from "react-router-dom";
 import LayoutAuth from "../../layouts/Auth";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
-import { AuthCredentials, ValidationErrors } from "../../types/auth";
+import { AuthCredentials, ValidationErrors } from "@/types/shared/auth";
 import { FaUser } from "react-icons/fa6";
 import { RiLockPasswordLine } from "react-icons/ri";
 

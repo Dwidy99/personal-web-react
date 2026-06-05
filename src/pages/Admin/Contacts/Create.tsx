@@ -3,7 +3,7 @@ import { useRef, useState, type FormEvent } from "react";
 import LayoutAdmin from "@/layouts/Admin";
 import toast from "react-hot-toast";
 import SubmitButton from "@/components/admin/SubmitButton";
-import type { AdminContactFormErrors } from "@/features/admin/contacts/types";
+import type { AdminContactFormErrors } from "@/types/admin/contacts";
 import { contactService } from "@/services";
 import {
   getErrorMessage,

@@ -3,7 +3,7 @@ import LayoutAuth from "../../layouts/Auth";
 import toast from "react-hot-toast";
 import { FaEnvelope } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
-import { ValidationErrors } from "../../types/auth";
+import { ValidationErrors } from "@/types/shared/auth";
 
 // Service
 import { authService } from "../../services";

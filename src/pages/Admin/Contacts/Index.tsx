@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import type {
   AdminContact,
   AdminContactPagination,
-} from "@/features/admin/contacts/types";
+} from "@/types/admin/contacts";
 import { confirmAlert } from "react-confirm-alert";
 import hasAnyPermissions from "@/utils/Permissions";
 import Pagination from "@/components/general/Pagination";

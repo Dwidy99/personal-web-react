@@ -5,7 +5,7 @@ import type {
   AdminPostListResult,
   AdminPostMutationResponse,
   AdminPostResponse,
-} from "@/features/admin/posts/types";
+} from "@/types/admin/posts";
 
 export const postService = {
   async getAll(page = 1, search = ""): Promise<AdminPostListResult> {

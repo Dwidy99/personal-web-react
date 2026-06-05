@@ -10,7 +10,7 @@ import type {
   WebPost,
   WebProfile,
   WebProject,
-} from "../types";
+} from "@/types/web";
 
 function listFromPayload<T>(payload: unknown): T[] {
   if (Array.isArray(payload)) {
