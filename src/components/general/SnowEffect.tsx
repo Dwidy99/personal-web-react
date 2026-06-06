@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const SNOW_BOTTOM_MARGIN = 32;
-
-// ==== Types ====
 interface SnowEffectProps {
   /** Mengatur kecepatan jatuhnya salju (default: 1) */
   snowSpeedFactor?: number;
@@ -17,53 +14,47 @@ interface Snowflake {
   radius: number;
 }
 
-// ==== Komponen utama ====
 export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const snowflakesRef = useRef<Snowflake[]>([]);
   const animationRef = useRef<number | null>(null);
-  const snowHeightRef = useRef(0);
+  const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
+  const lastFrameRef = useRef(0);
 
-  const getSnowHeight = useCallback(() => {
-    const footer = document.querySelector('footer[role="contentinfo"]');
-    const wrapper = document.querySelector(".site-wrapper");
-    const target = footer || wrapper;
+  const getParticleCount = useCallback((width: number, height: number) => {
+    const isDesktop = width > 768;
+    const baseCount = isDesktop ? 150 : 80;
+    const areaRatio = Math.max(0.7, Math.min((width * height) / (1440 * 900), 1.35));
+    const minCount = isDesktop ? 110 : 55;
+    const maxCount = isDesktop ? 220 : 120;
 
-    if (!target) {
-      return window.innerHeight;
-    }
-
-    const targetBottom = target.getBoundingClientRect().bottom + window.scrollY;
-
-    return Math.ceil(targetBottom + SNOW_BOTTOM_MARGIN);
+    return Math.max(minCount, Math.min(Math.round(baseCount * areaRatio), maxCount));
   }, []);
 
-  const getParticleCount = useCallback(() => {
-    const viewportCount = window.innerWidth > 768 ? 180 : 90;
-    const heightRatio = Math.max(1, snowHeightRef.current / Math.max(window.innerHeight, 1));
+  const createSnowflakes = useCallback(
+    (width: number, height: number): void => {
+      const snowflakes: Snowflake[] = [];
 
-    return Math.min(Math.ceil(viewportCount * heightRatio * 0.55), window.innerWidth > 768 ? 420 : 220);
-  }, []);
+      for (let i = 0; i < getParticleCount(width, height); i++) {
+        snowflakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          opacity: Math.random() * 0.55 + 0.25,
+          speedX: (Math.random() * 0.45 - 0.225) * snowSpeedFactor,
+          speedY: (Math.random() * 0.65 + 0.45) * snowSpeedFactor,
+          radius: Math.random() * 1.8 + 0.9,
+        });
+      }
 
-  // Membuat partikel salju awal
-  const createSnowflakes = useCallback((): void => {
-    const snowflakes: Snowflake[] = [];
-    for (let i = 0; i < getParticleCount(); i++) {
-      snowflakes.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * snowHeightRef.current,
-        opacity: Math.random(),
-        speedX: (Math.random() * 1 - 0.5) * snowSpeedFactor,
-        speedY: (Math.random() * 1 + 0.5) * snowSpeedFactor,
-        radius: Math.random() * 2 + 1,
-      });
-    }
-    snowflakesRef.current = snowflakes;
-  }, [getParticleCount, snowSpeedFactor]);
+      snowflakesRef.current = snowflakes;
+    },
+    [getParticleCount, snowSpeedFactor],
+  );
 
-  // Menggambar partikel salju
   const drawSnowflakes = useCallback((ctx: CanvasRenderingContext2D): void => {
-    ctx.clearRect(0, 0, window.innerWidth, snowHeightRef.current);
+    const { width, height } = sizeRef.current;
+
+    ctx.clearRect(0, 0, width, height);
     ctx.beginPath();
 
     snowflakesRef.current.forEach((flake) => {
@@ -75,25 +66,25 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     ctx.fill();
   }, []);
 
-  // Memperbarui posisi partikel salju
-  const updateSnowflakes = useCallback((): void => {
-    snowflakesRef.current = snowflakesRef.current.map((flake) => {
-      let newX = flake.x + flake.speedX;
-      let newY = flake.y + flake.speedY;
+  const updateSnowflakes = useCallback((frameRatio: number): void => {
+    const { width, height } = sizeRef.current;
 
-      if (newY > snowHeightRef.current) {
-        newY = 0;
-        newX = Math.random() * window.innerWidth;
+    snowflakesRef.current = snowflakesRef.current.map((flake) => {
+      let newX = flake.x + flake.speedX * frameRatio;
+      let newY = flake.y + flake.speedY * frameRatio;
+
+      if (newY > height + flake.radius) {
+        newY = -flake.radius;
+        newX = Math.random() * width;
       }
 
-      if (newX > window.innerWidth) newX = 0;
-      else if (newX < 0) newX = window.innerWidth;
+      if (newX > width + flake.radius) newX = -flake.radius;
+      else if (newX < -flake.radius) newX = width + flake.radius;
 
       return { ...flake, x: newX, y: newY };
     });
   }, []);
 
-  // Loop animasi salju
   const animateSnow = useCallback((): void => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -101,63 +92,60 @@ export default function SnowEffect({ snowSpeedFactor = 1 }: SnowEffectProps): JS
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const animate = (): void => {
+    const animate = (timestamp: number): void => {
+      const elapsed = lastFrameRef.current ? timestamp - lastFrameRef.current : 16.67;
+      const frameRatio = Math.min(elapsed / 16.67, 2);
+
+      lastFrameRef.current = timestamp;
       drawSnowflakes(ctx);
-      updateSnowflakes();
+      updateSnowflakes(frameRatio);
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
   }, [drawSnowflakes, updateSnowflakes]);
 
-  // Inisialisasi efek salju
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const syncCanvasSize = (): void => {
-      snowHeightRef.current = getSnowHeight();
-      canvas.width = window.innerWidth;
-      canvas.height = snowHeightRef.current;
-      canvas.style.height = `${snowHeightRef.current}px`;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const ctx = canvas.getContext("2d");
+
+      sizeRef.current = { width, height, dpr };
+      canvas.width = Math.ceil(width * dpr);
+      canvas.height = Math.ceil(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     syncCanvasSize();
-
-    createSnowflakes();
+    createSnowflakes(sizeRef.current.width, sizeRef.current.height);
     animateSnow();
 
     const handleResize = (): void => {
       syncCanvasSize();
-      createSnowflakes();
+      createSnowflakes(sizeRef.current.width, sizeRef.current.height);
     };
 
-    const resizeObserver = new ResizeObserver(() => {
-      const nextHeight = getSnowHeight();
-
-      if (Math.abs(nextHeight - snowHeightRef.current) < 24) {
-        return;
-      }
-
-      syncCanvasSize();
-      createSnowflakes();
-    });
-
     window.addEventListener("resize", handleResize);
-    resizeObserver.observe(document.body);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      resizeObserver.disconnect();
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [animateSnow, createSnowflakes, getSnowHeight]);
+  }, [animateSnow, createSnowflakes]);
 
   return (
     <canvas
+      aria-hidden="true"
       ref={canvasRef}
-      className="absolute left-0 top-0 z-0 w-full"
+      className="fixed inset-0 z-[1] h-screen w-screen"
       style={{ pointerEvents: "none" }}
-    ></canvas>
+    />
   );
 }
