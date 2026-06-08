@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import Api from "@/services/Api";
 import DynamicFavicon from "./DynamicFavicon";
+import { publicWebApi } from "@/features/web/shared/api/publicWebApi";
+import type { WebConfiguration } from "@/types/web";
 
 interface SEOProps {
   title?: string;
@@ -11,26 +12,13 @@ interface SEOProps {
   ogUrl?: string;
 }
 
-interface ConfigData {
-  site_name: string;
-  abbreviation: string;
-  tagline: string;
-  meta_text: string;
-  keywords: string[] | string;
-  website_url: string;
-  banner?: string | null;
-  icon?: string | null;
-  logo?: string | null;
-}
-
 export default function SEO({ title, description, keywords, canonical, ogUrl }: SEOProps) {
-  const [config, setConfig] = useState<ConfigData | null>(null);
+  const [config, setConfig] = useState<WebConfiguration | null>(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await Api.get<{ data: ConfigData }>("/api/public/configurations");
-        setConfig(res.data.data);
+        setConfig(await publicWebApi.getConfiguration());
       } catch (error) {
         console.error("Error loading configuration:", error);
       }
@@ -53,7 +41,7 @@ export default function SEO({ title, description, keywords, canonical, ogUrl }: 
     : typeof rawKeywords === "string"
       ? rawKeywords.split(",").map((keyword) => keyword.trim())
       : [];
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
   const defaultImage =
     config.banner || config.logo || `${apiBaseUrl}/storage/configurations/default-banner.png`;
   const faviconUrl = config.icon || `${apiBaseUrl}/storage/configurations/default-icon.png`;

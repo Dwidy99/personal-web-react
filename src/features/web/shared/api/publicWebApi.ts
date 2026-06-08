@@ -1,4 +1,4 @@
-import Api from "@/services/Api";
+import publicHttp from "@/features/web/shared/api/publicHttp";
 import type {
   WebApiResponse,
   WebCategory,
@@ -36,7 +36,7 @@ function paginationFromPayload<T>(payload: WebPaginationPayload<T>): WebPaginate
 
 export const publicWebApi = {
   async getProfiles(): Promise<WebProfile[]> {
-    const response = await Api.get<WebApiResponse<WebProfile[] | { data: WebProfile[] }>>(
+    const response = await publicHttp.get<WebApiResponse<WebProfile[] | { data: WebProfile[] }>>(
       "/api/public/profiles"
     );
 
@@ -44,15 +44,15 @@ export const publicWebApi = {
   },
 
   async getExperiences(): Promise<WebExperience[]> {
-    const response = await Api.get<WebApiResponse<WebExperience[] | { data: WebExperience[] }>>(
-      "/api/public/experiences"
-    );
+    const response = await publicHttp.get<
+      WebApiResponse<WebExperience[] | { data: WebExperience[] }>
+    >("/api/public/experiences");
 
     return listFromPayload<WebExperience>(response.data.data);
   },
 
   async getContacts(): Promise<WebContact[]> {
-    const response = await Api.get<WebApiResponse<WebContact[] | { data: WebContact[] }>>(
+    const response = await publicHttp.get<WebApiResponse<WebContact[] | { data: WebContact[] }>>(
       "/api/public/contacts"
     );
 
@@ -60,7 +60,7 @@ export const publicWebApi = {
   },
 
   async getConfiguration(): Promise<WebConfiguration | null> {
-    const response = await Api.get<WebApiResponse<WebConfiguration | null>>(
+    const response = await publicHttp.get<WebApiResponse<WebConfiguration | null>>(
       "/api/public/configurations"
     );
 
@@ -68,7 +68,7 @@ export const publicWebApi = {
   },
 
   async getCategories(): Promise<WebCategory[]> {
-    const response = await Api.get<WebApiResponse<WebCategory[] | { data: WebCategory[] }>>(
+    const response = await publicHttp.get<WebApiResponse<WebCategory[] | { data: WebCategory[] }>>(
       "/api/public/categories"
     );
 
@@ -76,7 +76,7 @@ export const publicWebApi = {
   },
 
   async getPostsHome(): Promise<WebPost[]> {
-    const response = await Api.get<WebApiResponse<WebPost[] | { data: WebPost[] }>>(
+    const response = await publicHttp.get<WebApiResponse<WebPost[] | { data: WebPost[] }>>(
       "/api/public/posts_home"
     );
 
@@ -84,7 +84,7 @@ export const publicWebApi = {
   },
 
   async getPosts(page = 1, perPage = 8): Promise<WebPaginatedResult<WebPost>> {
-    const response = await Api.get<WebApiResponse<WebPaginationPayload<WebPost>>>(
+    const response = await publicHttp.get<WebApiResponse<WebPaginationPayload<WebPost>>>(
       "/api/public/posts",
       {
         params: {
@@ -101,7 +101,7 @@ export const publicWebApi = {
     slug: string,
     page = 1
   ): Promise<{ category: WebCategory | null; posts: WebPaginatedResult<WebPost> }> {
-    const response = await Api.get<
+    const response = await publicHttp.get<
       WebApiResponse<{
         category: WebCategory | null;
         posts: WebPaginationPayload<WebPost>;
@@ -121,12 +121,12 @@ export const publicWebApi = {
       return null;
     }
 
-    const response = await Api.get<WebApiResponse<WebPost>>(`/api/public/posts/${slug}`);
+    const response = await publicHttp.get<WebApiResponse<WebPost>>(`/api/public/posts/${slug}`);
     return response.data.data ?? null;
   },
 
   async getProjects(): Promise<WebProject[]> {
-    const response = await Api.get<WebApiResponse<WebProject[] | { data: WebProject[] }>>(
+    const response = await publicHttp.get<WebApiResponse<WebProject[] | { data: WebProject[] }>>(
       "/api/public/projects"
     );
 
@@ -138,7 +138,9 @@ export const publicWebApi = {
       return null;
     }
 
-    const response = await Api.get<WebApiResponse<WebProject>>(`/api/public/projects/${slug}`);
+    const response = await publicHttp.get<WebApiResponse<WebProject>>(
+      `/api/public/projects/${slug}`
+    );
     return response.data.data ?? null;
   },
 };
