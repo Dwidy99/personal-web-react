@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ReactNode } from "react";
+import { toPlainText } from "@/utils/text";
 
 interface Category {
   name?: string;
@@ -23,6 +24,8 @@ export default function CardBlog({
   slug = "",
   children = null,
 }: CardBlogProps): JSX.Element {
+  const preview = toPlainText(content).slice(0, 110);
+
   return (
     <div className="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
       {image && <img src={image} alt={title} className="w-full h-48 object-cover" loading="lazy" />}
@@ -45,12 +48,10 @@ export default function CardBlog({
           )}
         </span>
 
-        <span
-          className="text-sm text-gray-500 text-left"
-          dangerouslySetInnerHTML={{
-            __html: (content || "").substring(0, 110) + "...",
-          }}
-        ></span>
+        <p className="text-left text-sm text-gray-500">
+          {preview || "No description available."}
+          {preview.length >= 110 ? "..." : ""}
+        </p>
 
         <div className="mt-auto text-right">{children}</div>
       </div>
