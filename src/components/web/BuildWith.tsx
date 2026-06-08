@@ -1,6 +1,7 @@
 import { AiOutlineJavaScript } from "react-icons/ai";
 import { FaReact } from "react-icons/fa";
 import { RiTailwindCssFill } from "react-icons/ri";
+import { SiTypescript } from "react-icons/si";
 
 export default function BuildWith() {
   return (
@@ -19,6 +20,9 @@ export default function BuildWith() {
           rel="noopener noreferrer"
         >
           <AiOutlineJavaScript className="text-yellow-600" />
+        </a>
+        <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">
+          <SiTypescript className="text-blue-600" />
         </a>
       </div>
     </div>
