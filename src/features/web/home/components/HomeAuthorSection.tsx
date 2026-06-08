@@ -1,12 +1,14 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Typewriter } from "react-simple-typewriter";
+import DOMPurify from "dompurify";
 import type { WebProfile } from "@/types/web";
 
 type HomeAuthorSectionProps = {
   profile: WebProfile;
 };
 
-const AUTO_TYPING_PARAGRAPHS = [
+const FALLBACK_AUTO_TYPING_PARAGRAPHS = [
   [
     "I started learning to code in 2016 when I started college.",
     "I landed my first job as an IT Operation BI Fast Payment in 2022.",
@@ -16,6 +18,48 @@ const AUTO_TYPING_PARAGRAPHS = [
     "I started this blog to practice my skill and share my knowledge.",
   ].join("\n\n"),
 ];
+
+function decodeHtmlEntities(value: string): string {
+  if (typeof document === "undefined") {
+    return value;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = value;
+  return textarea.value;
+}
+
+function extractAutoTypingParagraphs(value?: string | null): string[] {
+  if (!value) {
+    return [];
+  }
+
+  const textWithLineBreaks = value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6]|blockquote)>/gi, "\n");
+
+  const plainText = decodeHtmlEntities(
+    DOMPurify.sanitize(textWithLineBreaks, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+    })
+  );
+
+  return plainText
+    .split(/\n+/)
+    .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function groupParagraphsForTyping(paragraphs: string[]): string[] {
+  const groupedParagraphs: string[] = [];
+
+  for (let index = 0; index < paragraphs.length; index += 2) {
+    groupedParagraphs.push(paragraphs.slice(index, index + 2).join("\n\n"));
+  }
+
+  return groupedParagraphs;
+}
 
 function HomeQuickLink({ to, label }: { to: string; label: string }) {
   return (
@@ -29,6 +73,16 @@ function HomeQuickLink({ to, label }: { to: string; label: string }) {
 }
 
 export default function HomeAuthorSection({ profile }: HomeAuthorSectionProps): JSX.Element {
+  const autoTypingParagraphs = useMemo(() => {
+    const profileParagraphs = extractAutoTypingParagraphs(profile.content);
+
+    if (!profileParagraphs.length) {
+      return FALLBACK_AUTO_TYPING_PARAGRAPHS;
+    }
+
+    return groupParagraphsForTyping(profileParagraphs);
+  }, [profile.content]);
+
   return (
     <section className="mb-[4.5rem] lg:mb-24">
       <div className="mx-auto max-w-7xl">
@@ -47,7 +101,7 @@ export default function HomeAuthorSection({ profile }: HomeAuthorSectionProps): 
             <div className="mx-auto min-h-[9.5rem] w-full rounded-lg border border-slate-200/80 bg-white/75 p-5 text-left shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.06] sm:min-h-[8.5rem] sm:p-6 lg:mx-0">
               <p className="whitespace-pre-line text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg md:text-xl">
                 <Typewriter
-                  words={AUTO_TYPING_PARAGRAPHS}
+                  words={autoTypingParagraphs}
                   loop={0}
                   cursor
                   cursorStyle="|"

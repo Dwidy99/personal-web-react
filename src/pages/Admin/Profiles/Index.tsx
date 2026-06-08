@@ -359,12 +359,12 @@ export default function ProfilesIndex() {
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-gray-200">
-                Content
+                Home Intro
               </label>
               <CKEditorField
                 value={form.content}
                 onChange={(val) => setForm((p) => ({ ...p, content: val }))}
-                placeholder="Write profile content..."
+                placeholder="Write home intro paragraphs..."
                 height="340px"
                 minHeight="260px"
                 uploadEndpoint={PROFILE_EDITOR_UPLOAD_ENDPOINT}
