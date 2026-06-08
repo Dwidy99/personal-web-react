@@ -286,9 +286,9 @@ function injectEditorStyles() {
 
     .admin-rich-editor .ck-content code {
       padding: 0.12rem 0.35rem;
-      border-radius: 0.35rem;
-      background: #eef2ff;
-      color: #0f172a;
+      border-radius: 0.25rem;
+      background: #eeeeee;
+      color: #1f2937;
       font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.92em;
     }
@@ -297,9 +297,10 @@ function injectEditorStyles() {
       margin: 1em 0;
       padding: 1rem;
       overflow: auto;
-      border-radius: 10px;
-      background: #0f172a;
-      color: #e2e8f0;
+      border: 1px solid #c7c7c7;
+      border-radius: 2px;
+      background: #eeeeee;
+      color: #1f2937;
       font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.92rem;
       line-height: 1.65;
@@ -349,8 +350,14 @@ function injectEditorStyles() {
     }
 
     .dark .admin-rich-editor .ck-content code {
-      background: rgba(148, 163, 184, 0.18);
-      color: #e2e8f0;
+      background: #334155;
+      color: #f8fafc;
+    }
+
+    .dark .admin-rich-editor .ck-content pre {
+      border-color: #475569;
+      background: #1e293b;
+      color: #f8fafc;
     }
   `;
   document.head.appendChild(style);

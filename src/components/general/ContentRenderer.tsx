@@ -306,17 +306,17 @@ function injectContentRendererStyles() {
     .ckeditor-renderer pre {
       max-width: 100%;
       overflow-x: auto;
-      border-radius: 0.75rem;
+      border: 1px solid #c7c7c7;
+      border-radius: 2px;
       padding: 1rem;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: #eeeeee;
+      color: #1f2937;
       font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.95em;
       line-height: 1.7;
       tab-size: 2;
       white-space: pre-wrap;
       word-break: break-word;
-      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
     }
 
     .ckeditor-renderer pre code {
@@ -332,16 +332,22 @@ function injectContentRendererStyles() {
 
     .ckeditor-renderer code:not(pre code) {
       padding: 0.12rem 0.35rem;
-      border-radius: 0.35rem;
-      background: #eef2ff;
-      color: #0f172a;
+      border-radius: 0.25rem;
+      background: #eeeeee;
+      color: #1f2937;
       font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.92em;
     }
 
+    .dark .ckeditor-renderer pre {
+      border-color: #475569;
+      background: #1e293b;
+      color: #f8fafc;
+    }
+
     .dark .ckeditor-renderer code:not(pre code) {
-      background: rgba(148, 163, 184, 0.18);
-      color: #e2e8f0;
+      background: #334155;
+      color: #f8fafc;
     }
 
     .ckeditor-renderer iframe {
