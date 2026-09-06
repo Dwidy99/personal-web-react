@@ -110,9 +110,9 @@ export default function ProjectShow() {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md"
+              className="mt-6 inline-flex max-w-[calc(100vw-3.5rem)] items-center justify-center gap-2 rounded-md bg-sky-600 px-4 py-2.5 text-sm font-semibold leading-none text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md"
             >
-              <span className="truncate">Visit live project</span>
+              <span className="min-w-0 truncate">Open Demo</span>
               <FaExternalLinkAlt className="shrink-0 text-xs" />
             </a>
           )}
@@ -160,9 +160,9 @@ export default function ProjectShow() {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-md dark:bg-sky-600 dark:hover:bg-sky-700"
+              className="inline-flex max-w-[calc(100vw-3.5rem)] items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold leading-none text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-md dark:bg-sky-600 dark:hover:bg-sky-700"
             >
-              <span className="truncate">Open live project</span>
+              <span className="min-w-0 truncate">Open Demo</span>
               <FaExternalLinkAlt className="shrink-0 text-xs" />
             </a>
           )}
