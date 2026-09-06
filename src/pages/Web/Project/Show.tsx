@@ -73,7 +73,7 @@ export default function ProjectShow() {
     <LayoutWeb>
       <SEO title={projectTitle} description={seoDescription} />
 
-      <article className="mx-auto max-w-5xl pt-20 md:pt-12 lg:pt-10">
+      <article className="mx-auto w-full max-w-5xl min-w-0 overflow-hidden pt-20 md:pt-12 lg:pt-10">
         <Link
           to="/projects"
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300"
@@ -110,10 +110,10 @@ export default function ProjectShow() {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-md bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700"
+              className="mt-6 inline-flex w-full max-w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md sm:w-auto"
             >
-              Visit live project
-              <FaExternalLinkAlt className="text-xs" />
+              <span className="truncate">Visit live project</span>
+              <FaExternalLinkAlt className="shrink-0 text-xs" />
             </a>
           )}
         </header>
@@ -160,10 +160,10 @@ export default function ProjectShow() {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-sky-600 dark:hover:bg-sky-700"
+              className="inline-flex w-full max-w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-md dark:bg-sky-600 dark:hover:bg-sky-700 sm:w-auto"
             >
-              Open live project
-              <FaExternalLinkAlt className="text-xs" />
+              <span className="truncate">Open live project</span>
+              <FaExternalLinkAlt className="shrink-0 text-xs" />
             </a>
           )}
         </footer>
