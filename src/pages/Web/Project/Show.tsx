@@ -76,13 +76,13 @@ export default function ProjectShow() {
       <article className="mx-auto w-full max-w-5xl min-w-0 overflow-hidden pt-20 md:pt-12 lg:pt-10">
         <Link
           to="/projects"
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300"
+          className="mb-8 inline-flex max-w-full items-center gap-2 rounded-full border border-gray-200 px-3.5 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300 sm:px-4"
         >
-          <FaArrowLeft className="text-xs" />
-          Back to projects
+          <FaArrowLeft className="shrink-0 text-xs" />
+          <span className="truncate">Back to projects</span>
         </Link>
 
-        <header className="max-w-3xl">
+        <header className="max-w-3xl min-w-0">
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
             <span className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase text-sky-700 shadow-sm dark:border-white/15 dark:bg-white/5 dark:text-white">
               Project Detail
@@ -110,7 +110,7 @@ export default function ProjectShow() {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex w-full max-w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md sm:w-auto"
+              className="mt-6 inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md"
             >
               <span className="truncate">Visit live project</span>
               <FaExternalLinkAlt className="shrink-0 text-xs" />
@@ -149,10 +149,10 @@ export default function ProjectShow() {
         <footer className="mt-8 flex flex-col gap-3 border-t border-gray-200 pt-6 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
           <Link
             to="/projects"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300"
+            className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-full border border-gray-200 px-3.5 py-2 text-sm font-semibold text-gray-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-gray-700 dark:text-gray-200 dark:hover:border-sky-400 dark:hover:text-sky-300 sm:px-4 sm:py-2.5"
           >
-            <FaArrowLeft className="text-xs" />
-            Back to projects
+            <FaArrowLeft className="shrink-0 text-xs" />
+            <span className="truncate">Back to projects</span>
           </Link>
 
           {project.link && (
@@ -160,7 +160,7 @@ export default function ProjectShow() {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex w-full max-w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-md dark:bg-sky-600 dark:hover:bg-sky-700 sm:w-auto"
+              className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-md dark:bg-sky-600 dark:hover:bg-sky-700"
             >
               <span className="truncate">Open live project</span>
               <FaExternalLinkAlt className="shrink-0 text-xs" />
